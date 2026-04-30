@@ -26,6 +26,9 @@ export async function sendFinalMessage(
   const result = await registry.execute("messaging.send_message", {
     agentId: message.agentId,
     actorId: message.sender.platformUserId,
+    actorRole: message.sender.role,
+    platform: message.platform,
+    conversationId: message.conversationId,
     runId,
     stepId,
     input: {

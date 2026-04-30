@@ -109,6 +109,9 @@ async function executeToolCall(
   const result = await registry.execute(toolCall.name, {
     agentId: message.agentId,
     actorId: message.sender.platformUserId,
+    actorRole: message.sender.role,
+    platform: message.platform,
+    conversationId: message.conversationId,
     runId,
     stepId: toolStepId,
     input: toolCall.arguments

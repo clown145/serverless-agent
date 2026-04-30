@@ -28,10 +28,14 @@ export type ToolExecutionContext = {
   env: Env;
   agentId: string;
   actorId: string;
+  actorRole?: string;
+  platform?: string;
+  conversationId?: string;
   runId: string;
   stepId: string;
   input: unknown;
   allowDangerous?: boolean;
+  confirmedActionId?: string;
 };
 
 export type ToolResult = {

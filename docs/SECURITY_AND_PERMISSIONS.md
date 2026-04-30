@@ -149,3 +149,15 @@ VFS 路径规则：
 - 明确工具 schema。
 
 通用 HTTP 工具后续再加，并放到高权限等级。
+
+## 当前实现
+
+运行时代码已经实现：
+
+- 默认角色策略。
+- D1-backed `permission_policies` 显式策略。
+- `pending_actions` 高风险工具确认记录。
+- admin API 创建、查看、删除策略。
+- admin API 查看并确认 pending action。
+
+具体接口和本地调试方式见 [PERMISSIONS_RUNTIME.md](PERMISSIONS_RUNTIME.md)。

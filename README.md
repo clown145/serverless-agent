@@ -46,6 +46,7 @@ D1 / R2 / KV / External APIs
 - [docs/MODEL_PROVIDERS.md](docs/MODEL_PROVIDERS.md): OpenAI-compatible、Gemini 和 mock provider 配置。
 - [docs/SKILL_RUNTIME.md](docs/SKILL_RUNTIME.md): skill 选择、上下文注入和工具授权规则。
 - [docs/SCHEDULER_RUNTIME.md](docs/SCHEDULER_RUNTIME.md): future tasks、recurring schedules 和 heartbeat。
+- [docs/PERMISSIONS_RUNTIME.md](docs/PERMISSIONS_RUNTIME.md): 显式权限策略、默认权限和 pending action 确认流程。
 - [docs/ROADMAP.md](docs/ROADMAP.md): MVP 到长期版本路线。
 - [specs/](specs): 内部消息、工具、VFS、skill manifest 的接口草案。
 

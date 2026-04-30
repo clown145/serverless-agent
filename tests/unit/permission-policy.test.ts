@@ -12,7 +12,7 @@ const baseContext = {
 };
 
 describe("permission policy", () => {
-  it("allows non-dangerous tools by default", () => {
+  it("allows non-dangerous tools by default", async () => {
     const tool: ToolDefinition = {
       name: "vfs.read_file",
       description: "read",
@@ -22,19 +22,24 @@ describe("permission policy", () => {
       timeoutMs: 1000
     };
 
-    expect(evaluateToolPermission(tool, baseContext).allowed).toBe(true);
+    await expect(evaluateToolPermission(tool, baseContext)).resolves.toMatchObject({
+      allowed: true
+    });
   });
 
-  it("blocks dangerous tools without explicit confirmation", () => {
+  it("requires confirmation for dangerous tools", async () => {
     const tool: ToolDefinition = {
-      name: "permissions.update",
+      name: "workspace.replace_file",
       description: "dangerous",
       inputSchema: { type: "object", properties: {} },
-      permission: { level: 5, scopes: ["permissions:write"] },
+      permission: { level: 1, scopes: ["workspace:read"] },
       sideEffect: "dangerous",
       timeoutMs: 1000
     };
 
-    expect(evaluateToolPermission(tool, baseContext).allowed).toBe(false);
+    await expect(evaluateToolPermission(tool, baseContext)).resolves.toMatchObject({
+      allowed: false,
+      needsConfirmation: true
+    });
   });
 });

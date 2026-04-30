@@ -10,6 +10,10 @@ import { createMessagingTools } from "../messaging/tools";
 import { evaluateToolPermission } from "../permissions/policy";
 import { createVfsTools } from "../vfs/tools";
 import type { RegisteredTool, ToolResult } from "../types";
+import {
+  createPendingToolResult,
+  initialToolCallStatus
+} from "./pending-tool-result";
 
 export type ToolRegistry = {
   execute(name: string, input: RegistryExecuteInput): Promise<ToolResult>;
@@ -19,10 +23,14 @@ export type ToolRegistry = {
 type RegistryExecuteInput = {
   agentId: string;
   actorId: string;
+  actorRole?: string;
+  platform?: string;
+  conversationId?: string;
   runId: string;
   stepId: string;
   input: unknown;
   allowDangerous?: boolean;
+  confirmedActionId?: string;
 };
 
 export function createToolRegistry(env: Env): ToolRegistry {
@@ -41,7 +49,7 @@ export function createToolRegistry(env: Env): ToolRegistry {
       const toolCallId = createId("tool");
       const startedAt = nowIso();
       const context = { ...input, env };
-      const decision = evaluateToolPermission(tool.definition, context);
+      const decision = await evaluateToolPermission(tool.definition, context);
 
       await recordToolCall(env.AGENT_DB, {
         id: toolCallId,
@@ -49,10 +57,22 @@ export function createToolRegistry(env: Env): ToolRegistry {
         stepId: input.stepId,
         agentId: input.agentId,
         toolName: name,
-        status: decision.allowed ? "running" : "permission_denied",
+        status: initialToolCallStatus(decision),
         inputJson: JSON.stringify(input.input),
         createdAt: startedAt
       });
+
+      if (decision.needsConfirmation) {
+        return createPendingToolResult(env, {
+          toolName: name,
+          toolCallId,
+          startedAt,
+          actorId: input.actorId,
+          decisionReason: decision.reason,
+          context,
+          tool: tool.definition
+        });
+      }
 
       if (!decision.allowed) {
         await appendAuditLog(env.AGENT_DB, {

@@ -34,6 +34,7 @@ serverless-agent/
     MODEL_PROVIDERS.md
     SKILL_RUNTIME.md
     SCHEDULER_RUNTIME.md
+    PERMISSIONS_RUNTIME.md
     ROADMAP.md
 
   specs/
@@ -61,6 +62,7 @@ serverless-agent/
       email/
       git/
     storage/
+    permissions/
     scheduler/
     skills/
     observability/
@@ -193,6 +195,22 @@ src/tools/git/
 
 业务模块不能直接散落 SQL 或 R2 key 拼接。
 
+### `src/permissions/`
+
+权限策略解析和 pending action 创建逻辑。
+
+可以放：
+
+- 默认权限策略。
+- D1 策略合并和检查。
+- 高风险工具确认请求创建。
+
+不放：
+
+- HTTP admin route。
+- 具体工具实现。
+- 平台 adapter。
+
 ### `src/scheduler/`
 
 未来任务和心跳。
@@ -238,6 +256,7 @@ skill 加载器和 manifest 解析器。这里不放用户安装的 skill 内容
 - 处理 agent run 状态：放 `src/core`。
 - 处理 Durable Object 生命周期：放 `src/agents`。
 - 处理 R2/D1/KV：放 `src/storage`。
+- 处理权限策略、确认请求：放 `src/permissions`。
 - 处理可被 agent 调用的能力：放 `src/tools/{domain}`。
 - 处理未来任务和心跳：放 `src/scheduler`。
 - 处理 skill manifest 和加载：放 `src/skills`。

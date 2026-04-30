@@ -184,6 +184,34 @@ Inspect heartbeats:
 curl -sS http://localhost:8787/admin/heartbeats
 ```
 
+## Manage Permission Policies
+
+Create a policy for a user:
+
+```bash
+curl -sS http://localhost:8787/admin/permission-policies \
+  -H 'content-type: application/json' \
+  -d '{"subjectType":"user","subjectId":"alice","maxLevel":4,"scopes":["workspace:read","workspace:write","message:send"]}'
+```
+
+List policies:
+
+```bash
+curl -sS http://localhost:8787/admin/permission-policies
+```
+
+List pending confirmations:
+
+```bash
+curl -sS http://localhost:8787/admin/pending-actions
+```
+
+Confirm a pending action:
+
+```bash
+curl -sS -X POST http://localhost:8787/admin/pending-actions/act_.../confirm
+```
+
 ## Admin Token
 
 If `INTERNAL_ADMIN_TOKEN` is configured, admin routes require:
