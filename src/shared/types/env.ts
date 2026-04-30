@@ -6,6 +6,7 @@ export interface Env {
   AGENT_BUCKET: R2Bucket;
   AGENT_DB: D1Database;
   AGENT_KV: KVNamespace;
+  ASSETS?: Fetcher;
 
   DEFAULT_AGENT_ID?: string;
   INTERNAL_ADMIN_TOKEN?: string;

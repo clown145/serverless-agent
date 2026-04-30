@@ -7,6 +7,8 @@
 ```text
 telegram/
 qq/
+webui/
+admin/
 ```
 
 adapter 只负责平台协议和内部协议互转，不做 agent 决策。

@@ -39,7 +39,7 @@ export function createMessagingTools(): RegisteredTool[] {
           };
         }
 
-        if (parsed.data.platform === "admin") {
+        if (parsed.data.platform === "admin" || parsed.data.platform === "webui") {
           return { status: "success", output: { delivered: false } };
         }
 

@@ -1,4 +1,4 @@
-export type Platform = "telegram" | "qq" | "webhook" | "admin";
+export type Platform = "telegram" | "qq" | "webhook" | "admin" | "webui";
 
 export type MessageKind = "text" | "command" | "attachment" | "event";
 

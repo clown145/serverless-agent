@@ -28,6 +28,19 @@ This applies SQL files from `infra/cloudflare/migrations`.
 npm run dev
 ```
 
+The admin console is available at:
+
+```text
+http://localhost:8787/ui
+```
+
+Build or develop only the WebUI:
+
+```bash
+npm run admin:build
+npm run admin:dev
+```
+
 ## Trigger A Local Admin Run
 
 Use sync mode when developing. It sends the event directly to the Durable Object and returns the `runId`.
@@ -38,6 +51,14 @@ The default local model provider is `mock`, configured in `wrangler.toml`.
 curl -sS http://localhost:8787/admin/messages \
   -H 'content-type: application/json' \
   -d '{"text":"/ping","mode":"sync"}'
+```
+
+WebUI sends the same endpoint with `platform:webui`:
+
+```bash
+curl -sS http://localhost:8787/admin/messages \
+  -H 'content-type: application/json' \
+  -d '{"platform":"webui","conversationId":"webui:default","text":"/ping","mode":"sync"}'
 ```
 
 If your shell has proxy variables configured and local requests hang, add:
@@ -63,6 +84,12 @@ Then inspect the run:
 
 ```bash
 curl -sS http://localhost:8787/admin/runs/run_...
+```
+
+List recent runs:
+
+```bash
+curl -sS http://localhost:8787/admin/runs
 ```
 
 Test a tool call through the mock provider:

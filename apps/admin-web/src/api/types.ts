@@ -1,0 +1,73 @@
+export type ApiResult<T> = T & { ok: boolean };
+
+export type RunListItem = {
+  id: string;
+  agentId: string;
+  conversationId?: string;
+  triggerMessageId?: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type RunDetails = {
+  run: Record<string, unknown>;
+  steps: Record<string, unknown>[];
+  toolCalls: Record<string, unknown>[];
+  auditLogs: Record<string, unknown>[];
+};
+
+export type VfsEntry = {
+  id: string;
+  agentId: string;
+  path: string;
+  kind: "file" | "directory";
+  mimeType?: string;
+  size?: number;
+  updatedAt: string;
+};
+
+export type VfsFile = {
+  path: string;
+  content: string;
+  mimeType?: string;
+};
+
+export type Schedule = {
+  id: string;
+  agentId: string;
+  status: string;
+  dueAt: string;
+  payloadJson: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type PendingAction = {
+  id: string;
+  agentId: string;
+  runId: string;
+  stepId: string;
+  actorId: string;
+  actorRole?: string;
+  platform?: string;
+  conversationId?: string;
+  toolName: string;
+  inputJson: string;
+  status: string;
+  reason?: string;
+  expiresAt: string;
+  createdAt: string;
+};
+
+export type PermissionPolicy = {
+  id: string;
+  agentId: string;
+  subjectType: "agent" | "user" | "role" | "platform" | "conversation";
+  subjectId: string;
+  maxLevel: number;
+  scopes: string[];
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+};

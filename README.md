@@ -47,6 +47,7 @@ D1 / R2 / KV / External APIs
 - [docs/SKILL_RUNTIME.md](docs/SKILL_RUNTIME.md): skill 选择、上下文注入和工具授权规则。
 - [docs/SCHEDULER_RUNTIME.md](docs/SCHEDULER_RUNTIME.md): future tasks、recurring schedules 和 heartbeat。
 - [docs/PERMISSIONS_RUNTIME.md](docs/PERMISSIONS_RUNTIME.md): 显式权限策略、默认权限和 pending action 确认流程。
+- [docs/ADMIN_WEBUI.md](docs/ADMIN_WEBUI.md): React/Vite 管理控制台和 `platform:webui` 入口。
 - [docs/ROADMAP.md](docs/ROADMAP.md): MVP 到长期版本路线。
 - [specs/](specs): 内部消息、工具、VFS、skill manifest 的接口草案。
 
@@ -62,5 +63,6 @@ D1 / R2 / KV / External APIs
 6. 定时任务和心跳。
 7. 简单权限系统。
 8. 运行日志和错误记录。
+9. 最小 Admin WebUI。
 
 QQ、GitHub 同步、邮件、搜索等能力作为独立工具逐步接入。

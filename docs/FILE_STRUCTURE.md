@@ -9,6 +9,7 @@ serverless-agent/
   README.md
   docs/
   specs/
+  apps/
   infra/
   scripts/
   src/
@@ -19,6 +20,12 @@ serverless-agent/
 
 ```text
 serverless-agent/
+  apps/
+    admin-web/
+      src/
+      index.html
+      vite.config.ts
+
   docs/
     ARCHITECTURE.md
     LOCAL_DEVELOPMENT.md
@@ -76,6 +83,22 @@ serverless-agent/
 ### `docs/`
 
 设计文档、开发规范、路线图。只放人读的说明，不放运行时代码。
+
+### `apps/admin-web/`
+
+React + Vite 管理控制台。
+
+可以放：
+
+- WebUI routes/panels。
+- Admin API client。
+- WebUI-only CSS。
+
+不放：
+
+- Worker route。
+- D1/R2 访问逻辑。
+- agent 内核逻辑。
 
 ### `specs/`
 

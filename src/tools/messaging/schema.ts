@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const sendMessageInputSchema = z.object({
-  platform: z.enum(["telegram", "qq", "webhook", "admin"]),
+  platform: z.enum(["telegram", "qq", "webhook", "admin", "webui"]),
   conversationId: z.string().min(1),
   text: z.string().min(1).max(4096)
 });
@@ -13,7 +13,7 @@ export const sendMessageInputJsonSchema = {
   properties: {
     platform: {
       type: "string",
-      enum: ["telegram", "qq", "webhook", "admin"],
+      enum: ["telegram", "qq", "webhook", "admin", "webui"],
       description: "Target platform for the outbound message."
     },
     conversationId: {

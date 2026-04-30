@@ -7,9 +7,11 @@ import { handleAdminPendingActions } from "./routes/admin-pending-actions";
 import { handleAdminPermissionPolicies } from "./routes/admin-permission-policies";
 import { handleAdminPermissionPolicyDetail } from "./routes/admin-permission-policy-detail";
 import { handleAdminRunDetail } from "./routes/admin-run-detail";
+import { handleAdminRuns } from "./routes/admin-runs";
 import { handleAdminScheduleDetail } from "./routes/admin-schedule-detail";
 import { handleAdminSchedules } from "./routes/admin-schedules";
 import { handleAdminSkillDetail } from "./routes/admin-skill-detail";
+import { handleAdminUi } from "./routes/admin-ui";
 import { handleAdminVfs } from "./routes/admin-vfs";
 import { handleHealth } from "./routes/health";
 import { handleTelegramWebhook } from "./routes/telegram-webhook";
@@ -31,6 +33,10 @@ export async function routeRequest(
 
   if (request.method === "POST" && url.pathname === "/admin/messages") {
     return handleAdminMessage(request, env, ctx);
+  }
+
+  if (request.method === "GET" && (url.pathname === "/ui" || url.pathname.startsWith("/ui/"))) {
+    return handleAdminUi(request, env);
   }
 
   if (url.pathname === "/admin/permission-policies") {
@@ -76,6 +82,10 @@ export async function routeRequest(
     return handleAdminHeartbeats(request, env);
   }
 
+  if (request.method === "GET" && url.pathname === "/admin/runs") {
+    return handleAdminRuns(request, env);
+  }
+
   if (request.method === "GET" && url.pathname.startsWith("/admin/runs/")) {
     return handleAdminRunDetail(
       request,
@@ -109,9 +119,11 @@ export async function routeRequest(
         "/admin/schedules",
         "/admin/schedules/:scheduleId",
         "/admin/heartbeats",
+        "/admin/runs",
         "/admin/runs/:runId",
         "/admin/skills/:skillId",
-        "/admin/vfs"
+        "/admin/vfs",
+        "/ui"
       ]
     });
   }
