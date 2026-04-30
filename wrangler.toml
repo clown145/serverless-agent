@@ -1,0 +1,41 @@
+name = "serverless-agent"
+main = "src/worker/index.ts"
+compatibility_date = "2026-04-30"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+DEFAULT_AGENT_ID = "default"
+
+[triggers]
+crons = ["*/5 * * * *"]
+
+[[durable_objects.bindings]]
+name = "AGENT_OBJECT"
+class_name = "AgentDurableObject"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["AgentDurableObject"]
+
+[[queues.producers]]
+binding = "AGENT_QUEUE"
+queue = "serverless-agent-events"
+
+[[queues.consumers]]
+queue = "serverless-agent-events"
+max_batch_size = 10
+max_batch_timeout = 5
+
+[[r2_buckets]]
+binding = "AGENT_BUCKET"
+bucket_name = "serverless-agent"
+
+[[d1_databases]]
+binding = "AGENT_DB"
+database_name = "serverless-agent"
+database_id = "replace-with-d1-database-id"
+migrations_dir = "infra/cloudflare/migrations"
+
+[[kv_namespaces]]
+binding = "AGENT_KV"
+id = "replace-with-kv-namespace-id"
