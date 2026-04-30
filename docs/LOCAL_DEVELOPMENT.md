@@ -85,6 +85,26 @@ Read a file:
 curl -sS 'http://localhost:8787/admin/vfs?mode=file&path=/workspace/notes/hello.md'
 ```
 
+## Load A Skill From VFS
+
+Create a minimal skill:
+
+```bash
+curl -sS -X PUT http://localhost:8787/admin/vfs \
+  -H 'content-type: application/json' \
+  -d '{"path":"/skills/demo/manifest.json","content":"{\"id\":\"demo\",\"name\":\"Demo\",\"version\":\"0.1.0\",\"description\":\"Demo skill\",\"entry\":\"SKILL.md\",\"tools\":[\"vfs.read_file\"],\"permissions\":{\"requiredLevel\":1,\"scopes\":[\"workspace:read\"]}}"}'
+
+curl -sS -X PUT http://localhost:8787/admin/vfs \
+  -H 'content-type: application/json' \
+  -d '{"path":"/skills/demo/SKILL.md","content":"Use this skill for demo reads."}'
+```
+
+Load it:
+
+```bash
+curl -sS http://localhost:8787/admin/skills/demo
+```
+
 ## Queue Mode
 
 Production-like mode uses the Queue binding:

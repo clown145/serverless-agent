@@ -2,6 +2,7 @@ import type { Env } from "../shared/types/env";
 import { errorResponse, jsonResponse } from "../shared/http";
 import { handleAdminMessage } from "./routes/admin-message";
 import { handleAdminRunDetail } from "./routes/admin-run-detail";
+import { handleAdminSkillDetail } from "./routes/admin-skill-detail";
 import { handleAdminVfs } from "./routes/admin-vfs";
 import { handleHealth } from "./routes/health";
 import { handleTelegramWebhook } from "./routes/telegram-webhook";
@@ -33,6 +34,14 @@ export async function routeRequest(
     );
   }
 
+  if (request.method === "GET" && url.pathname.startsWith("/admin/skills/")) {
+    return handleAdminSkillDetail(
+      request,
+      env,
+      decodeURIComponent(url.pathname.replace("/admin/skills/", ""))
+    );
+  }
+
   if (url.pathname === "/admin/vfs") {
     return handleAdminVfs(request, env);
   }
@@ -46,6 +55,7 @@ export async function routeRequest(
         "/webhooks/telegram",
         "/admin/messages",
         "/admin/runs/:runId",
+        "/admin/skills/:skillId",
         "/admin/vfs"
       ]
     });
