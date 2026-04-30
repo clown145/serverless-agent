@@ -1,5 +1,8 @@
 import { appendAuditLog } from "../../storage/repositories/audit-logs-repository";
-import { recordToolCall } from "../../storage/repositories/tool-calls-repository";
+import {
+  completeToolCall,
+  recordToolCall
+} from "../../storage/repositories/tool-calls-repository";
 import { createId } from "../../shared/ids";
 import type { Env } from "../../shared/types/env";
 import { nowIso } from "../../shared/time";
@@ -75,7 +78,14 @@ export function createToolRegistry(env: Env): ToolRegistry {
         };
       }
 
-      const result = await tool.execute(context);
+      const result = await executeToolSafely(tool, context);
+      await completeToolCall(env.AGENT_DB, toolCallId, {
+        status: result.status,
+        outputJson: result.output ? JSON.stringify(result.output) : undefined,
+        errorCode: result.error?.code,
+        completedAt: nowIso()
+      });
+
       await appendAuditLog(env.AGENT_DB, {
         id: createId("audit"),
         agentId: input.agentId,
@@ -92,6 +102,21 @@ export function createToolRegistry(env: Env): ToolRegistry {
       return result;
     }
   };
+}
+
+async function executeToolSafely(
+  tool: RegisteredTool,
+  context: Parameters<RegisteredTool["execute"]>[0]
+): Promise<ToolResult> {
+  try {
+    return await tool.execute(context);
+  } catch (error) {
+    return failed(
+      "tool_execution_error",
+      error instanceof Error ? error.message : "Tool execution failed",
+      true
+    );
+  }
 }
 
 function failed(code: string, message: string, retryable: boolean): ToolResult {

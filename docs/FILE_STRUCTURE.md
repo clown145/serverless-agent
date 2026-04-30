@@ -21,6 +21,7 @@ serverless-agent/
 serverless-agent/
   docs/
     ARCHITECTURE.md
+    LOCAL_DEVELOPMENT.md
     architecture/
       RUNTIME_FLOW.md
       STORAGE_MODEL.md

@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "wrangler dev --config wrangler.toml",
     "deploy": "wrangler deploy --config wrangler.toml",
+    "dry-run": "wrangler deploy --config wrangler.toml --dry-run --outdir dist",
+    "db:migrate:local": "wrangler d1 migrations apply serverless-agent --local --config wrangler.toml",
+    "db:migrate:remote": "wrangler d1 migrations apply serverless-agent --remote --config wrangler.toml",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest"

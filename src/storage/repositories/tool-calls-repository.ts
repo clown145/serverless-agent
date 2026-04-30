@@ -38,3 +38,29 @@ export async function recordToolCall(
     )
     .run();
 }
+
+export async function completeToolCall(
+  db: D1Database,
+  id: string,
+  input: {
+    status: string;
+    outputJson?: string;
+    errorCode?: string;
+    completedAt: string;
+  }
+): Promise<void> {
+  await db
+    .prepare(
+      `UPDATE tool_calls
+       SET status = ?, output_json = ?, error_code = ?, completed_at = ?
+       WHERE id = ?`
+    )
+    .bind(
+      input.status,
+      input.outputJson ?? null,
+      input.errorCode ?? null,
+      input.completedAt,
+      id
+    )
+    .run();
+}

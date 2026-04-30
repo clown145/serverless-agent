@@ -4,10 +4,13 @@ import { nowIso } from "../../shared/time";
 import type { Env } from "../../shared/types/env";
 import type { InternalMessage } from "../../shared/types/internal-message";
 import type { QueueMessageBody } from "../../shared/types/queue";
+import { dispatchAgentJob, enqueueAgentJob } from "../agent-dispatch";
+import { requireAdmin } from "../admin-auth";
 
 type AdminMessagePayload = {
   text: string;
   agentId?: string;
+  mode?: "queue" | "sync";
 };
 
 export async function handleAdminMessage(
@@ -15,9 +18,9 @@ export async function handleAdminMessage(
   env: Env,
   _ctx: ExecutionContext
 ): Promise<Response> {
-  const auth = request.headers.get("authorization");
-  if (env.INTERNAL_ADMIN_TOKEN && auth !== `Bearer ${env.INTERNAL_ADMIN_TOKEN}`) {
-    return errorResponse(401, "unauthorized", "Invalid admin token");
+  const authError = requireAdmin(request, env);
+  if (authError) {
+    return authError;
   }
 
   const payload = (await request.json()) as AdminMessagePayload;
@@ -35,8 +38,13 @@ export async function handleAdminMessage(
     receivedAt: nowIso()
   };
 
-  await env.AGENT_QUEUE.send(job);
-  return jsonResponse({ ok: true, eventId: job.eventId });
+  if (payload.mode === "sync") {
+    const result = await dispatchAgentJob(env, job);
+    return jsonResponse({ ok: true, eventId: job.eventId, result });
+  }
+
+  await enqueueAgentJob(env, job);
+  return jsonResponse({ ok: true, eventId: job.eventId, queued: true });
 }
 
 function createAdminMessage(agentId: string, text: string): InternalMessage {

@@ -1,6 +1,7 @@
 import type { Env } from "../shared/types/env";
 import { errorResponse, jsonResponse } from "../shared/http";
 import { handleAdminMessage } from "./routes/admin-message";
+import { handleAdminRunDetail } from "./routes/admin-run-detail";
 import { handleHealth } from "./routes/health";
 import { handleTelegramWebhook } from "./routes/telegram-webhook";
 
@@ -23,11 +24,24 @@ export async function routeRequest(
     return handleAdminMessage(request, env, ctx);
   }
 
+  if (request.method === "GET" && url.pathname.startsWith("/admin/runs/")) {
+    return handleAdminRunDetail(
+      request,
+      env,
+      decodeURIComponent(url.pathname.replace("/admin/runs/", ""))
+    );
+  }
+
   if (request.method === "GET" && url.pathname === "/") {
     return jsonResponse({
       ok: true,
       service: "serverless-agent",
-      routes: ["/health", "/webhooks/telegram", "/admin/messages"]
+      routes: [
+        "/health",
+        "/webhooks/telegram",
+        "/admin/messages",
+        "/admin/runs/:runId"
+      ]
     });
   }
 
