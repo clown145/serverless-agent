@@ -17,7 +17,13 @@ describe("mock provider", () => {
     const provider = new MockModelProvider();
     const response = await provider.complete({
       messages: [{ role: "user", content: "/write /workspace/a.md hello" }],
-      tools: []
+      tools: [
+        {
+          name: "vfs.write_file",
+          description: "write",
+          parameters: { type: "object", properties: {} }
+        }
+      ]
     });
 
     expect(response.toolCalls[0]?.name).toBe("vfs.write_file");
@@ -25,5 +31,16 @@ describe("mock provider", () => {
       path: "/workspace/a.md",
       content: "hello"
     });
+  });
+
+  it("does not request unavailable tools", async () => {
+    const provider = new MockModelProvider();
+    const response = await provider.complete({
+      messages: [{ role: "user", content: "/write /workspace/a.md hello" }],
+      tools: []
+    });
+
+    expect(response.toolCalls).toEqual([]);
+    expect(response.content).toContain("vfs.write_file");
   });
 });

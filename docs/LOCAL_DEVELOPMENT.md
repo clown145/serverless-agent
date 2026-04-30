@@ -115,6 +115,35 @@ Load it:
 curl -sS http://localhost:8787/admin/skills/demo
 ```
 
+Run it explicitly:
+
+```bash
+curl -sS http://localhost:8787/admin/messages \
+  -H 'content-type: application/json' \
+  -d '{"text":"/skill demo /read /workspace/notes/hello.md","mode":"sync"}'
+```
+
+Trigger it automatically by command by adding this to the manifest:
+
+```json
+{
+  "triggers": [
+    {
+      "type": "command",
+      "pattern": "/read"
+    }
+  ]
+}
+```
+
+Then:
+
+```bash
+curl -sS http://localhost:8787/admin/messages \
+  -H 'content-type: application/json' \
+  -d '{"text":"/read /workspace/notes/hello.md","mode":"sync"}'
+```
+
 ## Queue Mode
 
 Production-like mode uses the Queue binding:

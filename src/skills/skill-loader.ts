@@ -1,5 +1,8 @@
 import type { Env } from "../shared/types/env";
-import { getVfsFile } from "../storage/repositories/vfs-repository";
+import {
+  getVfsFile,
+  listVfsEntries
+} from "../storage/repositories/vfs-repository";
 import {
   skillManifestSchema,
   type SkillManifest
@@ -28,6 +31,16 @@ export async function loadSkill(
     manifest,
     instructions: instructionsFile.content
   };
+}
+
+export async function listInstalledSkillIds(
+  env: Env,
+  agentId: string
+): Promise<string[]> {
+  const entries = await listVfsEntries(env, agentId, "/skills");
+  return entries
+    .filter((entry) => entry.kind === "directory")
+    .map((entry) => entry.path.replace(/^\/skills\//, ""));
 }
 
 export function assertSkillId(skillId: string): void {

@@ -32,6 +32,7 @@ serverless-agent/
     SECURITY_AND_PERMISSIONS.md
     PLATFORM_CLOUDFLARE.md
     MODEL_PROVIDERS.md
+    SKILL_RUNTIME.md
     ROADMAP.md
 
   specs/

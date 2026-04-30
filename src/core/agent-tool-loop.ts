@@ -1,16 +1,26 @@
 import { createId } from "../shared/ids";
 import type { Env } from "../shared/types/env";
 import type { InternalMessage } from "../shared/types/internal-message";
+import { selectSkillForMessage } from "../skills/skill-selector";
+import { filterToolsForSkill } from "../skills/skill-tools";
+import type { SelectedSkill } from "../skills/skill-selector";
 import {
-  appendRunStep,
   completeRun
 } from "../storage/repositories/runs-repository";
 import { createToolRegistry } from "../tools/registry/tool-registry";
 import type { ToolResult } from "../tools/types";
 import { createInitialModelMessages, createModelTools } from "./agent-context";
+import { sendFinalMessage } from "./agent-final-message";
 import { stringifyToolResult } from "./model/json";
 import { createModelProvider } from "./model/provider-factory";
 import type { ModelMessage, ModelToolCall } from "./model/types";
+import {
+  recordContextStep,
+  recordModelStep,
+  recordRunCompletedStep,
+  recordToolCompletedStep,
+  recordToolRequestedStep
+} from "./run-step-recorder";
 
 const MAX_MODEL_STEPS = 6;
 
@@ -21,8 +31,15 @@ export async function executeAgentToolLoop(
 ): Promise<void> {
   const registry = createToolRegistry(env);
   const provider = createModelProvider(env);
-  const messages = createInitialModelMessages(message);
-  const tools = createModelTools(registry.list());
+  const selectedSkill = await selectSkillForMessage(env, message);
+  await recordContextStep(env, runId, message.agentId, selectedSkill);
+
+  const registryTools = filterToolsForSkill(registry.list(), selectedSkill);
+  const allowedToolNames = new Set(
+    registryTools.map((tool) => tool.definition.name)
+  );
+  const messages = createInitialModelMessages(message, selectedSkill);
+  const tools = createModelTools(registryTools);
   let sentMessageTool = false;
 
   for (let index = 0; index < MAX_MODEL_STEPS; index += 1) {
@@ -41,7 +58,14 @@ export async function executeAgentToolLoop(
     });
 
     for (const toolCall of response.toolCalls) {
-      const execution = await executeToolCall(env, runId, message, toolCall);
+      const execution = await executeToolCall(
+        env,
+        runId,
+        message,
+        toolCall,
+        allowedToolNames,
+        selectedSkill
+      );
       sentMessageTool = sentMessageTool || execution.sentMessage;
       messages.push(createToolResultMessage(toolCall, execution.result));
     }
@@ -55,19 +79,32 @@ async function executeToolCall(
   env: Env,
   runId: string,
   message: InternalMessage,
-  toolCall: ModelToolCall
+  toolCall: ModelToolCall,
+  allowedToolNames: Set<string>,
+  selectedSkill?: SelectedSkill
 ): Promise<{ result: ToolResult; sentMessage: boolean }> {
   const registry = createToolRegistry(env);
   const toolStepId = createId("step");
 
-  await appendRunStep(env.AGENT_DB, {
-    id: toolStepId,
+  await recordToolRequestedStep(env, {
+    stepId: toolStepId,
     runId,
     agentId: message.agentId,
-    kind: "tool_requested",
-    status: "completed",
-    summary: toolCall.name
+    toolName: toolCall.name
   });
+
+  if (!allowedToolNames.has(toolCall.name)) {
+    const result = createDisallowedToolResult(toolCall.name, selectedSkill);
+    await recordToolCompletedStep(env, {
+      runId,
+      agentId: message.agentId,
+      status: "failed",
+      toolName: toolCall.name,
+      summaryStatus: "skill_denied"
+    });
+
+    return { result, sentMessage: false };
+  }
 
   const result = await registry.execute(toolCall.name, {
     agentId: message.agentId,
@@ -77,19 +114,34 @@ async function executeToolCall(
     input: toolCall.arguments
   });
 
-  await appendRunStep(env.AGENT_DB, {
-    id: createId("step"),
+  await recordToolCompletedStep(env, {
     runId,
     agentId: message.agentId,
-    kind: "tool_completed",
     status: result.status === "success" ? "completed" : "failed",
-    summary: `${toolCall.name}: ${result.status}`
+    toolName: toolCall.name,
+    summaryStatus: result.status
   });
 
   return {
     result,
     sentMessage:
       toolCall.name === "messaging.send_message" && result.status === "success"
+  };
+}
+
+function createDisallowedToolResult(
+  toolName: string,
+  selectedSkill?: SelectedSkill
+): ToolResult {
+  return {
+    status: "permission_denied",
+    error: {
+      code: "skill_tool_not_allowed",
+      message: selectedSkill
+        ? `Skill ${selectedSkill.skill.id} does not allow tool ${toolName}`
+        : `Tool ${toolName} is not allowed`,
+      retryable: false
+    }
   };
 }
 
@@ -104,33 +156,9 @@ async function finishRun(
     await sendFinalMessage(env, runId, message, content ?? "完成。");
   }
 
-  await appendRunStep(env.AGENT_DB, {
-    id: createId("step"),
-    runId,
-    agentId: message.agentId,
-    kind: "completed",
-    status: "completed",
-    summary: "Run completed"
-  });
+  await recordRunCompletedStep(env, runId, message.agentId);
 
   await completeRun(env.AGENT_DB, runId, "completed");
-}
-
-async function recordModelStep(
-  env: Env,
-  runId: string,
-  agentId: string,
-  providerName: string,
-  toolCallCount: number
-): Promise<void> {
-  await appendRunStep(env.AGENT_DB, {
-    id: createId("step"),
-    runId,
-    agentId,
-    kind: "model_called",
-    status: "completed",
-    summary: `${providerName} returned ${toolCallCount} tool call(s)`
-  });
 }
 
 function createToolResultMessage(
@@ -143,44 +171,4 @@ function createToolResultMessage(
     toolName: toolCall.name,
     content: stringifyToolResult(result)
   };
-}
-
-async function sendFinalMessage(
-  env: Env,
-  runId: string,
-  message: InternalMessage,
-  text: string
-): Promise<void> {
-  const registry = createToolRegistry(env);
-  const stepId = createId("step");
-
-  await appendRunStep(env.AGENT_DB, {
-    id: stepId,
-    runId,
-    agentId: message.agentId,
-    kind: "tool_requested",
-    status: "completed",
-    summary: "messaging.send_message"
-  });
-
-  const result = await registry.execute("messaging.send_message", {
-    agentId: message.agentId,
-    actorId: message.sender.platformUserId,
-    runId,
-    stepId,
-    input: {
-      platform: message.platform,
-      conversationId: message.conversationId,
-      text
-    }
-  });
-
-  await appendRunStep(env.AGENT_DB, {
-    id: createId("step"),
-    runId,
-    agentId: message.agentId,
-    kind: "tool_completed",
-    status: result.status === "success" ? "completed" : "failed",
-    summary: `messaging.send_message: ${result.status}`
-  });
 }
