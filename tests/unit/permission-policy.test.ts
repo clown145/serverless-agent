@@ -16,6 +16,7 @@ describe("permission policy", () => {
     const tool: ToolDefinition = {
       name: "vfs.read_file",
       description: "read",
+      inputSchema: { type: "object", properties: {} },
       permission: { level: 1, scopes: ["workspace:read"] },
       sideEffect: "none",
       timeoutMs: 1000
@@ -28,6 +29,7 @@ describe("permission policy", () => {
     const tool: ToolDefinition = {
       name: "permissions.update",
       description: "dangerous",
+      inputSchema: { type: "object", properties: {} },
       permission: { level: 5, scopes: ["permissions:write"] },
       sideEffect: "dangerous",
       timeoutMs: 1000

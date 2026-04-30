@@ -5,6 +5,7 @@ compatibility_flags = ["nodejs_compat"]
 
 [vars]
 DEFAULT_AGENT_ID = "default"
+MODEL_PROVIDER = "mock"
 
 [triggers]
 crons = ["*/5 * * * *"]

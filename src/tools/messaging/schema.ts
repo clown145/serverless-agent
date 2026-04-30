@@ -7,3 +7,24 @@ export const sendMessageInputSchema = z.object({
 });
 
 export type SendMessageInput = z.infer<typeof sendMessageInputSchema>;
+
+export const sendMessageInputJsonSchema = {
+  type: "object",
+  properties: {
+    platform: {
+      type: "string",
+      enum: ["telegram", "qq", "webhook", "admin"],
+      description: "Target platform for the outbound message."
+    },
+    conversationId: {
+      type: "string",
+      description: "Internal conversation id, such as telegram:123 or admin:default."
+    },
+    text: {
+      type: "string",
+      description: "Message text to send."
+    }
+  },
+  required: ["platform", "conversationId", "text"],
+  additionalProperties: false
+} as const;

@@ -11,5 +11,12 @@ export interface Env {
   INTERNAL_ADMIN_TOKEN?: string;
   TELEGRAM_BOT_TOKEN?: string;
   TELEGRAM_WEBHOOK_SECRET?: string;
+  MODEL_PROVIDER?: "openai" | "gemini" | "mock";
+  MODEL_NAME?: string;
   OPENAI_API_KEY?: string;
+  OPENAI_BASE_URL?: string;
+  OPENAI_MODEL?: string;
+  GEMINI_API_KEY?: string;
+  GEMINI_BASE_URL?: string;
+  GEMINI_MODEL?: string;
 }

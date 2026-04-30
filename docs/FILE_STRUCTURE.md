@@ -31,6 +31,7 @@ serverless-agent/
     DEVELOPMENT_GUIDE.md
     SECURITY_AND_PERMISSIONS.md
     PLATFORM_CLOUDFLARE.md
+    MODEL_PROVIDERS.md
     ROADMAP.md
 
   specs/
@@ -144,9 +145,9 @@ agent 内核。这里是平台无关的核心逻辑。
 可以放：
 
 - run state machine。
+- model provider abstraction。
 - prompt/context builder。
 - skill selector。
-- model provider abstraction。
 - tool call dispatcher interface。
 
 不放：

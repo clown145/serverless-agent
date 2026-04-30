@@ -43,6 +43,7 @@ D1 / R2 / KV / External APIs
 - [docs/SECURITY_AND_PERMISSIONS.md](docs/SECURITY_AND_PERMISSIONS.md): 权限、安全和审计设计。
 - [docs/PLATFORM_CLOUDFLARE.md](docs/PLATFORM_CLOUDFLARE.md): Cloudflare 平台映射。
 - [docs/LOCAL_DEVELOPMENT.md](docs/LOCAL_DEVELOPMENT.md): 本地开发、D1 迁移和调试入口。
+- [docs/MODEL_PROVIDERS.md](docs/MODEL_PROVIDERS.md): OpenAI-compatible、Gemini 和 mock provider 配置。
 - [docs/ROADMAP.md](docs/ROADMAP.md): MVP 到长期版本路线。
 - [specs/](specs): 内部消息、工具、VFS、skill manifest 的接口草案。
 

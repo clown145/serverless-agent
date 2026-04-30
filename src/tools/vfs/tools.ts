@@ -5,8 +5,11 @@ import {
 } from "../../storage/repositories/vfs-repository";
 import type { RegisteredTool, ToolResult } from "../types";
 import {
+  listDirInputJsonSchema,
   listDirInputSchema,
+  readFileInputJsonSchema,
   readFileInputSchema,
+  writeFileInputJsonSchema,
   writeFileInputSchema
 } from "./schema";
 
@@ -19,6 +22,7 @@ function readFileTool(): RegisteredTool {
     definition: {
       name: "vfs.read_file",
       description: "Read a file from the agent virtual filesystem.",
+      inputSchema: readFileInputJsonSchema,
       permission: { level: 1, scopes: ["workspace:read"] },
       sideEffect: "none",
       timeoutMs: 5_000
@@ -40,6 +44,7 @@ function writeFileTool(): RegisteredTool {
     definition: {
       name: "vfs.write_file",
       description: "Write a file into the agent virtual filesystem.",
+      inputSchema: writeFileInputJsonSchema,
       permission: { level: 2, scopes: ["workspace:write"] },
       sideEffect: "workspace_write",
       timeoutMs: 10_000
@@ -68,6 +73,7 @@ function listDirTool(): RegisteredTool {
     definition: {
       name: "vfs.list_dir",
       description: "List entries in a VFS directory.",
+      inputSchema: listDirInputJsonSchema,
       permission: { level: 1, scopes: ["workspace:read"] },
       sideEffect: "none",
       timeoutMs: 5_000

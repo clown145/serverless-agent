@@ -1,3 +1,4 @@
+import type { JsonSchema } from "../core/model/types";
 import type { Env } from "../shared/types/env";
 
 export type PermissionLevel = 0 | 1 | 2 | 3 | 4 | 5;
@@ -17,6 +18,7 @@ export type ToolSideEffect =
 export type ToolDefinition = {
   name: string;
   description: string;
+  inputSchema: JsonSchema;
   permission: PermissionRequirement;
   sideEffect: ToolSideEffect;
   timeoutMs: number;

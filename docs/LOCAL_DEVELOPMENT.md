@@ -32,6 +32,8 @@ npm run dev
 
 Use sync mode when developing. It sends the event directly to the Durable Object and returns the `runId`.
 
+The default local model provider is `mock`, configured in `wrangler.toml`.
+
 ```bash
 curl -sS http://localhost:8787/admin/messages \
   -H 'content-type: application/json' \
@@ -61,6 +63,14 @@ Then inspect the run:
 
 ```bash
 curl -sS http://localhost:8787/admin/runs/run_...
+```
+
+Test a tool call through the mock provider:
+
+```bash
+curl -sS http://localhost:8787/admin/messages \
+  -H 'content-type: application/json' \
+  -d '{"text":"/write /workspace/notes/mock.md hello","mode":"sync"}'
 ```
 
 ## Manage VFS Files
