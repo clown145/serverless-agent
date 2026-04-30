@@ -16,4 +16,18 @@ export type ScheduleTickJob = {
   receivedAt: string;
 };
 
-export type QueueMessageBody = InboundMessageJob | ScheduleTickJob;
+export type ScheduleFireJob = {
+  type: "schedule.fire";
+  eventId: string;
+  agentId: string;
+  scheduleId: string;
+  text: string;
+  conversationId?: string;
+  scheduledTime: string;
+  receivedAt: string;
+};
+
+export type QueueMessageBody =
+  | InboundMessageJob
+  | ScheduleTickJob
+  | ScheduleFireJob;

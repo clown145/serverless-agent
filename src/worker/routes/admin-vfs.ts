@@ -41,8 +41,16 @@ async function handleReadOrList(request: Request, env: Env): Promise<Response> {
   const mode = url.searchParams.get("mode") ?? "list";
 
   if (mode === "file") {
-    const file = await getVfsFile(env, agentId, path);
-    return jsonResponse({ ok: true, file });
+    try {
+      const file = await getVfsFile(env, agentId, path);
+      return jsonResponse({ ok: true, file });
+    } catch (error) {
+      return errorResponse(
+        404,
+        "vfs_file_not_found",
+        error instanceof Error ? error.message : "VFS file not found"
+      );
+    }
   }
 
   const entries = await listVfsEntries(env, agentId, path);

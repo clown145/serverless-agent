@@ -1,7 +1,10 @@
 import type { Env } from "../shared/types/env";
 import { errorResponse, jsonResponse } from "../shared/http";
+import { handleAdminHeartbeats } from "./routes/admin-heartbeats";
 import { handleAdminMessage } from "./routes/admin-message";
 import { handleAdminRunDetail } from "./routes/admin-run-detail";
+import { handleAdminScheduleDetail } from "./routes/admin-schedule-detail";
+import { handleAdminSchedules } from "./routes/admin-schedules";
 import { handleAdminSkillDetail } from "./routes/admin-skill-detail";
 import { handleAdminVfs } from "./routes/admin-vfs";
 import { handleHealth } from "./routes/health";
@@ -24,6 +27,22 @@ export async function routeRequest(
 
   if (request.method === "POST" && url.pathname === "/admin/messages") {
     return handleAdminMessage(request, env, ctx);
+  }
+
+  if (url.pathname === "/admin/schedules") {
+    return handleAdminSchedules(request, env);
+  }
+
+  if (url.pathname.startsWith("/admin/schedules/")) {
+    return handleAdminScheduleDetail(
+      request,
+      env,
+      decodeURIComponent(url.pathname.replace("/admin/schedules/", ""))
+    );
+  }
+
+  if (request.method === "GET" && url.pathname === "/admin/heartbeats") {
+    return handleAdminHeartbeats(request, env);
   }
 
   if (request.method === "GET" && url.pathname.startsWith("/admin/runs/")) {
@@ -54,6 +73,9 @@ export async function routeRequest(
         "/health",
         "/webhooks/telegram",
         "/admin/messages",
+        "/admin/schedules",
+        "/admin/schedules/:scheduleId",
+        "/admin/heartbeats",
         "/admin/runs/:runId",
         "/admin/skills/:skillId",
         "/admin/vfs"

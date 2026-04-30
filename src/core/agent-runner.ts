@@ -21,6 +21,7 @@ export async function runAgentForMessage(
     agentId: message.agentId,
     conversationId: message.conversationId,
     triggerMessageId: message.id,
+    scheduleId: message.scheduleId,
     status: "running",
     createdAt: nowIso(),
     updatedAt: nowIso()

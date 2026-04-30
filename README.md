@@ -45,6 +45,7 @@ D1 / R2 / KV / External APIs
 - [docs/LOCAL_DEVELOPMENT.md](docs/LOCAL_DEVELOPMENT.md): 本地开发、D1 迁移和调试入口。
 - [docs/MODEL_PROVIDERS.md](docs/MODEL_PROVIDERS.md): OpenAI-compatible、Gemini 和 mock provider 配置。
 - [docs/SKILL_RUNTIME.md](docs/SKILL_RUNTIME.md): skill 选择、上下文注入和工具授权规则。
+- [docs/SCHEDULER_RUNTIME.md](docs/SCHEDULER_RUNTIME.md): future tasks、recurring schedules 和 heartbeat。
 - [docs/ROADMAP.md](docs/ROADMAP.md): MVP 到长期版本路线。
 - [specs/](specs): 内部消息、工具、VFS、skill manifest 的接口草案。
 

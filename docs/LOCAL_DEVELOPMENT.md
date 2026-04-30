@@ -156,6 +156,34 @@ curl -sS http://localhost:8787/admin/messages \
 
 If `mode` is omitted, the API defaults to queue mode.
 
+## Test Scheduler
+
+Create an immediate one-time schedule:
+
+```bash
+curl -sS http://localhost:8787/admin/schedules \
+  -H 'content-type: application/json' \
+  -d '{"text":"/write /workspace/notes/scheduled.md from-schedule","delaySeconds":0}'
+```
+
+Trigger the local scheduled handler:
+
+```bash
+curl -sS http://localhost:8787/cdn-cgi/handler/scheduled
+```
+
+Queue delivery is async. Wait briefly, then read the file:
+
+```bash
+curl -sS 'http://localhost:8787/admin/vfs?mode=file&path=/workspace/notes/scheduled.md'
+```
+
+Inspect heartbeats:
+
+```bash
+curl -sS http://localhost:8787/admin/heartbeats
+```
+
 ## Admin Token
 
 If `INTERNAL_ADMIN_TOKEN` is configured, admin routes require:

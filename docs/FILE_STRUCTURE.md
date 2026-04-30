@@ -33,6 +33,7 @@ serverless-agent/
     PLATFORM_CLOUDFLARE.md
     MODEL_PROVIDERS.md
     SKILL_RUNTIME.md
+    SCHEDULER_RUNTIME.md
     ROADMAP.md
 
   specs/

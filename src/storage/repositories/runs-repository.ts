@@ -6,6 +6,7 @@ export type CreateRunInput = {
   agentId: string;
   conversationId: string;
   triggerMessageId: string;
+  scheduleId?: string;
   status: RunStatus;
   createdAt: string;
   updatedAt: string;
@@ -19,14 +20,15 @@ export async function createRun(
     .prepare(
       `INSERT INTO runs (
         id, agent_id, conversation_id, trigger_message_id,
-        status, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?)`
+        schedule_id, status, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
     )
     .bind(
       input.id,
       input.agentId,
       input.conversationId,
       input.triggerMessageId,
+      input.scheduleId ?? null,
       input.status,
       input.createdAt,
       input.updatedAt

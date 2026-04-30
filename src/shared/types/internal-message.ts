@@ -31,5 +31,6 @@ export type InternalMessage = {
   text?: string;
   attachments: MessageAttachment[];
   rawRef?: string;
+  scheduleId?: string;
   receivedAt: string;
 };
