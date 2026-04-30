@@ -3,18 +3,8 @@ import { createId } from "../../shared/ids";
 import { nowIso } from "../../shared/time";
 import { buildVfsObjectKey } from "../r2-keys";
 import { normalizeVfsPath, parentPath } from "../../tools/vfs/path";
-
-export type VfsEntry = {
-  id: string;
-  agentId: string;
-  path: string;
-  kind: "file" | "directory";
-  r2Key?: string;
-  mimeType?: string;
-  size?: number;
-  createdAt: string;
-  updatedAt: string;
-};
+import { ensureParentDirectories } from "./vfs-directories-repository";
+import { mapVfsEntry, type VfsEntry, type VfsEntryRow } from "./vfs-types";
 
 export type PutVfsFileInput = {
   agentId: string;
@@ -32,6 +22,14 @@ export async function putVfsFile(
   const r2Key = buildVfsObjectKey(input.agentId, path);
   const now = nowIso();
   const size = new TextEncoder().encode(input.content).byteLength;
+  const entryId = createId("vfs");
+
+  await ensureParentDirectories(env.AGENT_DB, {
+    agentId: input.agentId,
+    path,
+    createdBy: input.createdBy,
+    now
+  });
 
   await env.AGENT_BUCKET.put(r2Key, input.content, {
     httpMetadata: { contentType: input.mimeType ?? "text/plain; charset=utf-8" }
@@ -49,7 +47,7 @@ export async function putVfsFile(
       updated_at = excluded.updated_at`
   )
     .bind(
-      createId("vfs"),
+      entryId,
       input.agentId,
       path,
       parentPath(path),
@@ -62,17 +60,7 @@ export async function putVfsFile(
     )
     .run();
 
-  return {
-    id: `${input.agentId}:${path}`,
-    agentId: input.agentId,
-    path,
-    kind: "file",
-    r2Key,
-    mimeType: input.mimeType,
-    size,
-    createdAt: now,
-    updatedAt: now
-  };
+  return await getVfsEntry(env.AGENT_DB, input.agentId, path);
 }
 
 export async function getVfsFile(
@@ -115,7 +103,27 @@ export async function listVfsEntries(
      ORDER BY path ASC`
   )
     .bind(agentId, normalized)
-    .all<VfsEntry>();
+    .all<VfsEntryRow>();
 
-  return result.results ?? [];
+  return (result.results ?? []).map(mapVfsEntry);
+}
+
+async function getVfsEntry(
+  db: D1Database,
+  agentId: string,
+  path: string
+): Promise<VfsEntry> {
+  const row = await db
+    .prepare(
+      `SELECT id, agent_id, path, kind, r2_key, mime_type, size, created_at, updated_at
+       FROM vfs_entries WHERE agent_id = ? AND path = ?`
+    )
+    .bind(agentId, path)
+    .first<VfsEntryRow>();
+
+  if (!row) {
+    throw new Error(`VFS entry not found after write: ${path}`);
+  }
+
+  return mapVfsEntry(row);
 }

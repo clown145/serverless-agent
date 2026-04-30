@@ -29,8 +29,8 @@ R2 用于对象内容：
 推荐 key：
 
 ```text
-agents/{agent_id}/workspace/{path}
-agents/{agent_id}/skills/{skill_id}/{path}
+agents/{agent_id}/vfs/workspace/{path}
+agents/{agent_id}/vfs/skills/{skill_id}/{path}
 runs/{run_id}/artifacts/{name}
 attachments/{platform}/{message_id}/{name}
 ```

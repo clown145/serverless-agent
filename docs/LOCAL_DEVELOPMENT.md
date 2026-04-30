@@ -63,6 +63,28 @@ Then inspect the run:
 curl -sS http://localhost:8787/admin/runs/run_...
 ```
 
+## Manage VFS Files
+
+Write a file:
+
+```bash
+curl -sS -X PUT http://localhost:8787/admin/vfs \
+  -H 'content-type: application/json' \
+  -d '{"path":"/workspace/notes/hello.md","content":"hello"}'
+```
+
+List a directory:
+
+```bash
+curl -sS 'http://localhost:8787/admin/vfs?path=/workspace/notes'
+```
+
+Read a file:
+
+```bash
+curl -sS 'http://localhost:8787/admin/vfs?mode=file&path=/workspace/notes/hello.md'
+```
+
 ## Queue Mode
 
 Production-like mode uses the Queue binding:
