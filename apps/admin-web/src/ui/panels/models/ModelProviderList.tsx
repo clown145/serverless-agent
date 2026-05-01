@@ -32,7 +32,7 @@ export function ModelProviderList({
             <div className="model-provider-head">
               <div>
                 <strong>{provider.name}</strong>
-                <span>{provider.providerType} / {provider.apiKeySecret}</span>
+                <span>{provider.providerType} / secret binding: {provider.apiKeySecret}</span>
               </div>
               <StatusBadge value={provider.status} />
               <ToolbarButton

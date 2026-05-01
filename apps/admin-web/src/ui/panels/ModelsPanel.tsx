@@ -6,6 +6,8 @@ import { ModelProviderForm } from "./models/ModelProviderForm";
 import { ModelProviderList } from "./models/ModelProviderList";
 import type { PanelProps } from "./types";
 
+const secretBindingPattern = /^[A-Z_][A-Z0-9_]*$/;
+
 export function ModelsPanel({ client, notify }: PanelProps) {
   const [providers, setProviders] = useState<ModelProvider[]>([]);
   const [models, setModels] = useState<ModelCatalogItem[]>([]);
@@ -36,6 +38,11 @@ export function ModelsPanel({ client, notify }: PanelProps) {
   }
 
   async function createProvider() {
+    if (apiKeySecret && !secretBindingPattern.test(apiKeySecret)) {
+      notify("Secret binding must look like GEMINI_API_KEY", "error");
+      return;
+    }
+
     try {
       await client.createModelProvider({
         name,

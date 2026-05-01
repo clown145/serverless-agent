@@ -16,7 +16,7 @@ Production model selection is runtime configuration stored in D1. Use the WebUI 
 - refresh available models from that provider;
 - select the active model for the agent.
 
-Provider API keys are not stored in D1 or VFS. A provider stores only the Cloudflare secret name, such as `OPENAI_API_KEY` or `GEMINI_API_KEY`.
+Provider API keys are not stored in D1 or VFS. A provider stores only the Cloudflare secret binding name, such as `OPENAI_API_KEY` or `GEMINI_API_KEY`. This field is not the API key value.
 
 Local fallback still supports `MODEL_PROVIDER` in `.dev.vars` or Cloudflare environment variables.
 

@@ -49,9 +49,13 @@ export function ModelProviderForm({
         <input value={baseUrl} onChange={(event) => onBaseUrlChange(event.target.value)} />
       </label>
       <label>
-        Secret
+        Secret binding
         <input
           value={apiKeySecret}
+          autoCapitalize="characters"
+          autoComplete="off"
+          pattern="[A-Z_][A-Z0-9_]*"
+          title="Use a binding name like GEMINI_API_KEY, not the secret value"
           onChange={(event) => onApiKeySecretChange(event.target.value)}
         />
       </label>

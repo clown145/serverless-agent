@@ -3,6 +3,7 @@ import { errorResponse, jsonResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
 import { defaultSecretName } from "../../core/model/provider-config";
 import { fetchProviderModels } from "../../core/model/model-list";
+import { SECRET_BINDING_NAME_PATTERN } from "../../core/model/secret-binding";
 import {
   getModelSettings,
   setModelSettings
@@ -19,11 +20,16 @@ import {
 } from "../../storage/repositories/model-providers-repository";
 import { requireAdmin } from "../admin-auth";
 
+const secretBindingSchema = z.string().trim().regex(
+  SECRET_BINDING_NAME_PATTERN,
+  "Secret binding must look like GEMINI_API_KEY, not the API key value"
+);
+
 const createProviderSchema = z.object({
   name: z.string().min(1),
   providerType: z.enum(["openai", "gemini", "mock"]),
   baseUrl: z.string().url().optional().or(z.literal("")),
-  apiKeySecret: z.string().min(1).optional()
+  apiKeySecret: secretBindingSchema.optional()
 });
 
 const setActiveModelSchema = z.object({
