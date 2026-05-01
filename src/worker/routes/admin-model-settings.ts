@@ -61,7 +61,7 @@ export async function handleAdminModelSettings(
   if (request.method === "POST") {
     const parsed = createProviderSchema.safeParse(await request.json());
     if (!parsed.success) {
-      return errorResponse(400, "invalid_payload", parsed.error.message);
+      return errorResponse(400, "invalid_payload", zodMessage(parsed.error));
     }
 
     const provider = await createModelProviderRecord(env.AGENT_DB, {
@@ -77,7 +77,7 @@ export async function handleAdminModelSettings(
   if (request.method === "PUT") {
     const parsed = setActiveModelSchema.safeParse(await request.json());
     if (!parsed.success) {
-      return errorResponse(400, "invalid_payload", parsed.error.message);
+      return errorResponse(400, "invalid_payload", zodMessage(parsed.error));
     }
 
     const settings = await setModelSettings(env.AGENT_DB, {
@@ -90,6 +90,10 @@ export async function handleAdminModelSettings(
   }
 
   return errorResponse(405, "method_not_allowed", "Method not allowed");
+}
+
+function zodMessage(error: z.ZodError): string {
+  return error.issues[0]?.message ?? error.message;
 }
 
 export async function handleAdminModelProviderDetail(
