@@ -152,3 +152,6 @@ jobs:
           put_secret GEMINI_API_KEY "$GEMINI_API_KEY"
           put_secret TELEGRAM_BOT_TOKEN "$TELEGRAM_BOT_TOKEN"
           put_secret TELEGRAM_WEBHOOK_SECRET "$TELEGRAM_WEBHOOK_SECRET"
+
+      - name: Redeploy Worker after secret updates
+        run: npx wrangler deploy --config "$GENERATED_CONFIG"

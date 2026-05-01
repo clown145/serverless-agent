@@ -71,3 +71,31 @@ export type PermissionPolicy = {
   createdAt: string;
   updatedAt: string;
 };
+
+export type ModelProvider = {
+  id: string;
+  name: string;
+  providerType: "openai" | "gemini" | "mock";
+  baseUrl?: string;
+  apiKeySecret: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ModelCatalogItem = {
+  id: string;
+  providerId: string;
+  modelId: string;
+  displayName?: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ModelSettings = {
+  agentId: string;
+  providerId?: string;
+  modelId?: string;
+  updatedAt: string;
+};

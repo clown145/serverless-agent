@@ -30,7 +30,7 @@ export async function executeAgentToolLoop(
   message: InternalMessage
 ): Promise<void> {
   const registry = createToolRegistry(env);
-  const provider = createModelProvider(env);
+  const provider = await createModelProvider(env, message.agentId);
   const selectedSkill = await selectSkillForMessage(env, message);
   await recordContextStep(env, runId, message.agentId, selectedSkill);
 

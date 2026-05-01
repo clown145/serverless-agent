@@ -65,6 +65,7 @@ QUEUE_NAME=serverless-agent-events
 8. 执行远程 D1 migrations。
 9. 部署 Worker。
 10. 上传 Worker secrets。
+11. secrets 更新后再部署一次 Worker，使新 secret 立即对当前版本可用。
 
 ## Why Not Commit Real IDs
 

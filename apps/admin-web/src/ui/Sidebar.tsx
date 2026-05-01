@@ -4,6 +4,7 @@ import {
   FileText,
   KeyRound,
   MessageSquare,
+  SlidersHorizontal,
   ShieldCheck,
   Workflow
 } from "lucide-react";
@@ -15,6 +16,7 @@ const items: Array<{
   icon: typeof MessageSquare;
 }> = [
   { id: "chat", label: "Chat", icon: MessageSquare },
+  { id: "models", label: "Models", icon: SlidersHorizontal },
   { id: "runs", label: "Runs", icon: Workflow },
   { id: "vfs", label: "VFS", icon: FileText },
   { id: "schedules", label: "Schedules", icon: CalendarClock },

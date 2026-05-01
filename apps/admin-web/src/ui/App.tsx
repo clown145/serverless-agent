@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { createAdminClient } from "../api/client";
 import { ChatPanel } from "./panels/ChatPanel";
+import { ModelsPanel } from "./panels/ModelsPanel";
 import { PendingPanel } from "./panels/PendingPanel";
 import { PermissionsPanel } from "./panels/PermissionsPanel";
 import { RunsPanel } from "./panels/RunsPanel";
@@ -40,6 +41,7 @@ export function App() {
       <main className="main-surface">
         {notice && <div className={`notice ${notice.tone}`}>{notice.message}</div>}
         {active === "chat" && <ChatPanel client={client} notify={notify} onRun={openRun} />}
+        {active === "models" && <ModelsPanel client={client} notify={notify} />}
         {active === "runs" && (
           <RunsPanel client={client} notify={notify} selectedRunId={selectedRunId} />
         )}

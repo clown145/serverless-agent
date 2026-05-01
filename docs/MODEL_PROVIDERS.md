@@ -10,7 +10,15 @@ Supported providers:
 
 ## Configuration
 
-Set `MODEL_PROVIDER` in `.dev.vars` or Cloudflare environment variables.
+Production model selection is runtime configuration stored in D1. Use the WebUI `Models` panel to:
+
+- create a provider;
+- refresh available models from that provider;
+- select the active model for the agent.
+
+Provider API keys are not stored in D1 or VFS. A provider stores only the Cloudflare secret name, such as `OPENAI_API_KEY` or `GEMINI_API_KEY`.
+
+Local fallback still supports `MODEL_PROVIDER` in `.dev.vars` or Cloudflare environment variables.
 
 ```bash
 MODEL_PROVIDER=mock
@@ -84,4 +92,34 @@ The mock provider also supports a simple VFS write command:
 curl -sS http://localhost:8787/admin/messages \
   -H 'content-type: application/json' \
   -d '{"text":"/write /workspace/notes/a.md hello","mode":"sync"}'
+```
+
+## Admin API
+
+List providers, cached model catalog, and active setting:
+
+```bash
+curl -sS http://localhost:8787/admin/model-settings
+```
+
+Create a provider:
+
+```bash
+curl -sS http://localhost:8787/admin/model-settings \
+  -H 'content-type: application/json' \
+  -d '{"name":"OpenAI","providerType":"openai","baseUrl":"https://api.openai.com/v1","apiKeySecret":"OPENAI_API_KEY"}'
+```
+
+Refresh model list:
+
+```bash
+curl -sS -X POST http://localhost:8787/admin/model-providers/mprov_.../refresh
+```
+
+Activate a model:
+
+```bash
+curl -sS -X PUT http://localhost:8787/admin/model-settings \
+  -H 'content-type: application/json' \
+  -d '{"providerId":"mprov_...","modelId":"gpt-4.1"}'
 ```

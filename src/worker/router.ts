@@ -2,6 +2,10 @@ import type { Env } from "../shared/types/env";
 import { errorResponse, jsonResponse } from "../shared/http";
 import { handleAdminHeartbeats } from "./routes/admin-heartbeats";
 import { handleAdminMessage } from "./routes/admin-message";
+import {
+  handleAdminModelProviderDetail,
+  handleAdminModelSettings
+} from "./routes/admin-model-settings";
 import { handleAdminPendingActionConfirm } from "./routes/admin-pending-action-confirm";
 import { handleAdminPendingActions } from "./routes/admin-pending-actions";
 import { handleAdminPermissionPolicies } from "./routes/admin-permission-policies";
@@ -33,6 +37,16 @@ export async function routeRequest(
 
   if (request.method === "POST" && url.pathname === "/admin/messages") {
     return handleAdminMessage(request, env, ctx);
+  }
+
+  if (url.pathname === "/admin/model-settings") {
+    return handleAdminModelSettings(request, env);
+  }
+
+  if (url.pathname.startsWith("/admin/model-providers/")) {
+    const modelProviderPath = url.pathname.replace("/admin/model-providers/", "");
+    const providerId = decodeURIComponent(modelProviderPath.replace("/refresh", ""));
+    return handleAdminModelProviderDetail(request, env, providerId);
   }
 
   if (request.method === "GET" && (url.pathname === "/ui" || url.pathname.startsWith("/ui/"))) {
@@ -114,6 +128,8 @@ export async function routeRequest(
         "/health",
         "/webhooks/telegram",
         "/admin/messages",
+        "/admin/model-settings",
+        "/admin/model-providers/:providerId/refresh",
         "/admin/permission-policies",
         "/admin/pending-actions",
         "/admin/schedules",

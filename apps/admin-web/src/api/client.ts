@@ -1,5 +1,8 @@
 import type {
   ApiResult,
+  ModelCatalogItem,
+  ModelProvider,
+  ModelSettings,
   PendingAction,
   PermissionPolicy,
   RunDetails,
@@ -105,6 +108,43 @@ export function createAdminClient(getToken: () => string) {
     },
     deletePolicy: (id: string) => {
       return request<ApiResult<{ deleted: boolean }>>(`/admin/permission-policies/${id}`, {
+        method: "DELETE"
+      });
+    },
+    getModelSettings: () => {
+      return request<
+        ApiResult<{
+          providers: ModelProvider[];
+          models: ModelCatalogItem[];
+          settings?: ModelSettings;
+        }>
+      >("/admin/model-settings");
+    },
+    createModelProvider: (body: {
+      name: string;
+      providerType: ModelProvider["providerType"];
+      baseUrl?: string;
+      apiKeySecret?: string;
+    }) => {
+      return request<ApiResult<{ provider: ModelProvider }>>("/admin/model-settings", {
+        method: "POST",
+        body: JSON.stringify(body)
+      });
+    },
+    refreshProviderModels: (providerId: string) => {
+      return request<ApiResult<{ models: ModelCatalogItem[] }>>(
+        `/admin/model-providers/${providerId}/refresh`,
+        { method: "POST" }
+      );
+    },
+    activateModel: (body: { providerId: string; modelId: string }) => {
+      return request<ApiResult<{ settings: ModelSettings }>>("/admin/model-settings", {
+        method: "PUT",
+        body: JSON.stringify(body)
+      });
+    },
+    deleteModelProvider: (id: string) => {
+      return request<ApiResult<{ deleted: boolean }>>(`/admin/model-providers/${id}`, {
         method: "DELETE"
       });
     }
