@@ -21,9 +21,9 @@ export function providerDraftDefaults(
       providerType,
       baseUrl: "https://generativelanguage.googleapis.com/v1beta",
       apiKey: "",
-      authType: "x-goog-api-key",
+      authType: "query-param",
       authHeader: "",
-      authQueryParam: "",
+      authQueryParam: "key",
       modelListStrategy: "gemini",
       chatProtocol: "gemini-generate-content"
     };

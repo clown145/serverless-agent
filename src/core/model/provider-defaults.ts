@@ -9,6 +9,8 @@ export type ProviderDefaults = {
   name: string;
   baseUrl?: string;
   authType: ModelAuthType;
+  authHeader?: string;
+  authQueryParam?: string;
   modelListStrategy: ModelListStrategy;
   chatProtocol: ChatProtocol;
 };
@@ -18,7 +20,8 @@ export function modelProviderDefaults(type: ModelProviderType): ProviderDefaults
     return {
       name: "Gemini",
       baseUrl: "https://generativelanguage.googleapis.com/v1beta",
-      authType: "x-goog-api-key",
+      authType: "query-param",
+      authQueryParam: "key",
       modelListStrategy: "gemini",
       chatProtocol: "gemini-generate-content"
     };

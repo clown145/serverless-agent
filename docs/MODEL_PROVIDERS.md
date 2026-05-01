@@ -35,7 +35,7 @@ OPENAI_MODEL=gpt-4.1
 OPENAI_BASE_URL=https://api.openai.com/v1
 ```
 
-WebUI defaults:
+WebUI only asks for provider format, API address, and API key. Runtime defaults:
 
 ```text
 providerType=openai
@@ -61,11 +61,12 @@ GEMINI_MODEL=gemini-2.5-flash
 GEMINI_BASE_URL=https://generativelanguage.googleapis.com/v1beta
 ```
 
-WebUI defaults:
+WebUI only asks for provider format, API address, and API key. Runtime defaults:
 
 ```text
 providerType=gemini
-authType=x-goog-api-key
+authType=query-param
+authQueryParam=key
 modelListStrategy=gemini
 chatProtocol=gemini-generate-content
 ```
@@ -127,7 +128,7 @@ Create a provider:
 ```bash
 curl -sS http://localhost:8787/admin/model-settings \
   -H 'content-type: application/json' \
-  -d '{"name":"OpenAI","providerType":"openai","baseUrl":"https://api.openai.com/v1","apiKey":"sk-...","authType":"bearer","modelListStrategy":"openai","chatProtocol":"openai-chat-completions"}'
+  -d '{"name":"OpenAI","providerType":"openai","baseUrl":"https://api.openai.com/v1","apiKey":"sk-..."}'
 ```
 
 Refresh model list:

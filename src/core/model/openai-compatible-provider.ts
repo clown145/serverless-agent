@@ -6,6 +6,7 @@ import type {
   ModelTool
 } from "./types";
 import { parseJsonObject } from "./json";
+import { openAiChatUrl } from "./provider-endpoints";
 import { applyModelAuth, type ModelAuthConfig } from "./provider-auth";
 import { createToolNameMapper } from "./tool-name-mapper";
 
@@ -55,7 +56,7 @@ export class OpenAiCompatibleProvider implements ModelProvider {
 
     const headers = new Headers({ "content-type": "application/json" });
     const endpoint = applyModelAuth(
-      `${this.baseUrl.replace(/\/$/, "")}/chat/completions`,
+      openAiChatUrl(this.baseUrl),
       headers,
       this.options.auth ?? {
         apiKey: this.options.apiKey,

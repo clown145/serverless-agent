@@ -33,8 +33,9 @@ export function ModelProviderList({
               <div>
                 <strong>{provider.name}</strong>
                 <span>
-                  {provider.providerType} / {provider.chatProtocol} / {credentialLabel(provider)}
+                  {provider.providerType} / {credentialLabel(provider)}
                 </span>
+                {provider.baseUrl && <span>{provider.baseUrl}</span>}
               </div>
               <StatusBadge value={provider.status} />
               <ToolbarButton

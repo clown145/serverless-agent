@@ -11,6 +11,7 @@ import {
   type GeminiResponse
 } from "./gemini-format";
 import { applyModelAuth, type ModelAuthConfig } from "./provider-auth";
+import { geminiGenerateUrl } from "./provider-endpoints";
 import { createToolNameMapper } from "./tool-name-mapper";
 
 type GeminiOptions = {
@@ -34,11 +35,12 @@ export class GeminiProvider implements ModelProvider {
     const wireTools = mapper.mapTools(request.tools);
     const headers = new Headers({ "content-type": "application/json" });
     const endpoint = applyModelAuth(
-      `${this.baseUrl.replace(/\/$/, "")}/models/${this.options.model}:generateContent`,
+      geminiGenerateUrl(this.baseUrl, this.options.model),
       headers,
       this.options.auth ?? {
         apiKey: this.options.apiKey,
-        authType: "x-goog-api-key"
+        authType: "query-param",
+        authQueryParam: "key"
       }
     );
     const systemInstruction = buildSystemInstruction(request.messages);

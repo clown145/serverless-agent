@@ -2,6 +2,7 @@ import type { Env } from "../../shared/types/env";
 import type { ModelProviderRecord } from "../../storage/repositories/model-settings-types";
 import { applyModelAuth, requiresAuthKey, type ModelAuthConfig } from "./provider-auth";
 import { resolveProviderApiKey } from "./provider-credential";
+import { geminiModelsUrl, openAiModelsUrl } from "./provider-endpoints";
 
 export type RemoteModel = {
   modelId: string;
@@ -64,10 +65,9 @@ async function fetchOpenAiModels(
   env: Env,
   provider: ModelProviderRecord
 ): Promise<RemoteModel[]> {
-  const baseUrl = provider.baseUrl ?? "https://api.openai.com/v1";
   const headers = new Headers();
   const endpoint = applyModelAuth(
-    `${baseUrl.replace(/\/$/, "")}/models`,
+    openAiModelsUrl(provider.baseUrl),
     headers,
     await providerAuth(env, provider)
   );
@@ -95,10 +95,9 @@ async function fetchGeminiModels(
   env: Env,
   provider: ModelProviderRecord
 ): Promise<RemoteModel[]> {
-  const baseUrl = provider.baseUrl ?? "https://generativelanguage.googleapis.com/v1beta";
   const headers = new Headers();
   const endpoint = applyModelAuth(
-    `${baseUrl.replace(/\/$/, "")}/models`,
+    geminiModelsUrl(provider.baseUrl),
     headers,
     await providerAuth(env, provider)
   );

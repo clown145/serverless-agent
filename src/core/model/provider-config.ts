@@ -64,7 +64,8 @@ function resolveEnvConfig(env: Env): ResolvedModelConfig {
       apiKey: env.GEMINI_API_KEY,
       model: env.GEMINI_MODEL ?? env.MODEL_NAME ?? "gemini-2.5-flash",
       baseUrl: env.GEMINI_BASE_URL,
-      authType: "x-goog-api-key",
+      authType: "query-param",
+      authQueryParam: "key",
       chatProtocol: "gemini-generate-content"
     };
   }
