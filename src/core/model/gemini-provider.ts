@@ -10,12 +10,14 @@ import {
   toGeminiFunction,
   type GeminiResponse
 } from "./gemini-format";
+import { applyModelAuth, type ModelAuthConfig } from "./provider-auth";
 import { createToolNameMapper } from "./tool-name-mapper";
 
 type GeminiOptions = {
-  apiKey: string;
+  apiKey?: string;
   model: string;
   baseUrl?: string;
+  auth?: ModelAuthConfig;
 };
 
 export class GeminiProvider implements ModelProvider {
@@ -30,15 +32,20 @@ export class GeminiProvider implements ModelProvider {
   async complete(request: ModelRequest): Promise<ModelResponse> {
     const mapper = createToolNameMapper(request.tools.map((tool) => tool.name));
     const wireTools = mapper.mapTools(request.tools);
-    const endpoint = `${this.baseUrl.replace(/\/$/, "")}/models/${this.options.model}:generateContent`;
+    const headers = new Headers({ "content-type": "application/json" });
+    const endpoint = applyModelAuth(
+      `${this.baseUrl.replace(/\/$/, "")}/models/${this.options.model}:generateContent`,
+      headers,
+      this.options.auth ?? {
+        apiKey: this.options.apiKey,
+        authType: "x-goog-api-key"
+      }
+    );
     const systemInstruction = buildSystemInstruction(request.messages);
 
     const response = await fetch(endpoint, {
       method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-goog-api-key": this.options.apiKey
-      },
+      headers,
       body: JSON.stringify({
         systemInstruction,
         contents: toGeminiContents(request.messages, mapper.toWireName),

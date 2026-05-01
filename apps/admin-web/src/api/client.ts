@@ -124,7 +124,12 @@ export function createAdminClient(getToken: () => string) {
       name: string;
       providerType: ModelProvider["providerType"];
       baseUrl?: string;
-      apiKeySecret?: string;
+      apiKey?: string;
+      authType?: ModelProvider["authType"];
+      authHeader?: string;
+      authQueryParam?: string;
+      modelListStrategy?: ModelProvider["modelListStrategy"];
+      chatProtocol?: ModelProvider["chatProtocol"];
     }) => {
       return request<ApiResult<{ provider: ModelProvider }>>("/admin/model-settings", {
         method: "POST",

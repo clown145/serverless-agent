@@ -22,6 +22,7 @@ jobs:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       INTERNAL_ADMIN_TOKEN: ${{ secrets.INTERNAL_ADMIN_TOKEN }}
+      AGENT_MASTER_KEY: ${{ secrets.AGENT_MASTER_KEY }}
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -148,6 +149,7 @@ jobs:
           }
 
           put_secret INTERNAL_ADMIN_TOKEN "$INTERNAL_ADMIN_TOKEN"
+          put_secret AGENT_MASTER_KEY "$AGENT_MASTER_KEY"
           put_secret OPENAI_API_KEY "$OPENAI_API_KEY"
           put_secret GEMINI_API_KEY "$GEMINI_API_KEY"
           put_secret TELEGRAM_BOT_TOKEN "$TELEGRAM_BOT_TOKEN"

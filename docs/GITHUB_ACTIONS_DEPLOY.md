@@ -27,6 +27,7 @@ INTERNAL_ADMIN_TOKEN
 按需添加：
 
 ```text
+AGENT_MASTER_KEY
 OPENAI_API_KEY
 GEMINI_API_KEY
 TELEGRAM_BOT_TOKEN
@@ -36,6 +37,8 @@ KV_NAMESPACE_ID
 ```
 
 如果不提供 `D1_DATABASE_ID` 或 `KV_NAMESPACE_ID`，workflow 会按名称查找，不存在时自动创建。
+
+`AGENT_MASTER_KEY` 用于加密 WebUI 中保存的模型供应商 API Key。没有设置时，Worker 会使用 `INTERNAL_ADMIN_TOKEN` 作为后备加密密钥。为了后续能独立轮换 WebUI 密码，生产环境建议单独设置 `AGENT_MASTER_KEY`。
 
 ## Optional Variables
 

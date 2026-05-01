@@ -6,12 +6,14 @@ import type {
   ModelTool
 } from "./types";
 import { parseJsonObject } from "./json";
+import { applyModelAuth, type ModelAuthConfig } from "./provider-auth";
 import { createToolNameMapper } from "./tool-name-mapper";
 
 type OpenAiCompatibleOptions = {
-  apiKey: string;
+  apiKey?: string;
   model: string;
   baseUrl?: string;
+  auth?: ModelAuthConfig;
 };
 
 type OpenAiMessage = {
@@ -51,12 +53,19 @@ export class OpenAiCompatibleProvider implements ModelProvider {
     const mapper = createToolNameMapper(request.tools.map((tool) => tool.name));
     const wireTools = mapper.mapTools(request.tools);
 
-    const response = await fetch(`${this.baseUrl.replace(/\/$/, "")}/chat/completions`, {
+    const headers = new Headers({ "content-type": "application/json" });
+    const endpoint = applyModelAuth(
+      `${this.baseUrl.replace(/\/$/, "")}/chat/completions`,
+      headers,
+      this.options.auth ?? {
+        apiKey: this.options.apiKey,
+        authType: "bearer"
+      }
+    );
+
+    const response = await fetch(endpoint, {
       method: "POST",
-      headers: {
-        authorization: `Bearer ${this.options.apiKey}`,
-        "content-type": "application/json"
-      },
+      headers,
       body: JSON.stringify({
         model: this.options.model,
         messages: request.messages.map((message) =>

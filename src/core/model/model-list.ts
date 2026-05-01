@@ -1,6 +1,7 @@
 import type { Env } from "../../shared/types/env";
 import type { ModelProviderRecord } from "../../storage/repositories/model-settings-types";
-import { defaultSecretName } from "./provider-config";
+import { applyModelAuth, requiresAuthKey, type ModelAuthConfig } from "./provider-auth";
+import { resolveProviderApiKey } from "./provider-credential";
 
 export type RemoteModel = {
   modelId: string;
@@ -27,25 +28,36 @@ export async function fetchProviderModels(
   env: Env,
   provider: ModelProviderRecord
 ): Promise<RemoteModel[]> {
-  if (provider.providerType === "openai") {
+  if (provider.providerType === "mock") {
+    return [{ modelId: "mock", displayName: "Mock" }];
+  }
+
+  if (provider.modelListStrategy === "openai") {
     return fetchOpenAiModels(env, provider);
   }
 
-  if (provider.providerType === "gemini") {
+  if (provider.modelListStrategy === "gemini") {
     return fetchGeminiModels(env, provider);
   }
 
-  return [{ modelId: "mock", displayName: "Mock" }];
+  return [];
 }
 
-function providerApiKey(env: Env, provider: ModelProviderRecord): string {
-  const secretName = provider.apiKeySecret || defaultSecretName(provider.providerType);
-  const value = (env as unknown as Record<string, string | undefined>)[secretName];
-  if (!value && provider.providerType !== "mock") {
-    throw new Error(`Missing provider secret: ${secretName}`);
+async function providerAuth(
+  env: Env,
+  provider: ModelProviderRecord
+): Promise<ModelAuthConfig> {
+  const apiKey = await resolveProviderApiKey(env, provider);
+  if (!apiKey && requiresAuthKey(provider.authType)) {
+    throw new Error("Model provider API key is missing");
   }
 
-  return value ?? "";
+  return {
+    apiKey,
+    authType: provider.authType,
+    authHeader: provider.authHeader,
+    authQueryParam: provider.authQueryParam
+  };
 }
 
 async function fetchOpenAiModels(
@@ -53,11 +65,13 @@ async function fetchOpenAiModels(
   provider: ModelProviderRecord
 ): Promise<RemoteModel[]> {
   const baseUrl = provider.baseUrl ?? "https://api.openai.com/v1";
-  const response = await fetch(`${baseUrl.replace(/\/$/, "")}/models`, {
-    headers: {
-      authorization: `Bearer ${providerApiKey(env, provider)}`
-    }
-  });
+  const headers = new Headers();
+  const endpoint = applyModelAuth(
+    `${baseUrl.replace(/\/$/, "")}/models`,
+    headers,
+    await providerAuth(env, provider)
+  );
+  const response = await fetch(endpoint, { headers });
   const payload = (await response.json().catch(() => undefined)) as
     | OpenAiModelList
     | { error?: { message?: string } }
@@ -82,11 +96,13 @@ async function fetchGeminiModels(
   provider: ModelProviderRecord
 ): Promise<RemoteModel[]> {
   const baseUrl = provider.baseUrl ?? "https://generativelanguage.googleapis.com/v1beta";
-  const response = await fetch(`${baseUrl.replace(/\/$/, "")}/models`, {
-    headers: {
-      "x-goog-api-key": providerApiKey(env, provider)
-    }
-  });
+  const headers = new Headers();
+  const endpoint = applyModelAuth(
+    `${baseUrl.replace(/\/$/, "")}/models`,
+    headers,
+    await providerAuth(env, provider)
+  );
+  const response = await fetch(endpoint, { headers });
   const payload = (await response.json().catch(() => undefined)) as
     | GeminiModelList
     | { error?: { message?: string } }

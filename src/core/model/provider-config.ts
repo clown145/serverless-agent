@@ -1,7 +1,12 @@
 import type { Env } from "../../shared/types/env";
 import { getModelSettings } from "../../storage/repositories/agent-model-settings-repository";
 import { getModelProviderRecord } from "../../storage/repositories/model-providers-repository";
-import type { ModelProviderType } from "../../storage/repositories/model-settings-types";
+import type {
+  ChatProtocol,
+  ModelAuthType,
+  ModelProviderRecord
+} from "../../storage/repositories/model-settings-types";
+import { resolveProviderApiKey } from "./provider-credential";
 import type { ModelProviderName } from "./types";
 
 export type ResolvedModelConfig = {
@@ -9,6 +14,10 @@ export type ResolvedModelConfig = {
   model?: string;
   baseUrl?: string;
   apiKey?: string;
+  authType: ModelAuthType;
+  authHeader?: string;
+  authQueryParam?: string;
+  chatProtocol: ChatProtocol;
 };
 
 export async function resolveModelConfig(
@@ -20,10 +29,14 @@ export async function resolveModelConfig(
     const provider = await getModelProviderRecord(env.AGENT_DB, settings.providerId);
     if (provider && provider.status === "active") {
       return {
-        provider: provider.providerType,
+        provider: providerNameFromRecord(provider),
         model: settings.modelId,
         baseUrl: provider.baseUrl,
-        apiKey: readProviderSecret(env, provider.apiKeySecret)
+        apiKey: await resolveProviderApiKey(env, provider),
+        authType: provider.authType,
+        authHeader: provider.authHeader,
+        authQueryParam: provider.authQueryParam,
+        chatProtocol: provider.chatProtocol
       };
     }
   }
@@ -39,7 +52,9 @@ function resolveEnvConfig(env: Env): ResolvedModelConfig {
       provider,
       apiKey: env.OPENAI_API_KEY,
       model: env.OPENAI_MODEL ?? env.MODEL_NAME ?? "gpt-4.1",
-      baseUrl: env.OPENAI_BASE_URL
+      baseUrl: env.OPENAI_BASE_URL,
+      authType: "bearer",
+      chatProtocol: "openai-chat-completions"
     };
   }
 
@@ -48,11 +63,29 @@ function resolveEnvConfig(env: Env): ResolvedModelConfig {
       provider,
       apiKey: env.GEMINI_API_KEY,
       model: env.GEMINI_MODEL ?? env.MODEL_NAME ?? "gemini-2.5-flash",
-      baseUrl: env.GEMINI_BASE_URL
+      baseUrl: env.GEMINI_BASE_URL,
+      authType: "x-goog-api-key",
+      chatProtocol: "gemini-generate-content"
     };
   }
 
-  return { provider: "mock" };
+  return {
+    provider: "mock",
+    authType: "none",
+    chatProtocol: "openai-chat-completions"
+  };
+}
+
+function providerNameFromRecord(provider: ModelProviderRecord): ModelProviderName {
+  if (provider.providerType === "mock") {
+    return "mock";
+  }
+
+  if (provider.chatProtocol === "gemini-generate-content") {
+    return "gemini";
+  }
+
+  return "openai";
 }
 
 function resolveProviderName(env: Env): ModelProviderName {
@@ -73,21 +106,4 @@ function resolveProviderName(env: Env): ModelProviderName {
   }
 
   return "mock";
-}
-
-function readProviderSecret(env: Env, name: string): string | undefined {
-  const record = env as unknown as Record<string, string | undefined>;
-  return record[name];
-}
-
-export function defaultSecretName(type: ModelProviderType): string {
-  if (type === "openai") {
-    return "OPENAI_API_KEY";
-  }
-
-  if (type === "gemini") {
-    return "GEMINI_API_KEY";
-  }
-
-  return "MODEL_API_KEY";
 }

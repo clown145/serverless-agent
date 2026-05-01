@@ -32,7 +32,9 @@ export function ModelProviderList({
             <div className="model-provider-head">
               <div>
                 <strong>{provider.name}</strong>
-                <span>{provider.providerType} / secret binding: {provider.apiKeySecret}</span>
+                <span>
+                  {provider.providerType} / {provider.chatProtocol} / {credentialLabel(provider)}
+                </span>
               </div>
               <StatusBadge value={provider.status} />
               <ToolbarButton
@@ -70,4 +72,16 @@ export function ModelProviderList({
       {providers.length === 0 && <EmptyState label="No providers" />}
     </div>
   );
+}
+
+function credentialLabel(provider: ModelProvider): string {
+  if (provider.hasCredential) {
+    return "encrypted key";
+  }
+
+  if (provider.apiKeySecret) {
+    return `legacy binding: ${provider.apiKeySecret}`;
+  }
+
+  return "no key";
 }

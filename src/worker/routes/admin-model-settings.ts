@@ -1,13 +1,16 @@
-import { z } from "zod";
+import {
+  encryptProviderCredential,
+  type EncryptedProviderCredential
+} from "../../core/model/provider-credential";
+import { modelProviderDefaults } from "../../core/model/provider-defaults";
 import { errorResponse, jsonResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
-import { defaultSecretName } from "../../core/model/provider-config";
 import { fetchProviderModels } from "../../core/model/model-list";
-import { SECRET_BINDING_NAME_PATTERN } from "../../core/model/secret-binding";
 import {
   getModelSettings,
   setModelSettings
 } from "../../storage/repositories/agent-model-settings-repository";
+import { createModelCredentialRecord } from "../../storage/repositories/model-credentials-repository";
 import {
   listModelCatalog,
   upsertModelCatalog
@@ -17,26 +20,15 @@ import {
   deleteModelProviderRecord,
   getModelProviderRecord,
   listModelProviders,
+  updateModelProviderCredential,
 } from "../../storage/repositories/model-providers-repository";
 import { requireAdmin } from "../admin-auth";
-
-const secretBindingSchema = z.string().trim().regex(
-  SECRET_BINDING_NAME_PATTERN,
-  "Secret binding must look like GEMINI_API_KEY, not the API key value"
-);
-
-const createProviderSchema = z.object({
-  name: z.string().min(1),
-  providerType: z.enum(["openai", "gemini", "mock"]),
-  baseUrl: z.string().url().optional().or(z.literal("")),
-  apiKeySecret: secretBindingSchema.optional()
-});
-
-const setActiveModelSchema = z.object({
-  agentId: z.string().min(1).optional(),
-  providerId: z.string().min(1),
-  modelId: z.string().min(1)
-});
+import {
+  createProviderSchema,
+  setActiveModelSchema,
+  zodMessage
+} from "./model-settings/model-settings-schemas";
+import { toProviderDto } from "./model-settings/model-provider-dto";
 
 export async function handleAdminModelSettings(
   request: Request,
@@ -48,14 +40,22 @@ export async function handleAdminModelSettings(
   }
 
   if (request.method === "GET") {
-    const agentId = new URL(request.url).searchParams.get("agentId") ?? env.DEFAULT_AGENT_ID ?? "default";
+    const agentId =
+      new URL(request.url).searchParams.get("agentId") ??
+      env.DEFAULT_AGENT_ID ??
+      "default";
     const [providers, models, settings] = await Promise.all([
       listModelProviders(env.AGENT_DB),
       listModelCatalog(env.AGENT_DB),
       getModelSettings(env.AGENT_DB, agentId)
     ]);
 
-    return jsonResponse({ ok: true, providers, models, settings });
+    return jsonResponse({
+      ok: true,
+      providers: providers.map(toProviderDto),
+      models,
+      settings
+    });
   }
 
   if (request.method === "POST") {
@@ -64,14 +64,49 @@ export async function handleAdminModelSettings(
       return errorResponse(400, "invalid_payload", zodMessage(parsed.error));
     }
 
-    const provider = await createModelProviderRecord(env.AGENT_DB, {
+    const defaults = modelProviderDefaults(parsed.data.providerType);
+    const authType = parsed.data.authType ?? defaults.authType;
+    const apiKey = parsed.data.apiKey?.trim();
+    if (authType !== "none" && !apiKey && !parsed.data.apiKeySecret) {
+      return errorResponse(
+        400,
+        "missing_provider_api_key",
+        "API key is required unless auth is none"
+      );
+    }
+
+    let encrypted: EncryptedProviderCredential | undefined;
+    if (apiKey) {
+      const result = await encryptCredentialOrRespond(env, apiKey);
+      if (result instanceof Response) {
+        return result;
+      }
+      encrypted = result;
+    }
+
+    let provider = await createModelProviderRecord(env.AGENT_DB, {
       name: parsed.data.name,
       providerType: parsed.data.providerType,
       baseUrl: parsed.data.baseUrl || undefined,
-      apiKeySecret: parsed.data.apiKeySecret ?? defaultSecretName(parsed.data.providerType)
+      apiKeySecret: parsed.data.apiKeySecret,
+      authType,
+      authHeader: parsed.data.authHeader || undefined,
+      authQueryParam: parsed.data.authQueryParam || undefined,
+      modelListStrategy: parsed.data.modelListStrategy ?? defaults.modelListStrategy,
+      chatProtocol: parsed.data.chatProtocol ?? defaults.chatProtocol
     });
 
-    return jsonResponse({ ok: true, provider }, { status: 201 });
+    if (apiKey && encrypted) {
+      const credential = await createModelCredentialRecord(env.AGENT_DB, {
+        providerId: provider.id,
+        encryptedValue: encrypted.encryptedValue,
+        iv: encrypted.iv,
+        algorithm: encrypted.algorithm
+      });
+      provider = await updateModelProviderCredential(env.AGENT_DB, provider.id, credential.id) ?? provider;
+    }
+
+    return jsonResponse({ ok: true, provider: toProviderDto(provider) }, { status: 201 });
   }
 
   if (request.method === "PUT") {
@@ -92,8 +127,19 @@ export async function handleAdminModelSettings(
   return errorResponse(405, "method_not_allowed", "Method not allowed");
 }
 
-function zodMessage(error: z.ZodError): string {
-  return error.issues[0]?.message ?? error.message;
+async function encryptCredentialOrRespond(
+  env: Env,
+  apiKey: string
+) {
+  try {
+    return await encryptProviderCredential(env, apiKey);
+  } catch (error) {
+    return errorResponse(
+      400,
+      "credential_encryption_unavailable",
+      error instanceof Error ? error.message : "Unable to encrypt provider key"
+    );
+  }
 }
 
 export async function handleAdminModelProviderDetail(

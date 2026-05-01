@@ -1,6 +1,11 @@
 import { createId } from "../../shared/ids";
 import { nowIso } from "../../shared/time";
-import type { ModelProviderType } from "./model-settings-types";
+import type {
+  ChatProtocol,
+  ModelAuthType,
+  ModelListStrategy,
+  ModelProviderType
+} from "./model-settings-types";
 import {
   mapModelProviderRow,
   type ModelProviderRecord,
@@ -11,7 +16,12 @@ export type CreateModelProviderInput = {
   name: string;
   providerType: ModelProviderType;
   baseUrl?: string;
-  apiKeySecret: string;
+  apiKeySecret?: string;
+  authType: ModelAuthType;
+  authHeader?: string;
+  authQueryParam?: string;
+  modelListStrategy: ModelListStrategy;
+  chatProtocol: ChatProtocol;
 };
 
 export async function createModelProviderRecord(
@@ -24,10 +34,35 @@ export async function createModelProviderRecord(
   await db
     .prepare(
       `INSERT INTO model_providers (
-        id, name, provider_type, base_url, api_key_secret, status, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, 'active', ?, ?)`
+        id,
+        name,
+        provider_type,
+        base_url,
+        api_key_secret,
+        auth_type,
+        auth_header,
+        auth_query_param,
+        model_list_strategy,
+        chat_protocol,
+        status,
+        created_at,
+        updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?)`
     )
-    .bind(id, input.name, input.providerType, input.baseUrl ?? null, input.apiKeySecret, now, now)
+    .bind(
+      id,
+      input.name,
+      input.providerType,
+      input.baseUrl ?? null,
+      input.apiKeySecret ?? "",
+      input.authType,
+      input.authHeader ?? null,
+      input.authQueryParam ?? null,
+      input.modelListStrategy,
+      input.chatProtocol,
+      now,
+      now
+    )
     .run();
 
   return {
@@ -36,6 +71,11 @@ export async function createModelProviderRecord(
     providerType: input.providerType,
     baseUrl: input.baseUrl,
     apiKeySecret: input.apiKeySecret,
+    authType: input.authType,
+    authHeader: input.authHeader,
+    authQueryParam: input.authQueryParam,
+    modelListStrategy: input.modelListStrategy,
+    chatProtocol: input.chatProtocol,
     status: "active",
     createdAt: now,
     updatedAt: now
@@ -62,6 +102,19 @@ export async function getModelProviderRecord(
     .first<ModelProviderRow>();
 
   return row ? mapModelProviderRow(row) : undefined;
+}
+
+export async function updateModelProviderCredential(
+  db: D1Database,
+  id: string,
+  credentialId: string
+): Promise<ModelProviderRecord | undefined> {
+  await db
+    .prepare("UPDATE model_providers SET credential_id = ?, updated_at = ? WHERE id = ?")
+    .bind(credentialId, nowIso(), id)
+    .run();
+
+  return getModelProviderRecord(db, id);
 }
 
 export async function deleteModelProviderRecord(

@@ -4,19 +4,15 @@ import type { ModelCatalogItem, ModelProvider } from "../../api/types";
 import { ToolbarButton } from "../ToolbarButton";
 import { ModelProviderForm } from "./models/ModelProviderForm";
 import { ModelProviderList } from "./models/ModelProviderList";
+import { providerDraftDefaults, type ModelProviderDraft } from "./models/modelDefaults";
 import type { PanelProps } from "./types";
-
-const secretBindingPattern = /^[A-Z_][A-Z0-9_]*$/;
 
 export function ModelsPanel({ client, notify }: PanelProps) {
   const [providers, setProviders] = useState<ModelProvider[]>([]);
   const [models, setModels] = useState<ModelCatalogItem[]>([]);
   const [activeProviderId, setActiveProviderId] = useState("");
   const [activeModelId, setActiveModelId] = useState("");
-  const [name, setName] = useState("OpenAI");
-  const [providerType, setProviderType] = useState<ModelProvider["providerType"]>("openai");
-  const [baseUrl, setBaseUrl] = useState("https://api.openai.com/v1");
-  const [apiKeySecret, setApiKeySecret] = useState("OPENAI_API_KEY");
+  const [draft, setDraft] = useState<ModelProviderDraft>(providerDraftDefaults("openai"));
 
   const modelsByProvider = useMemo(() => {
     return models.reduce<Record<string, ModelCatalogItem[]>>((grouped, model) => {
@@ -38,19 +34,20 @@ export function ModelsPanel({ client, notify }: PanelProps) {
   }
 
   async function createProvider() {
-    if (apiKeySecret && !secretBindingPattern.test(apiKeySecret)) {
-      notify("Secret binding must look like GEMINI_API_KEY", "error");
-      return;
-    }
-
     try {
       await client.createModelProvider({
-        name,
-        providerType,
-        baseUrl: baseUrl || undefined,
-        apiKeySecret: apiKeySecret || undefined
+        name: draft.name,
+        providerType: draft.providerType,
+        baseUrl: draft.baseUrl || undefined,
+        apiKey: draft.apiKey || undefined,
+        authType: draft.authType,
+        authHeader: draft.authHeader || undefined,
+        authQueryParam: draft.authQueryParam || undefined,
+        modelListStrategy: draft.modelListStrategy,
+        chatProtocol: draft.chatProtocol
       });
       notify("Provider created", "ok");
+      setDraft({ ...draft, apiKey: "" });
       await load();
     } catch (error) {
       notify(error instanceof Error ? error.message : "Failed to create provider", "error");
@@ -91,22 +88,6 @@ export function ModelsPanel({ client, notify }: PanelProps) {
     void load();
   }, []);
 
-  useEffect(() => {
-    if (providerType === "gemini") {
-      setName("Gemini");
-      setBaseUrl("https://generativelanguage.googleapis.com/v1beta");
-      setApiKeySecret("GEMINI_API_KEY");
-    } else if (providerType === "openai") {
-      setName("OpenAI");
-      setBaseUrl("https://api.openai.com/v1");
-      setApiKeySecret("OPENAI_API_KEY");
-    } else {
-      setName("Mock");
-      setBaseUrl("");
-      setApiKeySecret("MODEL_API_KEY");
-    }
-  }, [providerType]);
-
   return (
     <section className="panel">
       <header className="panel-header">
@@ -118,14 +99,9 @@ export function ModelsPanel({ client, notify }: PanelProps) {
       </header>
 
       <ModelProviderForm
-        name={name}
-        providerType={providerType}
-        baseUrl={baseUrl}
-        apiKeySecret={apiKeySecret}
-        onNameChange={setName}
-        onProviderTypeChange={setProviderType}
-        onBaseUrlChange={setBaseUrl}
-        onApiKeySecretChange={setApiKeySecret}
+        draft={draft}
+        onDraftChange={setDraft}
+        onProviderTypeChange={(providerType) => setDraft(providerDraftDefaults(providerType))}
         onSubmit={() => void createProvider()}
       />
 

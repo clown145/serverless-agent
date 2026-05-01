@@ -210,6 +210,7 @@ tests/fixtures/
 推荐变量命名：
 
 ```text
+AGENT_MASTER_KEY
 OPENAI_API_KEY
 TELEGRAM_BOT_TOKEN
 QQ_BOT_SECRET

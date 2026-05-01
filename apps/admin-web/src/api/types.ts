@@ -75,9 +75,16 @@ export type PermissionPolicy = {
 export type ModelProvider = {
   id: string;
   name: string;
-  providerType: "openai" | "gemini" | "mock";
+  providerType: "openai" | "gemini" | "mock" | "custom";
   baseUrl?: string;
-  apiKeySecret: string;
+  apiKeySecret?: string;
+  credentialId?: string;
+  hasCredential: boolean;
+  authType: "none" | "bearer" | "x-goog-api-key" | "api-key-header" | "query-param";
+  authHeader?: string;
+  authQueryParam?: string;
+  modelListStrategy: "openai" | "gemini" | "static";
+  chatProtocol: "openai-chat-completions" | "gemini-generate-content";
   status: string;
   createdAt: string;
   updatedAt: string;

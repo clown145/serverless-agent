@@ -16,7 +16,9 @@ Production model selection is runtime configuration stored in D1. Use the WebUI 
 - refresh available models from that provider;
 - select the active model for the agent.
 
-Provider API keys are not stored in D1 or VFS. A provider stores only the Cloudflare secret binding name, such as `OPENAI_API_KEY` or `GEMINI_API_KEY`. This field is not the API key value.
+Provider API keys are entered in the WebUI and encrypted before being stored in D1. The encryption key comes from `AGENT_MASTER_KEY`; if it is not set, the worker falls back to `INTERNAL_ADMIN_TOKEN` so a fresh deployment can still be configured from the WebUI.
+
+The older secret-binding path still works for environment fallback, but new provider records should use encrypted credentials.
 
 Local fallback still supports `MODEL_PROVIDER` in `.dev.vars` or Cloudflare environment variables.
 
@@ -31,6 +33,15 @@ MODEL_PROVIDER=openai
 OPENAI_API_KEY=sk-...
 OPENAI_MODEL=gpt-4.1
 OPENAI_BASE_URL=https://api.openai.com/v1
+```
+
+WebUI defaults:
+
+```text
+providerType=openai
+authType=bearer
+modelListStrategy=openai
+chatProtocol=openai-chat-completions
 ```
 
 `OPENAI_BASE_URL` allows OpenAI-compatible gateways. The provider calls:
@@ -48,6 +59,15 @@ MODEL_PROVIDER=gemini
 GEMINI_API_KEY=...
 GEMINI_MODEL=gemini-2.5-flash
 GEMINI_BASE_URL=https://generativelanguage.googleapis.com/v1beta
+```
+
+WebUI defaults:
+
+```text
+providerType=gemini
+authType=x-goog-api-key
+modelListStrategy=gemini
+chatProtocol=gemini-generate-content
 ```
 
 The provider calls:
@@ -107,7 +127,7 @@ Create a provider:
 ```bash
 curl -sS http://localhost:8787/admin/model-settings \
   -H 'content-type: application/json' \
-  -d '{"name":"OpenAI","providerType":"openai","baseUrl":"https://api.openai.com/v1","apiKeySecret":"OPENAI_API_KEY"}'
+  -d '{"name":"OpenAI","providerType":"openai","baseUrl":"https://api.openai.com/v1","apiKey":"sk-...","authType":"bearer","modelListStrategy":"openai","chatProtocol":"openai-chat-completions"}'
 ```
 
 Refresh model list:
