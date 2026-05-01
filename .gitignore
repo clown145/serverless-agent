@@ -4,6 +4,8 @@
 .env.*
 node_modules/
 dist/
+dist-github/
+wrangler.generated.toml
 build/
 coverage/
 .DS_Store

@@ -48,6 +48,7 @@ D1 / R2 / KV / External APIs
 - [docs/SCHEDULER_RUNTIME.md](docs/SCHEDULER_RUNTIME.md): future tasks、recurring schedules 和 heartbeat。
 - [docs/PERMISSIONS_RUNTIME.md](docs/PERMISSIONS_RUNTIME.md): 显式权限策略、默认权限和 pending action 确认流程。
 - [docs/ADMIN_WEBUI.md](docs/ADMIN_WEBUI.md): React/Vite 管理控制台和 `platform:webui` 入口。
+- [docs/GITHUB_ACTIONS_DEPLOY.md](docs/GITHUB_ACTIONS_DEPLOY.md): 不绑定 Cloudflare 仓库的 GitHub Actions 部署方式。
 - [docs/ROADMAP.md](docs/ROADMAP.md): MVP 到长期版本路线。
 - [specs/](specs): 内部消息、工具、VFS、skill manifest 的接口草案。
 

@@ -1,0 +1,54 @@
+name = "${WORKER_NAME}"
+main = "src/worker/index.ts"
+compatibility_date = "2026-04-30"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = "./apps/admin-web/dist"
+binding = "ASSETS"
+run_worker_first = [
+  "/admin/*",
+  "/webhooks/*",
+  "/health",
+  "/ui",
+  "/ui/*",
+  "/cdn-cgi/*"
+]
+
+[vars]
+DEFAULT_AGENT_ID = "${DEFAULT_AGENT_ID}"
+MODEL_PROVIDER = "${MODEL_PROVIDER}"
+
+[triggers]
+crons = ["*/5 * * * *"]
+
+[[durable_objects.bindings]]
+name = "AGENT_OBJECT"
+class_name = "AgentDurableObject"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["AgentDurableObject"]
+
+[[queues.producers]]
+binding = "AGENT_QUEUE"
+queue = "${QUEUE_NAME}"
+
+[[queues.consumers]]
+queue = "${QUEUE_NAME}"
+max_batch_size = 10
+max_batch_timeout = 5
+
+[[r2_buckets]]
+binding = "AGENT_BUCKET"
+bucket_name = "${R2_BUCKET_NAME}"
+
+[[d1_databases]]
+binding = "AGENT_DB"
+database_name = "${D1_DATABASE_NAME}"
+database_id = "${D1_DATABASE_ID}"
+migrations_dir = "infra/cloudflare/migrations"
+
+[[kv_namespaces]]
+binding = "AGENT_KV"
+id = "${KV_NAMESPACE_ID}"

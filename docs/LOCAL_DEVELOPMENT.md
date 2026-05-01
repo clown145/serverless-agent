@@ -14,6 +14,8 @@ npm test
 npm run dry-run
 ```
 
+Production deploy is handled by GitHub Actions. See [GITHUB_ACTIONS_DEPLOY.md](GITHUB_ACTIONS_DEPLOY.md).
+
 ## Apply Local D1 Migrations
 
 ```bash
