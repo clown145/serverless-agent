@@ -63,18 +63,22 @@ export class OpenAiCompatibleProvider implements ModelProvider {
         authType: "bearer"
       }
     );
+    const body: Record<string, unknown> = {
+      model: this.options.model,
+      messages: request.messages.map((message) =>
+        toOpenAiMessage(message, mapper.toWireName)
+      )
+    };
+
+    if (wireTools.length) {
+      body.tools = wireTools.map(toOpenAiTool);
+      body.tool_choice = "auto";
+    }
 
     const response = await fetch(endpoint, {
       method: "POST",
       headers,
-      body: JSON.stringify({
-        model: this.options.model,
-        messages: request.messages.map((message) =>
-          toOpenAiMessage(message, mapper.toWireName)
-        ),
-        tools: wireTools.map(toOpenAiTool),
-        tool_choice: "auto"
-      })
+      body: JSON.stringify(body)
     });
 
     const payload = (await response.json().catch(() => undefined)) as

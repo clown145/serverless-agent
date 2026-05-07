@@ -52,9 +52,74 @@
   font-weight: 700;
 }
 
+.secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 38px;
+  border: 1px solid #cfd7e4;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #33425a;
+  padding: 0 14px;
+  font-weight: 700;
+}
+
 .primary-button:disabled {
   opacity: 0.58;
   cursor: default;
+}
+
+.setup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.setup-list,
+.diagnostic-list {
+  display: grid;
+  gap: 8px;
+}
+
+.setup-row,
+.diagnostic-row,
+.model-test-result {
+  display: grid;
+  gap: 8px;
+  border: 1px solid #dce3ee;
+  border-radius: 7px;
+  background: #ffffff;
+  padding: 12px;
+}
+
+.setup-row,
+.diagnostic-row {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.diagnostic-row {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.setup-row strong,
+.diagnostic-row strong,
+.model-test-result strong,
+.setup-row span,
+.diagnostic-row span,
+.model-test-result span {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.setup-row span,
+.diagnostic-row span,
+.model-test-result span {
+  color: #687386;
+  font-size: 12px;
 }
 
 .path-bar {
@@ -82,7 +147,7 @@
 
 .model-provider-head {
   display: grid;
-  grid-template-columns: minmax(180px, 1fr) auto auto auto;
+  grid-template-columns: minmax(180px, 1fr) auto auto auto auto;
   gap: 10px;
   align-items: center;
   margin-bottom: 10px;
@@ -106,21 +171,40 @@
 }
 
 .model-choice {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
   min-height: 38px;
   border: 1px solid #dce3ee;
   border-radius: 7px;
   background: #ffffff;
   color: #253044;
-  padding: 0 10px;
+  padding: 2px;
   text-align: left;
 }
 
 .model-choice.selected {
   border-color: #2563a8;
   background: #edf5ff;
+}
+
+.model-activate {
+  display: flex;
+  min-width: 0;
+  min-height: 34px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 0;
+  background: transparent;
+  color: #253044;
+  padding: 0 8px;
+  text-align: left;
+}
+
+.model-activate span {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .editor-pane {

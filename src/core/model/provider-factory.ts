@@ -11,6 +11,12 @@ export async function createModelProvider(
   agentId: string
 ): Promise<ModelProvider> {
   const config = await resolveModelConfig(env, agentId);
+  return createModelProviderFromConfig(config);
+}
+
+export function createModelProviderFromConfig(
+  config: Awaited<ReturnType<typeof resolveModelConfig>>
+): ModelProvider {
   if (requiresAuthKey(config.authType) && !config.apiKey) {
     throw new Error("Model provider API key is missing");
   }

@@ -3,6 +3,7 @@ import {
   type EncryptedProviderCredential
 } from "../../core/model/provider-credential";
 import { modelProviderDefaults } from "../../core/model/provider-defaults";
+import { testModelProvider } from "../../core/model/model-test";
 import { errorResponse, jsonResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
 import { fetchProviderModels } from "../../core/model/model-list";
@@ -26,6 +27,7 @@ import { requireAdmin } from "../admin-auth";
 import {
   createProviderSchema,
   setActiveModelSchema,
+  testModelSchema,
   zodMessage
 } from "./model-settings/model-settings-schemas";
 import { toProviderDto } from "./model-settings/model-provider-dto";
@@ -161,7 +163,44 @@ export async function handleAdminModelProviderDetail(
     return jsonResponse({ ok: true, deleted });
   }
 
-  if (request.method === "POST" && new URL(request.url).pathname.endsWith("/refresh")) {
+  const pathname = new URL(request.url).pathname;
+
+  if (request.method === "POST" && pathname.endsWith("/test")) {
+    const provider = await getModelProviderRecord(env.AGENT_DB, providerId);
+    if (!provider) {
+      return errorResponse(404, "provider_not_found", "Model provider not found");
+    }
+
+    const parsed = testModelSchema.safeParse(await request.json().catch(() => ({})));
+    if (!parsed.success) {
+      return errorResponse(400, "invalid_payload", zodMessage(parsed.error));
+    }
+
+    try {
+      const agentId = env.DEFAULT_AGENT_ID ?? "default";
+      const [models, settings] = await Promise.all([
+        listModelCatalog(env.AGENT_DB, providerId),
+        getModelSettings(env.AGENT_DB, agentId)
+      ]);
+      const result = await testModelProvider({
+        env,
+        provider,
+        models,
+        settings,
+        modelId: parsed.data.modelId,
+        prompt: parsed.data.prompt
+      });
+      return jsonResponse({ ok: true, result });
+    } catch (error) {
+      return errorResponse(
+        502,
+        "model_test_failed",
+        error instanceof Error ? error.message : "Failed to test model"
+      );
+    }
+  }
+
+  if (request.method === "POST" && pathname.endsWith("/refresh")) {
     const provider = await getModelProviderRecord(env.AGENT_DB, providerId);
     if (!provider) {
       return errorResponse(404, "provider_not_found", "Model provider not found");

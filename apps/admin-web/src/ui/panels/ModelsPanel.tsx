@@ -1,6 +1,6 @@
 import { RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import type { ModelCatalogItem, ModelProvider } from "../../api/types";
+import type { ModelCatalogItem, ModelProvider, ModelTestResult } from "../../api/types";
 import { ToolbarButton } from "../ToolbarButton";
 import { ModelProviderForm } from "./models/ModelProviderForm";
 import { ModelProviderList } from "./models/ModelProviderList";
@@ -12,6 +12,8 @@ export function ModelsPanel({ client, notify }: PanelProps) {
   const [models, setModels] = useState<ModelCatalogItem[]>([]);
   const [activeProviderId, setActiveProviderId] = useState("");
   const [activeModelId, setActiveModelId] = useState("");
+  const [testResult, setTestResult] = useState<ModelTestResult>();
+  const [testingKey, setTestingKey] = useState("");
   const [draft, setDraft] = useState<ModelProviderDraft>(providerDraftDefaults("openai"));
 
   const modelsByProvider = useMemo(() => {
@@ -64,6 +66,20 @@ export function ModelsPanel({ client, notify }: PanelProps) {
     }
   }
 
+  async function test(providerId: string, modelId?: string) {
+    const key = `${providerId}:${modelId ?? ""}`;
+    setTestingKey(key);
+    try {
+      const result = await client.testProviderModel(providerId, { modelId });
+      setTestResult(result.result);
+      notify(`Model replied in ${result.result.latencyMs}ms`, "ok");
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "Failed to test model", "error");
+    } finally {
+      setTestingKey("");
+    }
+  }
+
   async function activate(providerId: string, modelId: string) {
     try {
       await client.activateModel({ providerId, modelId });
@@ -105,14 +121,26 @@ export function ModelsPanel({ client, notify }: PanelProps) {
         onSubmit={() => void createProvider()}
       />
 
+      {testResult && (
+        <div className="model-test-result">
+          <strong>Last model test</strong>
+          <span>
+            {testResult.providerId} / {testResult.modelId} / {testResult.latencyMs}ms
+          </span>
+          <pre className="json-block">{testResult.content ?? "(no text response)"}</pre>
+        </div>
+      )}
+
       <ModelProviderList
         providers={providers}
         modelsByProvider={modelsByProvider}
         activeProviderId={activeProviderId}
         activeModelId={activeModelId}
         onRefresh={(providerId) => void refresh(providerId)}
+        onTest={(providerId, modelId) => void test(providerId, modelId)}
         onActivate={(providerId, modelId) => void activate(providerId, modelId)}
         onDelete={(providerId) => void removeProvider(providerId)}
+        testingKey={testingKey}
       />
     </section>
   );

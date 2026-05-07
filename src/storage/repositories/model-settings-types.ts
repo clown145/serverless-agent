@@ -158,7 +158,7 @@ export function mapModelSettingsRow(row: ModelSettingsRow): ModelSettingsRecord 
 
 function defaultAuthType(type: ModelProviderType): ModelAuthType {
   if (type === "gemini") {
-    return "x-goog-api-key";
+    return "query-param";
   }
 
   if (type === "mock") {

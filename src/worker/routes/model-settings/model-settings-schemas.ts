@@ -25,6 +25,11 @@ export const setActiveModelSchema = z.object({
   modelId: z.string().min(1)
 });
 
+export const testModelSchema = z.object({
+  modelId: z.string().min(1).optional(),
+  prompt: z.string().min(1).max(800).optional()
+});
+
 export function zodMessage(error: z.ZodError): string {
   return error.issues[0]?.message ?? error.message;
 }

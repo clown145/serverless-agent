@@ -44,20 +44,24 @@ export class GeminiProvider implements ModelProvider {
       }
     );
     const systemInstruction = buildSystemInstruction(request.messages);
+    const body: Record<string, unknown> = {
+      systemInstruction,
+      contents: toGeminiContents(request.messages, mapper.toWireName)
+    };
+
+    if (wireTools.length) {
+      body.tools = [{ functionDeclarations: wireTools.map(toGeminiFunction) }];
+      body.toolConfig = {
+        functionCallingConfig: {
+          mode: "AUTO"
+        }
+      };
+    }
 
     const response = await fetch(endpoint, {
       method: "POST",
       headers,
-      body: JSON.stringify({
-        systemInstruction,
-        contents: toGeminiContents(request.messages, mapper.toWireName),
-        tools: [{ functionDeclarations: wireTools.map(toGeminiFunction) }],
-        toolConfig: {
-          functionCallingConfig: {
-            mode: "AUTO"
-          }
-        }
-      })
+      body: JSON.stringify(body)
     });
 
     const payload = (await response.json().catch(() => undefined)) as

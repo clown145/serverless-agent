@@ -1,13 +1,16 @@
 import type {
   ApiResult,
   ModelCatalogItem,
+  DiagnosticCheck,
   ModelProvider,
   ModelSettings,
+  ModelTestResult,
   PendingAction,
   PermissionPolicy,
   RunDetails,
   RunListItem,
   Schedule,
+  SetupStatus,
   VfsEntry,
   VfsFile
 } from "./types";
@@ -120,6 +123,14 @@ export function createAdminClient(getToken: () => string) {
         }>
       >("/admin/model-settings");
     },
+    getSetupStatus: () => {
+      return request<ApiResult<{ status: SetupStatus }>>("/admin/setup/status");
+    },
+    getDiagnostics: () => {
+      return request<ApiResult<{ checks: DiagnosticCheck[]; healthy: boolean }>>(
+        "/admin/diagnostics"
+      );
+    },
     createModelProvider: (body: {
       name: string;
       providerType: ModelProvider["providerType"];
@@ -140,6 +151,15 @@ export function createAdminClient(getToken: () => string) {
       return request<ApiResult<{ models: ModelCatalogItem[] }>>(
         `/admin/model-providers/${providerId}/refresh`,
         { method: "POST" }
+      );
+    },
+    testProviderModel: (providerId: string, body: { modelId?: string; prompt?: string } = {}) => {
+      return request<ApiResult<{ result: ModelTestResult }>>(
+        `/admin/model-providers/${providerId}/test`,
+        {
+          method: "POST",
+          body: JSON.stringify(body)
+        }
       );
     },
     activateModel: (body: { providerId: string; modelId: string }) => {

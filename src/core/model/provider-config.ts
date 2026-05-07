@@ -28,20 +28,28 @@ export async function resolveModelConfig(
   if (settings?.providerId && settings.modelId) {
     const provider = await getModelProviderRecord(env.AGENT_DB, settings.providerId);
     if (provider && provider.status === "active") {
-      return {
-        provider: providerNameFromRecord(provider),
-        model: settings.modelId,
-        baseUrl: provider.baseUrl,
-        apiKey: await resolveProviderApiKey(env, provider),
-        authType: provider.authType,
-        authHeader: provider.authHeader,
-        authQueryParam: provider.authQueryParam,
-        chatProtocol: provider.chatProtocol
-      };
+      return resolveModelConfigFromProvider(env, provider, settings.modelId);
     }
   }
 
   return resolveEnvConfig(env);
+}
+
+export async function resolveModelConfigFromProvider(
+  env: Env,
+  provider: ModelProviderRecord,
+  model: string
+): Promise<ResolvedModelConfig> {
+  return {
+    provider: providerNameFromRecord(provider),
+    model,
+    baseUrl: provider.baseUrl,
+    apiKey: await resolveProviderApiKey(env, provider),
+    authType: provider.authType,
+    authHeader: provider.authHeader,
+    authQueryParam: provider.authQueryParam,
+    chatProtocol: provider.chatProtocol
+  };
 }
 
 function resolveEnvConfig(env: Env): ResolvedModelConfig {
@@ -77,7 +85,7 @@ function resolveEnvConfig(env: Env): ResolvedModelConfig {
   };
 }
 
-function providerNameFromRecord(provider: ModelProviderRecord): ModelProviderName {
+export function providerNameFromRecord(provider: ModelProviderRecord): ModelProviderName {
   if (provider.providerType === "mock") {
     return "mock";
   }

@@ -106,3 +106,31 @@ export type ModelSettings = {
   modelId?: string;
   updatedAt: string;
 };
+
+export type SetupStep = {
+  id: "provider" | "credential" | "models" | "active_model";
+  label: string;
+  status: "done" | "pending";
+  detail: string;
+};
+
+export type SetupStatus = {
+  ready: boolean;
+  steps: SetupStep[];
+  activeProvider?: string;
+  activeModel?: string;
+};
+
+export type DiagnosticCheck = {
+  id: string;
+  label: string;
+  status: "ok" | "warn" | "error";
+  detail: string;
+};
+
+export type ModelTestResult = {
+  providerId: string;
+  modelId: string;
+  latencyMs: number;
+  content?: string;
+};

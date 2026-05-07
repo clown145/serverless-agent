@@ -1,9 +1,11 @@
 import {
   CalendarClock,
+  ClipboardCheck,
   Database,
   FileText,
   KeyRound,
   MessageSquare,
+  Activity,
   SlidersHorizontal,
   ShieldCheck,
   Workflow
@@ -15,8 +17,10 @@ const items: Array<{
   label: string;
   icon: typeof MessageSquare;
 }> = [
+  { id: "setup", label: "Setup", icon: ClipboardCheck },
   { id: "chat", label: "Chat", icon: MessageSquare },
   { id: "models", label: "Models", icon: SlidersHorizontal },
+  { id: "diagnostics", label: "Diagnostics", icon: Activity },
   { id: "runs", label: "Runs", icon: Workflow },
   { id: "vfs", label: "VFS", icon: FileText },
   { id: "schedules", label: "Schedules", icon: CalendarClock },

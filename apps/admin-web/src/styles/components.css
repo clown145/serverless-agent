@@ -94,6 +94,8 @@
 .status-completed,
 .status-success,
 .status-active,
+.status-done,
+.status-ok,
 .status-file,
 .status-directory {
   background: #dff3e8;
@@ -102,12 +104,14 @@
 
 .status-failed,
 .status-deleted,
+.status-error,
 .status-cancelled {
   background: #f8dfdf;
   color: #8f2020;
 }
 
 .status-pending,
+.status-warn,
 .status-needs_confirmation {
   background: #fff0cd;
   color: #7b4c00;

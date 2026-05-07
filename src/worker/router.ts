@@ -1,5 +1,6 @@
 import type { Env } from "../shared/types/env";
 import { errorResponse, jsonResponse } from "../shared/http";
+import { handleAdminDiagnostics } from "./routes/admin-diagnostics";
 import { handleAdminHeartbeats } from "./routes/admin-heartbeats";
 import { handleAdminMessage } from "./routes/admin-message";
 import {
@@ -15,6 +16,7 @@ import { handleAdminRuns } from "./routes/admin-runs";
 import { handleAdminScheduleDetail } from "./routes/admin-schedule-detail";
 import { handleAdminSchedules } from "./routes/admin-schedules";
 import { handleAdminSkillDetail } from "./routes/admin-skill-detail";
+import { handleAdminSetupStatus } from "./routes/admin-setup-status";
 import { handleAdminUi } from "./routes/admin-ui";
 import { handleAdminVfs } from "./routes/admin-vfs";
 import { handleHealth } from "./routes/health";
@@ -39,13 +41,21 @@ export async function routeRequest(
     return handleAdminMessage(request, env, ctx);
   }
 
+  if (request.method === "GET" && url.pathname === "/admin/setup/status") {
+    return handleAdminSetupStatus(request, env);
+  }
+
+  if (request.method === "GET" && url.pathname === "/admin/diagnostics") {
+    return handleAdminDiagnostics(request, env);
+  }
+
   if (url.pathname === "/admin/model-settings") {
     return handleAdminModelSettings(request, env);
   }
 
   if (url.pathname.startsWith("/admin/model-providers/")) {
     const modelProviderPath = url.pathname.replace("/admin/model-providers/", "");
-    const providerId = decodeURIComponent(modelProviderPath.replace("/refresh", ""));
+    const providerId = decodeURIComponent(modelProviderPath.split("/")[0] ?? "");
     return handleAdminModelProviderDetail(request, env, providerId);
   }
 
@@ -128,8 +138,11 @@ export async function routeRequest(
         "/health",
         "/webhooks/telegram",
         "/admin/messages",
+        "/admin/setup/status",
+        "/admin/diagnostics",
         "/admin/model-settings",
         "/admin/model-providers/:providerId/refresh",
+        "/admin/model-providers/:providerId/test",
         "/admin/permission-policies",
         "/admin/pending-actions",
         "/admin/schedules",
