@@ -1,5 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { discoverMcpHttpTools } from "../../src/tools/mcp/http-client";
+import {
+  callMcpHttpTool,
+  discoverMcpHttpTools
+} from "../../src/tools/mcp/http-client";
 
 const originalFetch = globalThis.fetch;
 
@@ -86,6 +89,51 @@ describe("MCP HTTP client", () => {
         auth: { authType: "none" }
       })
     ).resolves.toMatchObject({ tools: [] });
+  });
+
+  it("calls tools through JSON-RPC", async () => {
+    const fetchMock = vi.fn(async (_url: RequestInfo | URL, init?: RequestInit) => {
+      const body = JSON.parse(String(init?.body ?? "{}")) as {
+        method?: string;
+        params?: Record<string, unknown>;
+      };
+
+      if (body.method === "initialize") {
+        return jsonResponse({ jsonrpc: "2.0", id: 1, result: {} });
+      }
+
+      if (body.method === "notifications/initialized") {
+        return new Response(null, { status: 202 });
+      }
+
+      expect(body).toMatchObject({
+        method: "tools/call",
+        params: {
+          name: "search",
+          arguments: { query: "cf workers" }
+        }
+      });
+      return jsonResponse({
+        jsonrpc: "2.0",
+        id: 2,
+        result: {
+          content: [{ type: "text", text: "ok" }],
+          structuredContent: { ok: true }
+        }
+      });
+    });
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+
+    await expect(
+      callMcpHttpTool({
+        url: "https://mcp.example.com",
+        auth: { authType: "none" },
+        name: "search",
+        arguments: { query: "cf workers" }
+      })
+    ).resolves.toMatchObject({
+      structuredContent: { ok: true }
+    });
   });
 });
 

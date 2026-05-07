@@ -1,4 +1,4 @@
-import { createToolRegistry } from "../../tools/registry/tool-registry";
+import { createRuntimeToolRegistry } from "../../tools/registry/tool-registry";
 import { errorResponse, jsonResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
 import {
@@ -44,7 +44,7 @@ export async function handleAdminPendingActionConfirm(
     return errorResponse(409, "pending_action_changed", "Pending action status changed");
   }
 
-  const registry = createToolRegistry(env);
+  const registry = await createRuntimeToolRegistry(env);
   const result = await registry.execute(action.toolName, {
     agentId: action.agentId,
     actorId: action.actorId,

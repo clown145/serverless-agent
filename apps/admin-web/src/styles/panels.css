@@ -201,6 +201,11 @@
   font-size: 12px;
 }
 
+.mcp-tool-row {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+}
+
 .mcp-tool-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));

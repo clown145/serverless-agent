@@ -7,7 +7,10 @@ import type { SelectedSkill } from "../skills/skill-selector";
 import {
   completeRun
 } from "../storage/repositories/runs-repository";
-import { createToolRegistry } from "../tools/registry/tool-registry";
+import {
+  createRuntimeToolRegistry,
+  type ToolRegistry
+} from "../tools/registry/tool-registry";
 import type { ToolResult } from "../tools/types";
 import { createInitialModelMessages, createModelTools } from "./agent-context";
 import { sendFinalMessage } from "./agent-final-message";
@@ -29,7 +32,7 @@ export async function executeAgentToolLoop(
   runId: string,
   message: InternalMessage
 ): Promise<void> {
-  const registry = createToolRegistry(env);
+  const registry = await createRuntimeToolRegistry(env);
   const provider = await createModelProvider(env, message.agentId);
   const selectedSkill = await selectSkillForMessage(env, message);
   await recordContextStep(env, runId, message.agentId, selectedSkill);
@@ -60,6 +63,7 @@ export async function executeAgentToolLoop(
     for (const toolCall of response.toolCalls) {
       const execution = await executeToolCall(
         env,
+        registry,
         runId,
         message,
         toolCall,
@@ -77,13 +81,13 @@ export async function executeAgentToolLoop(
 
 async function executeToolCall(
   env: Env,
+  registry: ToolRegistry,
   runId: string,
   message: InternalMessage,
   toolCall: ModelToolCall,
   allowedToolNames: Set<string>,
   selectedSkill?: SelectedSkill
 ): Promise<{ result: ToolResult; sentMessage: boolean }> {
-  const registry = createToolRegistry(env);
   const toolStepId = createId("step");
 
   await recordToolRequestedStep(env, {

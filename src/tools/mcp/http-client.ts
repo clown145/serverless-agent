@@ -1,4 +1,4 @@
-import type { McpTool } from "./types";
+import type { McpCallToolResult, McpTool } from "./types";
 import { mcpPost, type McpHttpAuth, type McpSession } from "./http-transport";
 
 const MCP_PROTOCOL_VERSION = "2025-06-18";
@@ -84,6 +84,28 @@ export async function listMcpHttpTools(input: {
   }
 
   throw new Error("MCP tools/list returned too many pages");
+}
+
+export async function callMcpHttpTool(input: {
+  url: string;
+  auth: McpHttpAuth;
+  name: string;
+  arguments?: Record<string, unknown>;
+}): Promise<McpCallToolResult> {
+  const session = await initializeMcpHttpServer(input);
+  await sendInitializedNotification({ ...input, session });
+  const response = await mcpPost<McpCallToolResult>({
+    ...input,
+    session,
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: input.name,
+      arguments: input.arguments ?? {}
+    }
+  });
+
+  return response.result ?? { content: [] };
 }
 
 async function sendInitializedNotification(input: {

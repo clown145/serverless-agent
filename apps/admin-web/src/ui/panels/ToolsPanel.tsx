@@ -81,6 +81,16 @@ export function ToolsPanel({ client, notify }: PanelProps) {
     }
   }
 
+  async function updateToolStatus(toolId: string, status: McpTool["status"]) {
+    try {
+      await client.setMcpToolStatus(toolId, status);
+      notify(status === "enabled" ? "MCP tool enabled" : "MCP tool disabled", "ok");
+      await load();
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "Failed to update MCP tool", "error");
+    }
+  }
+
   useEffect(() => {
     void load();
   }, []);
@@ -108,6 +118,7 @@ export function ToolsPanel({ client, notify }: PanelProps) {
         toolsByServer={mcpToolsByServer}
         busyServerId={busyServerId}
         onDiscover={(serverId) => void discover(serverId)}
+        onToolStatus={(toolId, status) => void updateToolStatus(toolId, status)}
         onDelete={(serverId) => void remove(serverId)}
       />
     </section>

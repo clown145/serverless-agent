@@ -127,6 +127,18 @@
   color: #273b8f;
 }
 
+.status-enabled {
+  background: #dff3e8;
+  color: #17603b;
+}
+
+.status-disabled,
+.status-available,
+.status-unavailable {
+  background: #edf1f5;
+  color: #445064;
+}
+
 .icon-button {
   display: inline-grid;
   width: 34px;

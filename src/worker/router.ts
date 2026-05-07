@@ -5,6 +5,7 @@ import { handleAdminHeartbeats } from "./routes/admin-heartbeats";
 import { handleAdminMessage } from "./routes/admin-message";
 import { handleAdminMcpServerDetail } from "./routes/admin-mcp-server-detail";
 import { handleAdminMcpServers } from "./routes/admin-mcp-servers";
+import { handleAdminMcpToolDetail } from "./routes/admin-mcp-tool-detail";
 import {
   handleAdminModelProviderDetail,
   handleAdminModelSettings
@@ -64,6 +65,11 @@ export async function routeRequest(
     const mcpServerPath = url.pathname.replace("/admin/mcp/servers/", "");
     const serverId = decodeURIComponent(mcpServerPath.split("/")[0] ?? "");
     return handleAdminMcpServerDetail(request, env, serverId);
+  }
+
+  if (url.pathname.startsWith("/admin/mcp/tools/")) {
+    const toolId = decodeURIComponent(url.pathname.replace("/admin/mcp/tools/", ""));
+    return handleAdminMcpToolDetail(request, env, toolId);
   }
 
   if (url.pathname === "/admin/model-settings") {
@@ -160,6 +166,7 @@ export async function routeRequest(
         "/admin/tools",
         "/admin/mcp/servers",
         "/admin/mcp/servers/:serverId/discover",
+        "/admin/mcp/tools/:toolId",
         "/admin/model-settings",
         "/admin/model-providers/:providerId/refresh",
         "/admin/model-providers/:providerId/test",

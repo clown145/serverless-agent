@@ -1,5 +1,5 @@
 import { createToolCatalog } from "../../tools/catalog/tool-catalog";
-import { createToolRegistry } from "../../tools/registry/tool-registry";
+import { createRuntimeToolRegistry } from "../../tools/registry/tool-registry";
 import { jsonResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
 import { requireAdmin } from "../admin-auth";
@@ -13,7 +13,7 @@ export async function handleAdminTools(
     return authError;
   }
 
-  const registry = createToolRegistry(env);
+  const registry = await createRuntimeToolRegistry(env);
   return jsonResponse({
     ok: true,
     tools: createToolCatalog(registry.list())

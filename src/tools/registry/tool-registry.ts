@@ -7,6 +7,7 @@ import { createId } from "../../shared/ids";
 import type { Env } from "../../shared/types/env";
 import { nowIso } from "../../shared/time";
 import { createBuiltinTools } from "../builtin/create-builtin-tools";
+import { createEnabledMcpTools } from "../mcp/runtime-tools";
 import { evaluateToolPermission } from "../permissions/policy";
 import type { RegisteredTool, ToolResult } from "../types";
 import {
@@ -128,6 +129,11 @@ export function createToolRegistry(
       return result;
     }
   };
+}
+
+export async function createRuntimeToolRegistry(env: Env): Promise<ToolRegistry> {
+  const externalTools = await createEnabledMcpTools(env);
+  return createToolRegistry(env, { externalTools });
 }
 
 async function executeToolSafely(

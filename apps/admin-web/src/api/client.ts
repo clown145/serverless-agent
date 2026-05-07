@@ -160,6 +160,12 @@ export function createAdminClient(getToken: () => string) {
         { method: "POST" }
       );
     },
+    setMcpToolStatus: (toolId: string, status: McpTool["status"]) => {
+      return request<ApiResult<{ tool: McpTool }>>(`/admin/mcp/tools/${toolId}`, {
+        method: "PUT",
+        body: JSON.stringify({ status })
+      });
+    },
     deleteMcpServer: (serverId: string) => {
       return request<ApiResult<{ deleted: boolean }>>(`/admin/mcp/servers/${serverId}`, {
         method: "DELETE"

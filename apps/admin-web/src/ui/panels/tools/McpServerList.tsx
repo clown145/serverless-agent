@@ -1,4 +1,4 @@
-import { RefreshCw, Trash2 } from "lucide-react";
+import { Power, PowerOff, RefreshCw, Trash2 } from "lucide-react";
 import type { McpServer, McpTool } from "../../../api/types";
 import { StatusBadge } from "../../StatusBadge";
 import { ToolbarButton } from "../../ToolbarButton";
@@ -8,6 +8,7 @@ type McpServerListProps = {
   toolsByServer: Record<string, McpTool[]>;
   busyServerId: string;
   onDiscover: (serverId: string) => void;
+  onToolStatus: (toolId: string, status: McpTool["status"]) => void;
   onDelete: (serverId: string) => void;
 };
 
@@ -16,6 +17,7 @@ export function McpServerList({
   toolsByServer,
   busyServerId,
   onDiscover,
+  onToolStatus,
   onDelete
 }: McpServerListProps) {
   return (
@@ -50,8 +52,22 @@ export function McpServerList({
             <div className="mcp-tool-list">
               {tools.map((tool) => (
                 <div className="mcp-tool-row" key={tool.id}>
-                  <strong>{tool.title ?? tool.toolName}</strong>
-                  <span>{tool.internalName}</span>
+                  <div>
+                    <strong>{tool.title ?? tool.toolName}</strong>
+                    <span>{tool.internalName}</span>
+                  </div>
+                  <StatusBadge value={tool.status} />
+                  <ToolbarButton
+                    label={tool.status === "enabled" ? "Disable MCP tool" : "Enable MCP tool"}
+                    icon={tool.status === "enabled" ? PowerOff : Power}
+                    disabled={tool.status === "unavailable"}
+                    onClick={() => {
+                      onToolStatus(
+                        tool.id,
+                        tool.status === "enabled" ? "disabled" : "enabled"
+                      );
+                    }}
+                  />
                 </div>
               ))}
               {tools.length === 0 && (
