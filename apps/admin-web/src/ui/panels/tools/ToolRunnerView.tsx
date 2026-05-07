@@ -1,0 +1,127 @@
+import { Play, RotateCcw } from "lucide-react";
+import { useEffect, useState } from "react";
+import type { AdminClient } from "../../../api/client";
+import type { ToolCatalogItem, ToolDebugCall } from "../../../api/types";
+import { EmptyState } from "../../EmptyState";
+import { JsonBlock } from "../../JsonBlock";
+import { StatusBadge } from "../../StatusBadge";
+import { createToolInputDraft } from "./toolInputDefaults";
+
+type ToolRunnerViewProps = {
+  tool?: ToolCatalogItem;
+  client: AdminClient;
+  notify: (message: string, tone?: "ok" | "error") => void;
+  onExecuted: () => void;
+};
+
+export function ToolRunnerView({
+  tool,
+  client,
+  notify,
+  onExecuted
+}: ToolRunnerViewProps) {
+  const [inputText, setInputText] = useState("{}");
+  const [allowDangerous, setAllowDangerous] = useState(false);
+  const [running, setRunning] = useState(false);
+  const [call, setCall] = useState<ToolDebugCall>();
+
+  useEffect(() => {
+    setInputText(JSON.stringify(createToolInputDraft(tool), null, 2));
+    setCall(undefined);
+  }, [tool?.name]);
+
+  async function runTool() {
+    if (!tool) {
+      return;
+    }
+
+    let input: unknown;
+    try {
+      input = JSON.parse(inputText);
+    } catch {
+      notify("Input JSON is invalid", "error");
+      return;
+    }
+
+    setRunning(true);
+    try {
+      const result = await client.callTool({
+        toolName: tool.name,
+        input,
+        allowDangerous
+      });
+      setCall(result.call);
+      notify(`Tool returned ${result.call.result.status}`, "ok");
+      onExecuted();
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "Failed to run tool", "error");
+    } finally {
+      setRunning(false);
+    }
+  }
+
+  if (!tool) {
+    return <EmptyState label="No tools registered" />;
+  }
+
+  return (
+    <div className="tool-runner">
+      <header className="subsection-header">
+        <div>
+          <h2>Runner</h2>
+          <p>{tool.name}</p>
+        </div>
+        <div className="tool-meta">
+          <StatusBadge value={tool.sideEffect} />
+          <span>level {tool.permission.level}</span>
+        </div>
+      </header>
+
+      <textarea
+        className="json-editor"
+        value={inputText}
+        onChange={(event) => setInputText(event.target.value)}
+        spellCheck={false}
+      />
+
+      <div className="tool-runner-actions">
+        <label className="checkbox-row">
+          <input
+            checked={allowDangerous}
+            type="checkbox"
+            onChange={(event) => setAllowDangerous(event.target.checked)}
+          />
+          <span>Bypass confirmation</span>
+        </label>
+        <button
+          className="secondary-button"
+          type="button"
+          onClick={() => setInputText(JSON.stringify(createToolInputDraft(tool), null, 2))}
+        >
+          <RotateCcw size={16} />
+          Reset
+        </button>
+        <button
+          className="primary-button"
+          disabled={running}
+          type="button"
+          onClick={() => void runTool()}
+        >
+          <Play size={16} />
+          Run
+        </button>
+      </div>
+
+      {call && (
+        <div className="tool-result">
+          <div className="tool-meta">
+            <StatusBadge value={call.result.status} />
+            <span>{call.latencyMs}ms</span>
+            <span>{call.runId}</span>
+          </div>
+          <JsonBlock value={call.result} />
+        </div>
+      )}
+    </div>
+  );
+}

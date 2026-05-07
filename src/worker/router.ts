@@ -22,6 +22,8 @@ import { handleAdminSearchProviderDetail } from "./routes/admin-search-provider-
 import { handleAdminSearchProviders } from "./routes/admin-search-providers";
 import { handleAdminSkillDetail } from "./routes/admin-skill-detail";
 import { handleAdminSetupStatus } from "./routes/admin-setup-status";
+import { handleAdminToolCall } from "./routes/admin-tool-call";
+import { handleAdminToolCalls } from "./routes/admin-tool-calls";
 import { handleAdminTools } from "./routes/admin-tools";
 import { handleAdminUi } from "./routes/admin-ui";
 import { handleAdminVfs } from "./routes/admin-vfs";
@@ -57,6 +59,14 @@ export async function routeRequest(
 
   if (request.method === "GET" && url.pathname === "/admin/tools") {
     return handleAdminTools(request, env);
+  }
+
+  if (url.pathname === "/admin/tools/call") {
+    return handleAdminToolCall(request, env);
+  }
+
+  if (url.pathname === "/admin/tools/calls") {
+    return handleAdminToolCalls(request, env);
   }
 
   if (url.pathname === "/admin/mcp/servers") {
@@ -176,6 +186,8 @@ export async function routeRequest(
         "/admin/setup/status",
         "/admin/diagnostics",
         "/admin/tools",
+        "/admin/tools/call",
+        "/admin/tools/calls",
         "/admin/mcp/servers",
         "/admin/mcp/servers/:serverId/discover",
         "/admin/mcp/tools/:toolId",

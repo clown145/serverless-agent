@@ -1,14 +1,23 @@
 import { RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import type { McpServer, McpTool, ToolCatalogItem } from "../../api/types";
+import type {
+  McpServer,
+  McpTool,
+  ToolCallHistoryItem,
+  ToolCatalogItem
+} from "../../api/types";
 import { ToolbarButton } from "../ToolbarButton";
 import { McpServerForm, type McpServerDraft } from "./tools/McpServerForm";
 import { McpServerList } from "./tools/McpServerList";
 import { RegisteredToolsView } from "./tools/RegisteredToolsView";
+import { ToolCallHistoryView } from "./tools/ToolCallHistoryView";
+import { ToolRunnerView } from "./tools/ToolRunnerView";
 import type { PanelProps } from "./types";
 
 export function ToolsPanel({ client, notify }: PanelProps) {
   const [tools, setTools] = useState<ToolCatalogItem[]>([]);
+  const [selectedToolName, setSelectedToolName] = useState("");
+  const [toolCalls, setToolCalls] = useState<ToolCallHistoryItem[]>([]);
   const [mcpServers, setMcpServers] = useState<McpServer[]>([]);
   const [mcpTools, setMcpTools] = useState<McpTool[]>([]);
   const [busyServerId, setBusyServerId] = useState("");
@@ -27,17 +36,32 @@ export function ToolsPanel({ client, notify }: PanelProps) {
     }, {});
   }, [mcpTools]);
 
+  const selectedTool =
+    tools.find((tool) => tool.name === selectedToolName) ?? tools[0];
+
   async function load() {
     try {
-      const [toolResult, mcpResult] = await Promise.all([
+      const [toolResult, mcpResult, callResult] = await Promise.all([
         client.listTools(),
-        client.listMcpServers()
+        client.listMcpServers(),
+        client.listToolCalls()
       ]);
       setTools(toolResult.tools);
+      setSelectedToolName((current) => current || toolResult.tools[0]?.name || "");
       setMcpServers(mcpResult.servers);
       setMcpTools(mcpResult.tools);
+      setToolCalls(callResult.calls);
     } catch (error) {
       notify(error instanceof Error ? error.message : "Failed to load tools", "error");
+    }
+  }
+
+  async function loadToolCalls() {
+    try {
+      const result = await client.listToolCalls();
+      setToolCalls(result.calls);
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "Failed to load tool calls", "error");
     }
   }
 
@@ -105,7 +129,23 @@ export function ToolsPanel({ client, notify }: PanelProps) {
         <ToolbarButton label="Refresh" icon={RefreshCw} onClick={() => void load()} />
       </header>
 
-      <RegisteredToolsView tools={tools} />
+      <RegisteredToolsView
+        tools={tools}
+        selectedName={selectedToolName}
+        onSelect={setSelectedToolName}
+      />
+
+      <ToolRunnerView
+        tool={selectedTool}
+        client={client}
+        notify={notify}
+        onExecuted={() => void loadToolCalls()}
+      />
+
+      <ToolCallHistoryView
+        calls={toolCalls}
+        onRefresh={() => void loadToolCalls()}
+      />
 
       <McpServerForm
         draft={draft}

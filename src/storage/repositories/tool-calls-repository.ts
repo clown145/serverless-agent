@@ -12,6 +12,26 @@ export type ToolCallRecord = {
   completedAt?: string;
 };
 
+export type ToolCallHistoryItem = ToolCallRecord & {
+  input: unknown;
+  output?: unknown;
+  latencyMs?: number;
+};
+
+type ToolCallRow = {
+  id: string;
+  run_id: string;
+  step_id: string;
+  agent_id: string;
+  tool_name: string;
+  status: string;
+  input_json: string;
+  output_json?: string | null;
+  error_code?: string | null;
+  created_at: string;
+  completed_at?: string | null;
+};
+
 export async function recordToolCall(
   db: D1Database,
   record: ToolCallRecord
@@ -63,4 +83,53 @@ export async function completeToolCall(
       id
     )
     .run();
+}
+
+export async function listRecentToolCalls(
+  db: D1Database,
+  input: { limit?: number } = {}
+): Promise<ToolCallHistoryItem[]> {
+  const limit = Math.min(Math.max(input.limit ?? 20, 1), 100);
+  const result = await db
+    .prepare("SELECT * FROM tool_calls ORDER BY created_at DESC LIMIT ?")
+    .bind(limit)
+    .all<ToolCallRow>();
+
+  return (result.results ?? []).map(mapToolCallRow);
+}
+
+function mapToolCallRow(row: ToolCallRow): ToolCallHistoryItem {
+  return {
+    id: row.id,
+    runId: row.run_id,
+    stepId: row.step_id,
+    agentId: row.agent_id,
+    toolName: row.tool_name,
+    status: row.status,
+    inputJson: row.input_json,
+    outputJson: row.output_json ?? undefined,
+    errorCode: row.error_code ?? undefined,
+    createdAt: row.created_at,
+    completedAt: row.completed_at ?? undefined,
+    input: parseJson(row.input_json),
+    output: row.output_json ? parseJson(row.output_json) : undefined,
+    latencyMs: elapsedMs(row.created_at, row.completed_at)
+  };
+}
+
+function parseJson(value: string): unknown {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return value;
+  }
+}
+
+function elapsedMs(start: string, end?: string | null): number | undefined {
+  if (!end) {
+    return undefined;
+  }
+
+  const elapsed = new Date(end).getTime() - new Date(start).getTime();
+  return Number.isFinite(elapsed) && elapsed >= 0 ? elapsed : undefined;
 }

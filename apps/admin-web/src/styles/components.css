@@ -108,6 +108,7 @@
 .status-deleted,
 .status-error,
 .status-dangerous,
+.status-permission_denied,
 .status-cancelled {
   background: #f8dfdf;
   color: #8f2020;

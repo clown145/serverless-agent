@@ -158,6 +158,43 @@ export type ToolCatalogItem = {
   timeoutMs: number;
 };
 
+export type ToolResult = {
+  status: "success" | "failed" | "permission_denied" | "needs_confirmation";
+  output?: unknown;
+  error?: {
+    code: string;
+    message: string;
+    retryable: boolean;
+  };
+};
+
+export type ToolDebugCall = {
+  toolName: string;
+  runId: string;
+  stepId: string;
+  startedAt: string;
+  completedAt: string;
+  latencyMs: number;
+  result: ToolResult;
+};
+
+export type ToolCallHistoryItem = {
+  id: string;
+  runId: string;
+  stepId: string;
+  agentId: string;
+  toolName: string;
+  status: string;
+  inputJson: string;
+  outputJson?: string;
+  errorCode?: string;
+  createdAt: string;
+  completedAt?: string;
+  input: unknown;
+  output?: unknown;
+  latencyMs?: number;
+};
+
 export type McpServer = {
   id: string;
   name: string;

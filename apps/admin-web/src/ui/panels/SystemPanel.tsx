@@ -32,6 +32,8 @@ export function SystemPanel({ token, onTokenChange }: SystemPanelProps) {
             "/admin/runs",
             "/admin/search-providers",
             "/admin/tools",
+            "/admin/tools/call",
+            "/admin/tools/calls",
             "/admin/vfs",
             "/admin/schedules"
           ]

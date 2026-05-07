@@ -108,7 +108,8 @@ export function createToolRegistry(
       const result = await executeToolSafely(tool, context);
       await completeToolCall(env.AGENT_DB, toolCallId, {
         status: result.status,
-        outputJson: result.output ? JSON.stringify(result.output) : undefined,
+        outputJson:
+          result.output !== undefined ? JSON.stringify(result.output) : undefined,
         errorCode: result.error?.code,
         completedAt: nowIso()
       });

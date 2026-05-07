@@ -1,14 +1,18 @@
-import { useState } from "react";
 import type { ToolCatalogItem } from "../../../api/types";
 import { JsonBlock } from "../../JsonBlock";
 import { StatusBadge } from "../../StatusBadge";
 
 type RegisteredToolsViewProps = {
   tools: ToolCatalogItem[];
+  selectedName: string;
+  onSelect: (name: string) => void;
 };
 
-export function RegisteredToolsView({ tools }: RegisteredToolsViewProps) {
-  const [selectedName, setSelectedName] = useState("");
+export function RegisteredToolsView({
+  tools,
+  selectedName,
+  onSelect
+}: RegisteredToolsViewProps) {
   const selectedTool =
     tools.find((tool) => tool.name === selectedName) ?? tools[0];
 
@@ -20,7 +24,7 @@ export function RegisteredToolsView({ tools }: RegisteredToolsViewProps) {
             className={`tool-row ${selectedTool?.name === tool.name ? "selected" : ""}`}
             key={tool.name}
             type="button"
-            onClick={() => setSelectedName(tool.name)}
+            onClick={() => onSelect(tool.name)}
           >
             <div>
               <strong>{tool.title ?? tool.name}</strong>

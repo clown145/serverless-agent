@@ -17,6 +17,8 @@ import type {
   SearchTestResult,
   SetupStatus,
   ToolCatalogItem,
+  ToolCallHistoryItem,
+  ToolDebugCall,
   VfsEntry,
   VfsFile
 } from "./types";
@@ -139,6 +141,26 @@ export function createAdminClient(getToken: () => string) {
     },
     listTools: () => {
       return request<ApiResult<{ tools: ToolCatalogItem[] }>>("/admin/tools");
+    },
+    callTool: (body: {
+      toolName: string;
+      input: unknown;
+      agentId?: string;
+      actorId?: string;
+      actorRole?: string;
+      platform?: string;
+      conversationId?: string;
+      allowDangerous?: boolean;
+    }) => {
+      return request<ApiResult<{ call: ToolDebugCall }>>("/admin/tools/call", {
+        method: "POST",
+        body: JSON.stringify(body)
+      });
+    },
+    listToolCalls: (limit = 20) => {
+      return request<ApiResult<{ calls: ToolCallHistoryItem[] }>>(
+        `/admin/tools/calls?limit=${encodeURIComponent(String(limit))}`
+      );
     },
     listMcpServers: () => {
       return request<ApiResult<{ servers: McpServer[]; tools: McpTool[] }>>(
