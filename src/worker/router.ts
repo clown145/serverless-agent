@@ -3,6 +3,8 @@ import { errorResponse, jsonResponse } from "../shared/http";
 import { handleAdminDiagnostics } from "./routes/admin-diagnostics";
 import { handleAdminHeartbeats } from "./routes/admin-heartbeats";
 import { handleAdminMessage } from "./routes/admin-message";
+import { handleAdminMcpServerDetail } from "./routes/admin-mcp-server-detail";
+import { handleAdminMcpServers } from "./routes/admin-mcp-servers";
 import {
   handleAdminModelProviderDetail,
   handleAdminModelSettings
@@ -52,6 +54,16 @@ export async function routeRequest(
 
   if (request.method === "GET" && url.pathname === "/admin/tools") {
     return handleAdminTools(request, env);
+  }
+
+  if (url.pathname === "/admin/mcp/servers") {
+    return handleAdminMcpServers(request, env);
+  }
+
+  if (url.pathname.startsWith("/admin/mcp/servers/")) {
+    const mcpServerPath = url.pathname.replace("/admin/mcp/servers/", "");
+    const serverId = decodeURIComponent(mcpServerPath.split("/")[0] ?? "");
+    return handleAdminMcpServerDetail(request, env, serverId);
   }
 
   if (url.pathname === "/admin/model-settings") {
@@ -146,6 +158,8 @@ export async function routeRequest(
         "/admin/setup/status",
         "/admin/diagnostics",
         "/admin/tools",
+        "/admin/mcp/servers",
+        "/admin/mcp/servers/:serverId/discover",
         "/admin/model-settings",
         "/admin/model-providers/:providerId/refresh",
         "/admin/model-providers/:providerId/test",

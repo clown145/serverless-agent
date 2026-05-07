@@ -27,6 +27,7 @@ export function SystemPanel({ token, onTokenChange }: SystemPanelProps) {
           apiBase: "/admin",
           routes: [
             "/admin/messages",
+            "/admin/mcp/servers",
             "/admin/runs",
             "/admin/tools",
             "/admin/vfs",

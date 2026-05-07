@@ -157,3 +157,34 @@ export type ToolCatalogItem = {
   sideEffect: "none" | "workspace_write" | "external_write" | "dangerous";
   timeoutMs: number;
 };
+
+export type McpServer = {
+  id: string;
+  name: string;
+  url: string;
+  transport: "streamable-http";
+  authType: "none" | "bearer" | "api-key-header";
+  authHeader?: string;
+  protocolVersion?: string;
+  status: string;
+  lastCheckedAt?: string;
+  lastError?: string;
+  createdAt: string;
+  updatedAt: string;
+  hasCredential: boolean;
+};
+
+export type McpTool = {
+  id: string;
+  serverId: string;
+  toolName: string;
+  internalName: string;
+  title?: string;
+  description?: string;
+  inputSchema: Record<string, unknown>;
+  outputSchema?: Record<string, unknown>;
+  annotations?: Record<string, unknown>;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+};

@@ -1,5 +1,6 @@
 .field-row,
 .form-grid,
+.mcp-form,
 .path-bar {
   display: grid;
   gap: 10px;
@@ -21,6 +22,18 @@
 
 .form-grid.model-form {
   grid-template-columns: 150px minmax(150px, 0.8fr) minmax(240px, 1.4fr) minmax(180px, 1fr) auto;
+}
+
+.mcp-form {
+  grid-template-columns:
+    minmax(140px, 0.8fr)
+    minmax(240px, 1.4fr)
+    minmax(120px, 0.7fr)
+    minmax(130px, 0.8fr)
+    minmax(160px, 1fr)
+    auto;
+  align-items: end;
+  margin-top: 16px;
 }
 
 .form-grid.single {
@@ -89,6 +102,8 @@
 .diagnostic-row,
 .tool-row,
 .tool-detail,
+.mcp-server-row,
+.mcp-tool-row,
 .model-test-result {
   display: grid;
   gap: 8px;
@@ -157,6 +172,39 @@
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
+}
+
+.mcp-server-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.mcp-server-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.mcp-server-head strong,
+.mcp-server-head span,
+.mcp-tool-row strong,
+.mcp-tool-row span {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.mcp-server-head span,
+.mcp-tool-row span {
+  color: #687386;
+  font-size: 12px;
+}
+
+.mcp-tool-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 8px;
 }
 
 .path-bar {
@@ -260,7 +308,9 @@
   .form-grid,
   .form-grid.policy-form,
   .form-grid.model-form,
+  .mcp-form,
   .model-provider-head,
+  .mcp-server-head,
   .composer,
   .tools-layout,
   .table-row,

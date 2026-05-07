@@ -2,6 +2,8 @@ import type {
   ApiResult,
   ModelCatalogItem,
   DiagnosticCheck,
+  McpServer,
+  McpTool,
   ModelProvider,
   ModelSettings,
   ModelTestResult,
@@ -134,6 +136,34 @@ export function createAdminClient(getToken: () => string) {
     },
     listTools: () => {
       return request<ApiResult<{ tools: ToolCatalogItem[] }>>("/admin/tools");
+    },
+    listMcpServers: () => {
+      return request<ApiResult<{ servers: McpServer[]; tools: McpTool[] }>>(
+        "/admin/mcp/servers"
+      );
+    },
+    createMcpServer: (body: {
+      name: string;
+      url: string;
+      authType: McpServer["authType"];
+      authHeader?: string;
+      credential?: string;
+    }) => {
+      return request<ApiResult<{ server: McpServer }>>("/admin/mcp/servers", {
+        method: "POST",
+        body: JSON.stringify(body)
+      });
+    },
+    discoverMcpServerTools: (serverId: string) => {
+      return request<ApiResult<{ protocolVersion: string; tools: McpTool[] }>>(
+        `/admin/mcp/servers/${serverId}/discover`,
+        { method: "POST" }
+      );
+    },
+    deleteMcpServer: (serverId: string) => {
+      return request<ApiResult<{ deleted: boolean }>>(`/admin/mcp/servers/${serverId}`, {
+        method: "DELETE"
+      });
     },
     createModelProvider: (body: {
       name: string;

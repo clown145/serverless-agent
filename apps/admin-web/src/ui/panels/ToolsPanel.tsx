@@ -1,24 +1,83 @@
 import { RefreshCw } from "lucide-react";
-import { useEffect, useState } from "react";
-import type { ToolCatalogItem } from "../../api/types";
-import { JsonBlock } from "../JsonBlock";
-import { StatusBadge } from "../StatusBadge";
+import { useEffect, useMemo, useState } from "react";
+import type { McpServer, McpTool, ToolCatalogItem } from "../../api/types";
 import { ToolbarButton } from "../ToolbarButton";
+import { McpServerForm, type McpServerDraft } from "./tools/McpServerForm";
+import { McpServerList } from "./tools/McpServerList";
+import { RegisteredToolsView } from "./tools/RegisteredToolsView";
 import type { PanelProps } from "./types";
 
 export function ToolsPanel({ client, notify }: PanelProps) {
   const [tools, setTools] = useState<ToolCatalogItem[]>([]);
-  const [selectedTool, setSelectedTool] = useState<ToolCatalogItem>();
+  const [mcpServers, setMcpServers] = useState<McpServer[]>([]);
+  const [mcpTools, setMcpTools] = useState<McpTool[]>([]);
+  const [busyServerId, setBusyServerId] = useState("");
+  const [draft, setDraft] = useState<McpServerDraft>({
+    name: "",
+    url: "",
+    authType: "none",
+    authHeader: "",
+    credential: ""
+  });
+
+  const mcpToolsByServer = useMemo(() => {
+    return mcpTools.reduce<Record<string, McpTool[]>>((grouped, tool) => {
+      grouped[tool.serverId] = [...(grouped[tool.serverId] ?? []), tool];
+      return grouped;
+    }, {});
+  }, [mcpTools]);
 
   async function load() {
     try {
-      const result = await client.listTools();
-      setTools(result.tools);
-      setSelectedTool((current) => {
-        return result.tools.find((tool) => tool.name === current?.name) ?? result.tools[0];
-      });
+      const [toolResult, mcpResult] = await Promise.all([
+        client.listTools(),
+        client.listMcpServers()
+      ]);
+      setTools(toolResult.tools);
+      setMcpServers(mcpResult.servers);
+      setMcpTools(mcpResult.tools);
     } catch (error) {
       notify(error instanceof Error ? error.message : "Failed to load tools", "error");
+    }
+  }
+
+  async function createMcpServer() {
+    try {
+      await client.createMcpServer({
+        name: draft.name,
+        url: draft.url,
+        authType: draft.authType,
+        authHeader: draft.authHeader || undefined,
+        credential: draft.credential || undefined
+      });
+      setDraft({ ...draft, credential: "" });
+      notify("MCP server saved", "ok");
+      await load();
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "Failed to save MCP server", "error");
+    }
+  }
+
+  async function discover(serverId: string) {
+    setBusyServerId(serverId);
+    try {
+      const result = await client.discoverMcpServerTools(serverId);
+      notify(`${result.tools.length} MCP tools discovered`, "ok");
+      await load();
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "Failed to discover MCP tools", "error");
+    } finally {
+      setBusyServerId("");
+    }
+  }
+
+  async function remove(serverId: string) {
+    try {
+      await client.deleteMcpServer(serverId);
+      notify("MCP server deleted", "ok");
+      await load();
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "Failed to delete MCP server", "error");
     }
   }
 
@@ -36,48 +95,21 @@ export function ToolsPanel({ client, notify }: PanelProps) {
         <ToolbarButton label="Refresh" icon={RefreshCw} onClick={() => void load()} />
       </header>
 
-      <div className="tools-layout">
-        <div className="tool-list">
-          {tools.map((tool) => (
-            <button
-              className={`tool-row ${selectedTool?.name === tool.name ? "selected" : ""}`}
-              key={tool.name}
-              type="button"
-              onClick={() => setSelectedTool(tool)}
-            >
-              <div>
-                <strong>{tool.title ?? tool.name}</strong>
-                <span>{tool.name}</span>
-              </div>
-              <StatusBadge value={tool.source.type} />
-            </button>
-          ))}
-        </div>
+      <RegisteredToolsView tools={tools} />
 
-        {selectedTool && (
-          <div className="tool-detail">
-            <div>
-              <strong>{selectedTool.title ?? selectedTool.name}</strong>
-              <span>{selectedTool.description}</span>
-            </div>
-            <div className="tool-meta">
-              <StatusBadge value={selectedTool.source.type} />
-              <StatusBadge value={selectedTool.sideEffect} />
-              <span>{selectedTool.source.name}</span>
-              <span>level {selectedTool.permission.level}</span>
-              <span>{selectedTool.timeoutMs}ms</span>
-            </div>
-            <JsonBlock
-              value={{
-                inputSchema: selectedTool.inputSchema,
-                outputSchema: selectedTool.outputSchema,
-                annotations: selectedTool.annotations,
-                scopes: selectedTool.permission.scopes
-              }}
-            />
-          </div>
-        )}
-      </div>
+      <McpServerForm
+        draft={draft}
+        onDraftChange={setDraft}
+        onSubmit={() => void createMcpServer()}
+      />
+
+      <McpServerList
+        servers={mcpServers}
+        toolsByServer={mcpToolsByServer}
+        busyServerId={busyServerId}
+        onDiscover={(serverId) => void discover(serverId)}
+        onDelete={(serverId) => void remove(serverId)}
+      />
     </section>
   );
 }
