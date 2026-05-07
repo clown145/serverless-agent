@@ -1,5 +1,6 @@
 import type {
   ApiResult,
+  ChatMessage,
   ModelCatalogItem,
   DiagnosticCheck,
   McpServer,
@@ -63,6 +64,20 @@ export function createAdminClient(getToken: () => string) {
             mode: "sync"
           })
         }
+      );
+    },
+    listMessages: (body: { conversationId: string; agentId?: string; limit?: number }) => {
+      const params = new URLSearchParams({
+        conversationId: body.conversationId,
+        platform: "webui",
+        limit: String(body.limit ?? 50)
+      });
+      if (body.agentId) {
+        params.set("agentId", body.agentId);
+      }
+
+      return request<ApiResult<{ messages: ChatMessage[] }>>(
+        `/admin/messages?${params.toString()}`
       );
     },
     listRuns: () => request<ApiResult<{ runs: RunListItem[] }>>("/admin/runs?limit=30"),

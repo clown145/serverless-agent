@@ -3,9 +3,16 @@ import type { InternalMessage } from "../shared/types/internal-message";
 import type { SelectedSkill } from "../skills/skill-selector";
 import type { ModelMessage, ModelTool } from "./model/types";
 
+export type ConversationContextMessage = {
+  id: string;
+  role: "user" | "assistant";
+  text?: string;
+};
+
 export function createInitialModelMessages(
   message: InternalMessage,
-  selectedSkill?: SelectedSkill
+  selectedSkill?: SelectedSkill,
+  history: ConversationContextMessage[] = []
 ): ModelMessage[] {
   return [
     {
@@ -13,10 +20,7 @@ export function createInitialModelMessages(
       content: createBaseInstructions()
     },
     ...createSkillMessages(selectedSkill),
-    {
-      role: "user",
-      content: selectedSkill?.userText ?? message.text ?? ""
-    }
+    ...createConversationMessages(message, selectedSkill, history)
   ];
 }
 
@@ -35,6 +39,35 @@ function createBaseInstructions(): string {
     "When the task is complete, answer concisely in the user's language.",
     "Do not claim a tool action succeeded unless a tool result confirms it."
   ].join("\n");
+}
+
+function createConversationMessages(
+  message: InternalMessage,
+  selectedSkill: SelectedSkill | undefined,
+  history: ConversationContextMessage[]
+): ModelMessage[] {
+  const messages = history.flatMap<ModelMessage>((entry) => {
+    const content =
+      entry.id === message.id && selectedSkill ? selectedSkill.userText : entry.text;
+
+    if (!content) {
+      return [];
+    }
+
+    return [{ role: entry.role, content }];
+  });
+
+  if (history.some((entry) => entry.id === message.id)) {
+    return messages;
+  }
+
+  return [
+    ...messages,
+    {
+      role: "user",
+      content: selectedSkill?.userText ?? message.text ?? ""
+    }
+  ];
 }
 
 function createSkillMessages(selectedSkill?: SelectedSkill): ModelMessage[] {

@@ -1,4 +1,5 @@
 import { sendTelegramText } from "../../adapters/telegram/outbound";
+import { insertOutboundTextMessage } from "../../storage/repositories/messages-repository";
 import { builtinTool } from "../builtin/source";
 import type { RegisteredTool, ToolResult } from "../types";
 import { sendMessageInputJsonSchema, sendMessageInputSchema } from "./schema";
@@ -39,14 +40,35 @@ export function createMessagingTools(): RegisteredTool[] {
             return failed("telegram_send_failed", result.error ?? "Failed", true);
           }
 
+          const message = await insertOutboundTextMessage(context.env.AGENT_DB, {
+            agentId: context.agentId,
+            platform: "telegram",
+            conversationId: parsed.data.conversationId,
+            text: parsed.data.text,
+            platformMessageId: result.providerMessageId
+          });
+
           return {
             status: "success",
-            output: { providerMessageId: result.providerMessageId }
+            output: {
+              messageId: message.id,
+              providerMessageId: result.providerMessageId
+            }
           };
         }
 
         if (parsed.data.platform === "admin" || parsed.data.platform === "webui") {
-          return { status: "success", output: { delivered: false } };
+          const message = await insertOutboundTextMessage(context.env.AGENT_DB, {
+            agentId: context.agentId,
+            platform: parsed.data.platform,
+            conversationId: parsed.data.conversationId,
+            text: parsed.data.text
+          });
+
+          return {
+            status: "success",
+            output: { delivered: false, messageId: message.id }
+          };
         }
 
         return failed(

@@ -7,6 +7,7 @@ import type { SelectedSkill } from "../skills/skill-selector";
 import {
   completeRun
 } from "../storage/repositories/runs-repository";
+import { listConversationMessages } from "../storage/repositories/messages-repository";
 import {
   createRuntimeToolRegistry,
   type ToolRegistry
@@ -35,13 +36,18 @@ export async function executeAgentToolLoop(
   const registry = await createRuntimeToolRegistry(env);
   const provider = await createModelProvider(env, message.agentId);
   const selectedSkill = await selectSkillForMessage(env, message);
+  const history = await listConversationMessages(env.AGENT_DB, {
+    agentId: message.agentId,
+    conversationId: message.conversationId,
+    limit: 16
+  });
   await recordContextStep(env, runId, message.agentId, selectedSkill);
 
   const registryTools = filterToolsForSkill(registry.list(), selectedSkill);
   const allowedToolNames = new Set(
     registryTools.map((tool) => tool.definition.name)
   );
-  const messages = createInitialModelMessages(message, selectedSkill);
+  const messages = createInitialModelMessages(message, selectedSkill, history);
   const tools = createModelTools(registryTools);
   let sentMessageTool = false;
 

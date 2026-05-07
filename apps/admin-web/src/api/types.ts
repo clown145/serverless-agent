@@ -17,6 +17,20 @@ export type RunDetails = {
   auditLogs: Record<string, unknown>[];
 };
 
+export type ChatMessage = {
+  id: string;
+  agentId: string;
+  conversationId: string;
+  platform: "telegram" | "qq" | "webhook" | "admin" | "webui";
+  platformMessageId: string;
+  senderId: string;
+  role: "user" | "assistant";
+  kind: string;
+  text?: string;
+  receivedAt: string;
+  createdAt: string;
+};
+
 export type VfsEntry = {
   id: string;
   agentId: string;

@@ -89,3 +89,19 @@ export async function recordRunCompletedStep(
     summary: "Run completed"
   });
 }
+
+export async function recordRunFailedStep(
+  env: Env,
+  runId: string,
+  agentId: string,
+  summary: string
+): Promise<void> {
+  await appendRunStep(env.AGENT_DB, {
+    id: createId("step"),
+    runId,
+    agentId,
+    kind: "failed",
+    status: "failed",
+    summary
+  });
+}

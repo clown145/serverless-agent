@@ -1,6 +1,10 @@
-import { Send } from "lucide-react";
-import { useState } from "react";
+import { ExternalLink, RefreshCw } from "lucide-react";
+import { useEffect, useState } from "react";
 import type { AdminClient } from "../../api/client";
+import type { ChatMessage } from "../../api/types";
+import { ToolbarButton } from "../ToolbarButton";
+import { ChatComposer } from "./chat/ChatComposer";
+import { ChatTranscript } from "./chat/ChatTranscript";
 
 type ChatPanelProps = {
   client: AdminClient;
@@ -11,7 +15,18 @@ type ChatPanelProps = {
 export function ChatPanel({ client, notify, onRun }: ChatPanelProps) {
   const [text, setText] = useState("");
   const [conversationId, setConversationId] = useState("webui:default");
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [lastRunId, setLastRunId] = useState("");
   const [busy, setBusy] = useState(false);
+
+  async function loadMessages() {
+    try {
+      const result = await client.listMessages({ conversationId });
+      setMessages(result.messages);
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "Failed to load messages", "error");
+    }
+  }
 
   async function send() {
     if (!text.trim()) {
@@ -23,14 +38,24 @@ export function ChatPanel({ client, notify, onRun }: ChatPanelProps) {
       const result = await client.sendMessage({ text, conversationId });
       const runId = result.result?.runId;
       setText("");
-      notify(runId ? `Run ${runId}` : "Message sent", "ok");
-      if (runId) {
-        onRun(runId);
-      }
+      setLastRunId(runId ?? "");
+      await loadMessages();
+      notify(runId ? `Run ${runId} completed` : "Message sent", "ok");
     } catch (error) {
       notify(error instanceof Error ? error.message : "Send failed", "error");
+      await loadMessages();
     } finally {
       setBusy(false);
+    }
+  }
+
+  useEffect(() => {
+    void loadMessages();
+  }, [conversationId]);
+
+  function openLastRun() {
+    if (lastRunId) {
+      onRun(lastRunId);
     }
   }
 
@@ -41,6 +66,12 @@ export function ChatPanel({ client, notify, onRun }: ChatPanelProps) {
           <h1>WebUI Chat</h1>
           <p>platform:webui</p>
         </div>
+        <div className="tool-meta">
+          {lastRunId && (
+            <ToolbarButton label="Open run" icon={ExternalLink} onClick={openLastRun} />
+          )}
+          <ToolbarButton label="Refresh" icon={RefreshCw} onClick={() => void loadMessages()} />
+        </div>
       </header>
 
       <div className="field-row">
@@ -50,21 +81,8 @@ export function ChatPanel({ client, notify, onRun }: ChatPanelProps) {
         </label>
       </div>
 
-      <div className="composer">
-        <textarea
-          value={text}
-          onChange={(event) => setText(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
-              void send();
-            }
-          }}
-        />
-        <button className="primary-button" type="button" onClick={send} disabled={busy}>
-          <Send size={16} />
-          Send
-        </button>
-      </div>
+      <ChatTranscript messages={messages} />
+      <ChatComposer text={text} busy={busy} onTextChange={setText} onSend={() => void send()} />
     </section>
   );
 }

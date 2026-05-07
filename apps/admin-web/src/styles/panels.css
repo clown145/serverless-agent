@@ -55,10 +55,64 @@
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 10px;
+  margin-top: 12px;
 }
 
 .composer textarea {
-  min-height: 220px;
+  min-height: 120px;
+}
+
+.chat-transcript {
+  display: grid;
+  gap: 10px;
+  min-height: 320px;
+  max-height: 58vh;
+  overflow: auto;
+  border: 1px solid #dce3ee;
+  border-radius: 7px;
+  background: #f8fafc;
+  padding: 12px;
+}
+
+.chat-message {
+  display: flex;
+}
+
+.chat-message.user {
+  justify-content: flex-end;
+}
+
+.chat-message.assistant {
+  justify-content: flex-start;
+}
+
+.chat-bubble {
+  max-width: min(720px, 82%);
+  border: 1px solid #dce3ee;
+  border-radius: 7px;
+  background: #ffffff;
+  padding: 10px 12px;
+}
+
+.chat-message.user .chat-bubble {
+  border-color: #b8cee7;
+  background: #edf5ff;
+}
+
+.chat-message-meta {
+  display: block;
+  margin-bottom: 5px;
+  color: #687386;
+  font-size: 12px;
+}
+
+.chat-bubble p {
+  margin: 0;
+  color: #253044;
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .primary-button,

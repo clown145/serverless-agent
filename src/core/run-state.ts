@@ -6,6 +6,7 @@ export type RunStepKind =
   | "model_called"
   | "tool_requested"
   | "tool_completed"
+  | "failed"
   | "completed";
 
 export type RunStepInput = {

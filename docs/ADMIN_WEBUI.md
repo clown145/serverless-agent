@@ -29,6 +29,7 @@ WebUI
 第一版控制台包含：
 
 - WebUI chat。
+- WebUI conversation history, including agent replies sent through `messaging.send_message`。
 - model providers 创建、加密保存 API key、刷新和启用模型。
 - runs 列表和 run detail。
 - VFS 浏览、读取、写入。

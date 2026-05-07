@@ -45,7 +45,7 @@ export async function routeRequest(
     return handleTelegramWebhook(request, env, ctx);
   }
 
-  if (request.method === "POST" && url.pathname === "/admin/messages") {
+  if (url.pathname === "/admin/messages") {
     return handleAdminMessage(request, env, ctx);
   }
 
