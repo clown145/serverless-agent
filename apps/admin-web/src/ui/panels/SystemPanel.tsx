@@ -25,7 +25,13 @@ export function SystemPanel({ token, onTokenChange }: SystemPanelProps) {
         value={{
           uiPlatform: "webui",
           apiBase: "/admin",
-          routes: ["/admin/messages", "/admin/runs", "/admin/vfs", "/admin/schedules"]
+          routes: [
+            "/admin/messages",
+            "/admin/runs",
+            "/admin/tools",
+            "/admin/vfs",
+            "/admin/schedules"
+          ]
         }}
       />
     </section>

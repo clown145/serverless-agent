@@ -96,6 +96,8 @@
 .status-active,
 .status-done,
 .status-ok,
+.status-builtin,
+.status-none,
 .status-file,
 .status-directory {
   background: #dff3e8;
@@ -105,6 +107,7 @@
 .status-failed,
 .status-deleted,
 .status-error,
+.status-dangerous,
 .status-cancelled {
   background: #f8dfdf;
   color: #8f2020;
@@ -112,9 +115,16 @@
 
 .status-pending,
 .status-warn,
+.status-external_write,
+.status-workspace_write,
 .status-needs_confirmation {
   background: #fff0cd;
   color: #7b4c00;
+}
+
+.status-mcp {
+  background: #e8ecff;
+  color: #273b8f;
 }
 
 .icon-button {

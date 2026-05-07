@@ -17,6 +17,7 @@ import { handleAdminScheduleDetail } from "./routes/admin-schedule-detail";
 import { handleAdminSchedules } from "./routes/admin-schedules";
 import { handleAdminSkillDetail } from "./routes/admin-skill-detail";
 import { handleAdminSetupStatus } from "./routes/admin-setup-status";
+import { handleAdminTools } from "./routes/admin-tools";
 import { handleAdminUi } from "./routes/admin-ui";
 import { handleAdminVfs } from "./routes/admin-vfs";
 import { handleHealth } from "./routes/health";
@@ -47,6 +48,10 @@ export async function routeRequest(
 
   if (request.method === "GET" && url.pathname === "/admin/diagnostics") {
     return handleAdminDiagnostics(request, env);
+  }
+
+  if (request.method === "GET" && url.pathname === "/admin/tools") {
+    return handleAdminTools(request, env);
   }
 
   if (url.pathname === "/admin/model-settings") {
@@ -140,6 +145,7 @@ export async function routeRequest(
         "/admin/messages",
         "/admin/setup/status",
         "/admin/diagnostics",
+        "/admin/tools",
         "/admin/model-settings",
         "/admin/model-providers/:providerId/refresh",
         "/admin/model-providers/:providerId/test",

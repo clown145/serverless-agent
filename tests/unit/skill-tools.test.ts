@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { canUseToolWithSkill, filterToolsForSkill } from "../../src/skills/skill-tools";
+import { builtinTool } from "../../src/tools/builtin/source";
 import type { SelectedSkill } from "../../src/skills/skill-selector";
 import type { RegisteredTool } from "../../src/tools/types";
 
@@ -62,7 +63,7 @@ describe("skill tool filtering", () => {
 });
 
 function tool(name: string): RegisteredTool {
-  return {
+  return builtinTool({
     definition: {
       name,
       description: name,
@@ -72,5 +73,5 @@ function tool(name: string): RegisteredTool {
       timeoutMs: 1000
     },
     execute: async () => ({ status: "success" })
-  };
+  });
 }

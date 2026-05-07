@@ -9,6 +9,7 @@ import { RunsPanel } from "./panels/RunsPanel";
 import { SchedulesPanel } from "./panels/SchedulesPanel";
 import { SetupPanel } from "./panels/SetupPanel";
 import { SystemPanel } from "./panels/SystemPanel";
+import { ToolsPanel } from "./panels/ToolsPanel";
 import { VfsPanel } from "./panels/VfsPanel";
 import { Sidebar } from "./Sidebar";
 import type { ViewId } from "./views";
@@ -50,6 +51,7 @@ export function App() {
         {active === "chat" && <ChatPanel client={client} notify={notify} onRun={openRun} />}
         {active === "models" && <ModelsPanel client={client} notify={notify} />}
         {active === "diagnostics" && <DiagnosticsPanel client={client} notify={notify} />}
+        {active === "tools" && <ToolsPanel client={client} notify={notify} />}
         {active === "runs" && (
           <RunsPanel client={client} notify={notify} selectedRunId={selectedRunId} />
         )}

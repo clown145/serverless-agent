@@ -134,3 +134,26 @@ export type ModelTestResult = {
   latencyMs: number;
   content?: string;
 };
+
+export type ToolSource = {
+  type: "builtin" | "mcp";
+  id: string;
+  name: string;
+};
+
+export type ToolCatalogItem = {
+  name: string;
+  title?: string;
+  description: string;
+  inputSchema: Record<string, unknown>;
+  outputSchema?: Record<string, unknown>;
+  annotations?: Record<string, unknown>;
+  source: ToolSource;
+  permission: {
+    level: number;
+    scopes: string[];
+    confirmationRequired?: boolean;
+  };
+  sideEffect: "none" | "workspace_write" | "external_write" | "dangerous";
+  timeoutMs: number;
+};

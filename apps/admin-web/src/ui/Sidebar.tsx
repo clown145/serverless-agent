@@ -6,6 +6,7 @@ import {
   KeyRound,
   MessageSquare,
   Activity,
+  Plug,
   SlidersHorizontal,
   ShieldCheck,
   Workflow
@@ -21,6 +22,7 @@ const items: Array<{
   { id: "chat", label: "Chat", icon: MessageSquare },
   { id: "models", label: "Models", icon: SlidersHorizontal },
   { id: "diagnostics", label: "Diagnostics", icon: Activity },
+  { id: "tools", label: "Tools", icon: Plug },
   { id: "runs", label: "Runs", icon: Workflow },
   { id: "vfs", label: "VFS", icon: FileText },
   { id: "schedules", label: "Schedules", icon: CalendarClock },

@@ -6,9 +6,8 @@ import {
 import { createId } from "../../shared/ids";
 import type { Env } from "../../shared/types/env";
 import { nowIso } from "../../shared/time";
-import { createMessagingTools } from "../messaging/tools";
+import { createBuiltinTools } from "../builtin/create-builtin-tools";
 import { evaluateToolPermission } from "../permissions/policy";
-import { createVfsTools } from "../vfs/tools";
 import type { RegisteredTool, ToolResult } from "../types";
 import {
   createPendingToolResult,
@@ -18,6 +17,10 @@ import {
 export type ToolRegistry = {
   execute(name: string, input: RegistryExecuteInput): Promise<ToolResult>;
   list(): RegisteredTool[];
+};
+
+export type ToolRegistryOptions = {
+  externalTools?: RegisteredTool[];
 };
 
 type RegistryExecuteInput = {
@@ -33,8 +36,11 @@ type RegistryExecuteInput = {
   confirmedActionId?: string;
 };
 
-export function createToolRegistry(env: Env): ToolRegistry {
-  const tools = [...createMessagingTools(), ...createVfsTools()];
+export function createToolRegistry(
+  env: Env,
+  options: ToolRegistryOptions = {}
+): ToolRegistry {
+  const tools = [...createBuiltinTools(), ...(options.externalTools ?? [])];
   const byName = new Map(tools.map((tool) => [tool.definition.name, tool]));
 
   return {

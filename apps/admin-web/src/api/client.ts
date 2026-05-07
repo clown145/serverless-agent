@@ -11,6 +11,7 @@ import type {
   RunListItem,
   Schedule,
   SetupStatus,
+  ToolCatalogItem,
   VfsEntry,
   VfsFile
 } from "./types";
@@ -130,6 +131,9 @@ export function createAdminClient(getToken: () => string) {
       return request<ApiResult<{ checks: DiagnosticCheck[]; healthy: boolean }>>(
         "/admin/diagnostics"
       );
+    },
+    listTools: () => {
+      return request<ApiResult<{ tools: ToolCatalogItem[] }>>("/admin/tools");
     },
     createModelProvider: (body: {
       name: string;

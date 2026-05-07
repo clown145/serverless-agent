@@ -1,14 +1,20 @@
 import { sendTelegramText } from "../../adapters/telegram/outbound";
+import { builtinTool } from "../builtin/source";
 import type { RegisteredTool, ToolResult } from "../types";
 import { sendMessageInputJsonSchema, sendMessageInputSchema } from "./schema";
 
 export function createMessagingTools(): RegisteredTool[] {
   return [
-    {
+    builtinTool({
       definition: {
         name: "messaging.send_message",
+        title: "Send Message",
         description: "Send a message to a supported platform conversation.",
         inputSchema: sendMessageInputJsonSchema,
+        annotations: {
+          destructiveHint: false,
+          openWorldHint: true
+        },
         permission: {
           level: 3,
           scopes: ["message:send"]
@@ -49,7 +55,7 @@ export function createMessagingTools(): RegisteredTool[] {
           false
         );
       }
-    }
+    })
   ];
 }
 

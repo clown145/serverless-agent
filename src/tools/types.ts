@@ -15,10 +15,29 @@ export type ToolSideEffect =
   | "external_write"
   | "dangerous";
 
+export type ToolSourceType = "builtin" | "mcp";
+
+export type ToolSource = {
+  type: ToolSourceType;
+  id: string;
+  name: string;
+};
+
+export type ToolAnnotations = {
+  title?: string;
+  readOnlyHint?: boolean;
+  destructiveHint?: boolean;
+  idempotentHint?: boolean;
+  openWorldHint?: boolean;
+};
+
 export type ToolDefinition = {
   name: string;
+  title?: string;
   description: string;
   inputSchema: JsonSchema;
+  outputSchema?: JsonSchema;
+  annotations?: ToolAnnotations;
   permission: PermissionRequirement;
   sideEffect: ToolSideEffect;
   timeoutMs: number;
@@ -54,5 +73,6 @@ export type ToolExecutor = (
 
 export type RegisteredTool = {
   definition: ToolDefinition;
+  source: ToolSource;
   execute: ToolExecutor;
 };

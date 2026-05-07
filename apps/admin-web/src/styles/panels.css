@@ -79,13 +79,16 @@
 }
 
 .setup-list,
-.diagnostic-list {
+.diagnostic-list,
+.tool-list {
   display: grid;
   gap: 8px;
 }
 
 .setup-row,
 .diagnostic-row,
+.tool-row,
+.tool-detail,
 .model-test-result {
   display: grid;
   gap: 8px;
@@ -105,21 +108,55 @@
   grid-template-columns: minmax(0, 1fr) auto;
 }
 
+.tool-row {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  width: 100%;
+  color: #253044;
+  text-align: left;
+}
+
+.tool-row.selected,
+.tool-row:hover {
+  border-color: #7aa0ce;
+  background: #f1f6fc;
+}
+
 .setup-row strong,
 .diagnostic-row strong,
 .model-test-result strong,
+.tool-row strong,
+.tool-detail strong,
 .setup-row span,
 .diagnostic-row span,
-.model-test-result span {
+.model-test-result span,
+.tool-row span,
+.tool-detail span {
   display: block;
   overflow-wrap: anywhere;
 }
 
 .setup-row span,
 .diagnostic-row span,
-.model-test-result span {
+.model-test-result span,
+.tool-row span,
+.tool-detail span {
   color: #687386;
   font-size: 12px;
+}
+
+.tools-layout {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.9fr) minmax(320px, 1.4fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.tool-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
 }
 
 .path-bar {
@@ -225,6 +262,7 @@
   .form-grid.model-form,
   .model-provider-head,
   .composer,
+  .tools-layout,
   .table-row,
   .pending-row {
     grid-template-columns: 1fr;

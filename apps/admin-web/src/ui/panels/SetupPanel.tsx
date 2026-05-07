@@ -1,4 +1,11 @@
-import { CheckCircle2, MessageSquare, RefreshCw, SlidersHorizontal, Wrench } from "lucide-react";
+import {
+  CheckCircle2,
+  MessageSquare,
+  Plug,
+  RefreshCw,
+  SlidersHorizontal,
+  Wrench
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import type { SetupStatus } from "../../api/types";
 import { StatusBadge } from "../StatusBadge";
@@ -44,6 +51,10 @@ export function SetupPanel({ client, notify, onNavigate }: SetupPanelProps) {
         <button className="secondary-button" type="button" onClick={() => onNavigate("diagnostics")}>
           <Wrench size={16} />
           Diagnostics
+        </button>
+        <button className="secondary-button" type="button" onClick={() => onNavigate("tools")}>
+          <Plug size={16} />
+          Tools
         </button>
         <button className="secondary-button" type="button" onClick={() => onNavigate("chat")}>
           <MessageSquare size={16} />
