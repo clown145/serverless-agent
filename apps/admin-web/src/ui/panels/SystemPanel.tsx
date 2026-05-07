@@ -30,6 +30,7 @@ export function SystemPanel({ token, onTokenChange }: SystemPanelProps) {
             "/admin/mcp/servers",
             "/admin/mcp/tools/:toolId",
             "/admin/runs",
+            "/admin/search-providers",
             "/admin/tools",
             "/admin/vfs",
             "/admin/schedules"

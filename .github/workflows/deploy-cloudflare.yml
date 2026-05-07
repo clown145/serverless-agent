@@ -25,6 +25,7 @@ jobs:
       AGENT_MASTER_KEY: ${{ secrets.AGENT_MASTER_KEY }}
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TELEGRAM_WEBHOOK_SECRET: ${{ secrets.TELEGRAM_WEBHOOK_SECRET }}
       GENERATED_CONFIG: wrangler.generated.toml
@@ -152,6 +153,7 @@ jobs:
           put_secret AGENT_MASTER_KEY "$AGENT_MASTER_KEY"
           put_secret OPENAI_API_KEY "$OPENAI_API_KEY"
           put_secret GEMINI_API_KEY "$GEMINI_API_KEY"
+          put_secret TAVILY_API_KEY "$TAVILY_API_KEY"
           put_secret TELEGRAM_BOT_TOKEN "$TELEGRAM_BOT_TOKEN"
           put_secret TELEGRAM_WEBHOOK_SECRET "$TELEGRAM_WEBHOOK_SECRET"
 

@@ -21,4 +21,6 @@ export interface Env {
   GEMINI_API_KEY?: string;
   GEMINI_BASE_URL?: string;
   GEMINI_MODEL?: string;
+  TAVILY_API_KEY?: string;
+  TAVILY_BASE_URL?: string;
 }

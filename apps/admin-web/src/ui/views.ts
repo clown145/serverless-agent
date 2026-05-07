@@ -4,6 +4,7 @@ export type ViewId =
   | "models"
   | "diagnostics"
   | "tools"
+  | "search"
   | "runs"
   | "vfs"
   | "schedules"

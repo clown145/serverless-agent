@@ -3,6 +3,7 @@ import {
   MessageSquare,
   Plug,
   RefreshCw,
+  Search,
   SlidersHorizontal,
   Wrench
 } from "lucide-react";
@@ -55,6 +56,10 @@ export function SetupPanel({ client, notify, onNavigate }: SetupPanelProps) {
         <button className="secondary-button" type="button" onClick={() => onNavigate("tools")}>
           <Plug size={16} />
           Tools
+        </button>
+        <button className="secondary-button" type="button" onClick={() => onNavigate("search")}>
+          <Search size={16} />
+          Search
         </button>
         <button className="secondary-button" type="button" onClick={() => onNavigate("chat")}>
           <MessageSquare size={16} />

@@ -1,6 +1,7 @@
 .field-row,
 .form-grid,
 .mcp-form,
+.search-provider-form,
 .path-bar {
   display: grid;
   gap: 10px;
@@ -34,6 +35,16 @@
     auto;
   align-items: end;
   margin-top: 16px;
+}
+
+.search-provider-form {
+  grid-template-columns:
+    minmax(130px, 0.7fr)
+    minmax(130px, 0.6fr)
+    minmax(240px, 1.3fr)
+    minmax(180px, 1fr)
+    auto;
+  align-items: end;
 }
 
 .form-grid.single {
@@ -180,6 +191,34 @@
   margin-top: 14px;
 }
 
+.search-provider-list {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.search-provider-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto auto auto;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid #dce3ee;
+  border-radius: 7px;
+  background: #ffffff;
+  padding: 12px;
+}
+
+.search-provider-row strong,
+.search-provider-row span {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.search-provider-row span {
+  color: #687386;
+  font-size: 12px;
+}
+
 .mcp-server-head {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto auto;
@@ -314,6 +353,8 @@
   .form-grid.policy-form,
   .form-grid.model-form,
   .mcp-form,
+  .search-provider-form,
+  .search-provider-row,
   .model-provider-head,
   .mcp-server-head,
   .composer,

@@ -18,6 +18,8 @@ import { handleAdminRunDetail } from "./routes/admin-run-detail";
 import { handleAdminRuns } from "./routes/admin-runs";
 import { handleAdminScheduleDetail } from "./routes/admin-schedule-detail";
 import { handleAdminSchedules } from "./routes/admin-schedules";
+import { handleAdminSearchProviderDetail } from "./routes/admin-search-provider-detail";
+import { handleAdminSearchProviders } from "./routes/admin-search-providers";
 import { handleAdminSkillDetail } from "./routes/admin-skill-detail";
 import { handleAdminSetupStatus } from "./routes/admin-setup-status";
 import { handleAdminTools } from "./routes/admin-tools";
@@ -74,6 +76,16 @@ export async function routeRequest(
 
   if (url.pathname === "/admin/model-settings") {
     return handleAdminModelSettings(request, env);
+  }
+
+  if (url.pathname === "/admin/search-providers") {
+    return handleAdminSearchProviders(request, env);
+  }
+
+  if (url.pathname.startsWith("/admin/search-providers/")) {
+    const searchProviderPath = url.pathname.replace("/admin/search-providers/", "");
+    const providerId = decodeURIComponent(searchProviderPath.split("/")[0] ?? "");
+    return handleAdminSearchProviderDetail(request, env, providerId);
   }
 
   if (url.pathname.startsWith("/admin/model-providers/")) {
@@ -170,6 +182,8 @@ export async function routeRequest(
         "/admin/model-settings",
         "/admin/model-providers/:providerId/refresh",
         "/admin/model-providers/:providerId/test",
+        "/admin/search-providers",
+        "/admin/search-providers/:providerId/test",
         "/admin/permission-policies",
         "/admin/pending-actions",
         "/admin/schedules",

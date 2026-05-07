@@ -12,6 +12,9 @@ import type {
   RunDetails,
   RunListItem,
   Schedule,
+  SearchProvider,
+  SearchSettings,
+  SearchTestResult,
   SetupStatus,
   ToolCatalogItem,
   VfsEntry,
@@ -168,6 +171,45 @@ export function createAdminClient(getToken: () => string) {
     },
     deleteMcpServer: (serverId: string) => {
       return request<ApiResult<{ deleted: boolean }>>(`/admin/mcp/servers/${serverId}`, {
+        method: "DELETE"
+      });
+    },
+    getSearchProviders: () => {
+      return request<
+        ApiResult<{
+          providers: SearchProvider[];
+          settings?: SearchSettings;
+        }>
+      >("/admin/search-providers");
+    },
+    createSearchProvider: (body: {
+      name: string;
+      providerType: SearchProvider["providerType"];
+      baseUrl?: string;
+      apiKey?: string;
+    }) => {
+      return request<ApiResult<{ provider: SearchProvider }>>("/admin/search-providers", {
+        method: "POST",
+        body: JSON.stringify(body)
+      });
+    },
+    activateSearchProvider: (providerId: string) => {
+      return request<ApiResult<{ settings: SearchSettings }>>("/admin/search-providers", {
+        method: "PUT",
+        body: JSON.stringify({ providerId })
+      });
+    },
+    testSearchProvider: (providerId: string, body: { query: string; maxResults?: number }) => {
+      return request<ApiResult<{ result: SearchTestResult }>>(
+        `/admin/search-providers/${providerId}/test`,
+        {
+          method: "POST",
+          body: JSON.stringify(body)
+        }
+      );
+    },
+    deleteSearchProvider: (providerId: string) => {
+      return request<ApiResult<{ deleted: boolean }>>(`/admin/search-providers/${providerId}`, {
         method: "DELETE"
       });
     },

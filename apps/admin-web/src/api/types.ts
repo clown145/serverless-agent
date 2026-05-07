@@ -188,3 +188,39 @@ export type McpTool = {
   createdAt: string;
   updatedAt: string;
 };
+
+export type SearchProvider = {
+  id: string;
+  name: string;
+  providerType: "tavily" | "custom";
+  baseUrl?: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  hasCredential: boolean;
+};
+
+export type SearchSettings = {
+  agentId: string;
+  providerId?: string;
+  updatedAt: string;
+};
+
+export type SearchResultItem = {
+  title: string;
+  url: string;
+  content?: string;
+  score?: number;
+  rawContent?: string | null;
+  favicon?: string;
+};
+
+export type SearchTestResult = {
+  provider: "tavily" | "custom";
+  query: string;
+  answer?: string;
+  results: SearchResultItem[];
+  responseTime?: number;
+  requestId?: string;
+  usage?: unknown;
+};

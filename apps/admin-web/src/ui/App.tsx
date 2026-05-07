@@ -7,6 +7,7 @@ import { PendingPanel } from "./panels/PendingPanel";
 import { PermissionsPanel } from "./panels/PermissionsPanel";
 import { RunsPanel } from "./panels/RunsPanel";
 import { SchedulesPanel } from "./panels/SchedulesPanel";
+import { SearchPanel } from "./panels/SearchPanel";
 import { SetupPanel } from "./panels/SetupPanel";
 import { SystemPanel } from "./panels/SystemPanel";
 import { ToolsPanel } from "./panels/ToolsPanel";
@@ -52,6 +53,7 @@ export function App() {
         {active === "models" && <ModelsPanel client={client} notify={notify} />}
         {active === "diagnostics" && <DiagnosticsPanel client={client} notify={notify} />}
         {active === "tools" && <ToolsPanel client={client} notify={notify} />}
+        {active === "search" && <SearchPanel client={client} notify={notify} />}
         {active === "runs" && (
           <RunsPanel client={client} notify={notify} selectedRunId={selectedRunId} />
         )}
