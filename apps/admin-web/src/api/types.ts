@@ -275,3 +275,16 @@ export type SearchTestResult = {
   requestId?: string;
   usage?: unknown;
 };
+
+export type TelegramIntegration = {
+  id: string;
+  agentId: string;
+  name: string;
+  status: string;
+  webhookSecretConfigured: boolean;
+  hasCredential: boolean;
+  lastCheckedAt?: string;
+  lastError?: string;
+  createdAt: string;
+  updatedAt: string;
+};

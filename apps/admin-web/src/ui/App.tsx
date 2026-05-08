@@ -3,6 +3,7 @@ import { createAdminClient } from "../api/client";
 import { ChatPanel } from "./panels/ChatPanel";
 import { DiagnosticsPanel } from "./panels/DiagnosticsPanel";
 import { ModelsPanel } from "./panels/ModelsPanel";
+import { PlatformsPanel } from "./panels/PlatformsPanel";
 import { PendingPanel } from "./panels/PendingPanel";
 import { PermissionsPanel } from "./panels/PermissionsPanel";
 import { RunsPanel } from "./panels/RunsPanel";
@@ -51,6 +52,7 @@ export function App() {
         )}
         {active === "chat" && <ChatPanel client={client} notify={notify} onRun={openRun} />}
         {active === "models" && <ModelsPanel client={client} notify={notify} />}
+        {active === "platforms" && <PlatformsPanel client={client} notify={notify} />}
         {active === "diagnostics" && <DiagnosticsPanel client={client} notify={notify} />}
         {active === "tools" && <ToolsPanel client={client} notify={notify} />}
         {active === "search" && <SearchPanel client={client} notify={notify} />}

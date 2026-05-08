@@ -2,6 +2,7 @@ export type ViewId =
   | "setup"
   | "chat"
   | "models"
+  | "platforms"
   | "diagnostics"
   | "tools"
   | "search"

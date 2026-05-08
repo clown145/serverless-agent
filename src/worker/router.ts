@@ -22,6 +22,8 @@ import { handleAdminSearchProviderDetail } from "./routes/admin-search-provider-
 import { handleAdminSearchProviders } from "./routes/admin-search-providers";
 import { handleAdminSkillDetail } from "./routes/admin-skill-detail";
 import { handleAdminSetupStatus } from "./routes/admin-setup-status";
+import { handleAdminTelegramIntegrationDetail } from "./routes/admin-telegram-integration-detail";
+import { handleAdminTelegramIntegrations } from "./routes/admin-telegram-integrations";
 import { handleAdminToolCall } from "./routes/admin-tool-call";
 import { handleAdminToolCalls } from "./routes/admin-tool-calls";
 import { handleAdminTools } from "./routes/admin-tools";
@@ -55,6 +57,16 @@ export async function routeRequest(
 
   if (request.method === "GET" && url.pathname === "/admin/diagnostics") {
     return handleAdminDiagnostics(request, env);
+  }
+
+  if (url.pathname === "/admin/platforms/telegram") {
+    return handleAdminTelegramIntegrations(request, env);
+  }
+
+  if (url.pathname.startsWith("/admin/platforms/telegram/")) {
+    const telegramPath = url.pathname.replace("/admin/platforms/telegram/", "");
+    const integrationId = decodeURIComponent(telegramPath.split("/")[0] ?? "");
+    return handleAdminTelegramIntegrationDetail(request, env, integrationId);
   }
 
   if (request.method === "GET" && url.pathname === "/admin/tools") {
@@ -185,6 +197,9 @@ export async function routeRequest(
         "/admin/messages",
         "/admin/setup/status",
         "/admin/diagnostics",
+        "/admin/platforms/telegram",
+        "/admin/platforms/telegram/:integrationId/test",
+        "/admin/platforms/telegram/:integrationId/webhook",
         "/admin/tools",
         "/admin/tools/call",
         "/admin/tools/calls",

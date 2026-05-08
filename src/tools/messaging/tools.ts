@@ -32,6 +32,7 @@ export function createMessagingTools(): RegisteredTool[] {
         if (parsed.data.platform === "telegram") {
           const result = await sendTelegramText(
             context.env,
+            context.agentId,
             parsed.data.conversationId,
             parsed.data.text
           );

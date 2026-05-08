@@ -3,6 +3,7 @@ import {
   MessageSquare,
   Plug,
   RefreshCw,
+  Send,
   Search,
   SlidersHorizontal,
   Wrench
@@ -56,6 +57,10 @@ export function SetupPanel({ client, notify, onNavigate }: SetupPanelProps) {
         <button className="secondary-button" type="button" onClick={() => onNavigate("tools")}>
           <Plug size={16} />
           Tools
+        </button>
+        <button className="secondary-button" type="button" onClick={() => onNavigate("platforms")}>
+          <Send size={16} />
+          Platforms
         </button>
         <button className="secondary-button" type="button" onClick={() => onNavigate("search")}>
           <Search size={16} />

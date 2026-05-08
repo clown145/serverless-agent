@@ -1,4 +1,5 @@
 import { normalizeTelegramUpdate } from "../../adapters/telegram/normalize";
+import { resolveTelegramBotForWebhook } from "../../adapters/telegram/config";
 import { errorResponse, jsonResponse } from "../../shared/http";
 import { createId } from "../../shared/ids";
 import type { Env } from "../../shared/types/env";
@@ -11,12 +12,13 @@ export async function handleTelegramWebhook(
   _ctx: ExecutionContext
 ): Promise<Response> {
   const secret = request.headers.get("x-telegram-bot-api-secret-token");
-  if (env.TELEGRAM_WEBHOOK_SECRET && secret !== env.TELEGRAM_WEBHOOK_SECRET) {
+  const bot = await resolveTelegramBotForWebhook(env, secret ?? undefined);
+  if (!bot) {
     return errorResponse(401, "invalid_webhook_secret", "Invalid Telegram secret");
   }
 
   const payload = await request.json();
-  const agentId = env.DEFAULT_AGENT_ID ?? "default";
+  const agentId = bot.agentId;
   const message = normalizeTelegramUpdate(payload, agentId);
 
   if (!message) {

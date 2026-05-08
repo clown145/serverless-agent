@@ -17,6 +17,7 @@ import type {
   SearchSettings,
   SearchTestResult,
   SetupStatus,
+  TelegramIntegration,
   ToolCatalogItem,
   ToolCallHistoryItem,
   ToolDebugCall,
@@ -152,6 +153,55 @@ export function createAdminClient(getToken: () => string) {
     getDiagnostics: () => {
       return request<ApiResult<{ checks: DiagnosticCheck[]; healthy: boolean }>>(
         "/admin/diagnostics"
+      );
+    },
+    getTelegramIntegrations: () => {
+      return request<
+        ApiResult<{
+          integrations: TelegramIntegration[];
+          webhookPath: string;
+        }>
+      >("/admin/platforms/telegram");
+    },
+    createTelegramIntegration: (body: {
+      agentId?: string;
+      name: string;
+      botToken?: string;
+      webhookSecret?: string;
+    }) => {
+      return request<ApiResult<{ integration: TelegramIntegration }>>(
+        "/admin/platforms/telegram",
+        {
+          method: "POST",
+          body: JSON.stringify(body)
+        }
+      );
+    },
+    testTelegramIntegration: (integrationId: string) => {
+      return request<ApiResult<{ integration: TelegramIntegration; bot: unknown; webhook: unknown }>>(
+        `/admin/platforms/telegram/${integrationId}/test`,
+        { method: "POST" }
+      );
+    },
+    setTelegramWebhook: (integrationId: string, webhookUrl?: string) => {
+      return request<ApiResult<{ webhookUrl: string; webhook: unknown }>>(
+        `/admin/platforms/telegram/${integrationId}/webhook`,
+        {
+          method: "POST",
+          body: JSON.stringify({ webhookUrl: webhookUrl || undefined })
+        }
+      );
+    },
+    deleteTelegramWebhook: (integrationId: string) => {
+      return request<ApiResult<{ webhook: unknown }>>(
+        `/admin/platforms/telegram/${integrationId}/webhook`,
+        { method: "DELETE" }
+      );
+    },
+    deleteTelegramIntegration: (integrationId: string) => {
+      return request<ApiResult<{ deleted: boolean }>>(
+        `/admin/platforms/telegram/${integrationId}`,
+        { method: "DELETE" }
       );
     },
     listTools: () => {

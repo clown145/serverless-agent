@@ -1,4 +1,6 @@
 import type { Env } from "../../shared/types/env";
+import { callTelegramApi } from "./api";
+import { resolveTelegramBotForAgent } from "./config";
 
 export type PlatformSendResult = {
   ok: boolean;
@@ -8,42 +10,32 @@ export type PlatformSendResult = {
 
 export async function sendTelegramText(
   env: Env,
+  agentId: string,
   conversationId: string,
   text: string
 ): Promise<PlatformSendResult> {
-  if (!env.TELEGRAM_BOT_TOKEN) {
-    return { ok: false, error: "TELEGRAM_BOT_TOKEN is not configured" };
+  const bot = await resolveTelegramBotForAgent(env, agentId);
+  if (!bot.token) {
+    return { ok: false, error: "Telegram bot token is not configured" };
   }
 
   const chatId = conversationId.replace(/^telegram:/, "");
-  const response = await fetch(
-    `https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`,
-    {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
+  try {
+    const payload = await callTelegramApi<{ message_id?: number }>(
+      bot.token,
+      "sendMessage",
+      {
         chat_id: chatId,
         text,
         disable_web_page_preview: true
-      })
-    }
-  );
+      }
+    );
 
-  const payload = (await response.json().catch(() => undefined)) as
-    | { result?: { message_id?: number }; description?: string }
-    | undefined;
-
-  if (!response.ok) {
     return {
-      ok: false,
-      error: payload?.description ?? `Telegram API error ${response.status}`
+      ok: true,
+      providerMessageId: payload.message_id ? String(payload.message_id) : undefined
     };
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "Telegram send failed" };
   }
-
-  return {
-    ok: true,
-    providerMessageId: payload?.result?.message_id
-      ? String(payload.result.message_id)
-      : undefined
-  };
 }

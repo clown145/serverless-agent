@@ -27,6 +27,9 @@ export function SystemPanel({ token, onTokenChange }: SystemPanelProps) {
           apiBase: "/admin",
           routes: [
             "/admin/messages",
+            "/admin/platforms/telegram",
+            "/admin/platforms/telegram/:integrationId/test",
+            "/admin/platforms/telegram/:integrationId/webhook",
             "/admin/mcp/servers",
             "/admin/mcp/tools/:toolId",
             "/admin/runs",

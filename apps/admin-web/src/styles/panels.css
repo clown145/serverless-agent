@@ -37,6 +37,19 @@
   margin-top: 16px;
 }
 
+.telegram-form {
+  display: grid;
+  grid-template-columns:
+    minmax(120px, 0.7fr)
+    minmax(140px, 0.8fr)
+    minmax(220px, 1.2fr)
+    minmax(220px, 1.2fr)
+    auto;
+  gap: 10px;
+  align-items: end;
+  margin-bottom: 14px;
+}
+
 .search-provider-form {
   grid-template-columns:
     minmax(130px, 0.7fr)
@@ -348,6 +361,34 @@
   margin-bottom: 14px;
 }
 
+.telegram-list {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.telegram-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto auto auto;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid #dce3ee;
+  border-radius: 7px;
+  background: #ffffff;
+  padding: 12px;
+}
+
+.telegram-row strong,
+.telegram-row span {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.telegram-row span {
+  color: #687386;
+  font-size: 12px;
+}
+
 .search-provider-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto auto auto auto;
@@ -504,7 +545,9 @@
   .form-grid.policy-form,
   .form-grid.model-form,
   .mcp-form,
+  .telegram-form,
   .search-provider-form,
+  .telegram-row,
   .search-provider-row,
   .model-provider-head,
   .mcp-server-head,
