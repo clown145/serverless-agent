@@ -15,6 +15,9 @@ D1 用于结构化数据：
 - permissions
 - audit_logs
 - vfs_entries
+- vfs_contents
+- vfs_revisions
+- vfs_mounts
 
 ## R2
 
@@ -29,8 +32,7 @@ R2 用于对象内容：
 推荐 key：
 
 ```text
-agents/{agent_id}/vfs/workspace/{path}
-agents/{agent_id}/vfs/skills/{skill_id}/{path}
+agents/{agent_id}/vfs/blobs/sha256/{prefix}/{shard}/{checksum}
 runs/{run_id}/artifacts/{name}
 attachments/{platform}/{message_id}/{name}
 ```
@@ -60,22 +62,26 @@ Durable Object storage 用于单个 agent 的局部状态：
 
 ## VFS
 
-Worker 的真实文件系统不是持久工作区。项目的 VFS 是 R2 + D1 实现的抽象。
+Worker 的真实文件系统不是持久工作区。项目的 VFS 是 D1-first +
+R2 blob 实现的抽象。
 
 ```text
 readFile(path)
 writeFile(path, content)
 listDir(path)
-stat(path)
-deleteFile(path)
+mkdir(path)
+delete(path)
 move(path, target)
+search(path, query)
+command("ls /workspace")
 ```
 
 VFS 约束：
 
 - 所有路径必须归一化。
-- 禁止 `..` 越权。
+- 工具 API 禁止 `..`，命令层可解析相对路径但不能越过 `/`。
 - 每个 agent 有独立根目录。
-- 大文件走 R2。
-- metadata 写 D1。
+- 小文本和 JSON 内容写 D1。
+- 大文件和二进制内容走 R2 content-addressed blob。
+- metadata、版本号和 revision 写 D1。
 - 操作写 audit log。

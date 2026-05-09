@@ -1,6 +1,10 @@
-import { normalizeVfsPath } from "../tools/vfs/path";
+import {
+  buildVfsBlobKey,
+  buildVfsPathObjectKey
+} from "../vfs/storage/blob-keys";
 
 export function buildVfsObjectKey(agentId: string, path: string): string {
-  const normalized = normalizeVfsPath(path).replace(/^\//, "");
-  return `agents/${agentId}/vfs/${normalized}`;
+  return buildVfsPathObjectKey(agentId, path);
 }
+
+export { buildVfsBlobKey };

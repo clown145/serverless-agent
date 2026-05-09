@@ -16,5 +16,7 @@ describe("tool catalog", () => {
       sideEffect: "none"
     });
     expect(readFile?.inputSchema).toMatchObject({ type: "object" });
+    expect(catalog.map((tool) => tool.name)).toContain("vfs.command");
+    expect(catalog.map((tool) => tool.name)).toContain("vfs.search");
   });
 });

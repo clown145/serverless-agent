@@ -1,20 +1,25 @@
-import { FilePenLine, RefreshCw, Save } from "lucide-react";
 import { useEffect, useState } from "react";
-import type { VfsEntry } from "../../api/types";
-import { EmptyState } from "../EmptyState";
-import { StatusBadge } from "../StatusBadge";
-import { ToolbarButton } from "../ToolbarButton";
+import type { VfsEntry, VfsFile } from "../../api/types";
 import type { PanelProps } from "./types";
+import { VfsCommandPane } from "./vfs/VfsCommandPane";
+import { VfsEditorPane } from "./vfs/VfsEditorPane";
+import { VfsEntryList } from "./vfs/VfsEntryList";
 
 export function VfsPanel({ client, notify }: PanelProps) {
   const [path, setPath] = useState("/");
+  const [newDirectoryPath, setNewDirectoryPath] = useState("/workspace");
   const [filePath, setFilePath] = useState("/workspace/notes/hello.md");
+  const [moveTarget, setMoveTarget] = useState("/workspace/notes/renamed.md");
   const [content, setContent] = useState("");
+  const [file, setFile] = useState<VfsFile>();
   const [entries, setEntries] = useState<VfsEntry[]>([]);
+  const [command, setCommand] = useState("ls /");
+  const [commandOutput, setCommandOutput] = useState("");
 
   async function loadDirectory(target = path) {
     try {
       const result = await client.listVfs(target);
+      setPath(target);
       setEntries(result.entries);
     } catch (error) {
       notify(error instanceof Error ? error.message : "Failed to load VFS", "error");
@@ -24,7 +29,9 @@ export function VfsPanel({ client, notify }: PanelProps) {
   async function readFile(target = filePath) {
     try {
       const result = await client.readVfsFile(target);
+      setFile(result.file);
       setFilePath(result.file.path);
+      setMoveTarget(result.file.path);
       setContent(result.file.content);
       notify("File loaded", "ok");
     } catch (error) {
@@ -36,9 +43,54 @@ export function VfsPanel({ client, notify }: PanelProps) {
     try {
       await client.writeVfsFile({ path: filePath, content, mimeType: "text/plain" });
       notify("File saved", "ok");
+      await readFile(filePath);
       await loadDirectory(path);
     } catch (error) {
       notify(error instanceof Error ? error.message : "Failed to save file", "error");
+    }
+  }
+
+  async function createDirectory() {
+    try {
+      await client.mkdirVfs(newDirectoryPath);
+      notify("Directory created", "ok");
+      await loadDirectory(path);
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "Failed to create directory", "error");
+    }
+  }
+
+  async function deleteFile() {
+    try {
+      await client.deleteVfs(filePath, false);
+      notify("Entry deleted", "ok");
+      setContent("");
+      setFile(undefined);
+      await loadDirectory(path);
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "Failed to delete entry", "error");
+    }
+  }
+
+  async function moveEntry() {
+    try {
+      const result = await client.moveVfs(filePath, moveTarget);
+      notify("Entry moved", "ok");
+      setFilePath(result.entry.path);
+      setMoveTarget(result.entry.path);
+      await loadDirectory(path);
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "Failed to move entry", "error");
+    }
+  }
+
+  async function runCommand() {
+    try {
+      const result = await client.runVfsCommand({ command, cwd: path });
+      setCommandOutput(result.result.output);
+      await loadDirectory(path);
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "Failed to run command", "error");
     }
   }
 
@@ -47,52 +99,45 @@ export function VfsPanel({ client, notify }: PanelProps) {
   }, []);
 
   return (
-    <section className="panel split-panel">
-      <div className="list-pane">
-        <header className="panel-header compact">
-          <h1>VFS</h1>
-          <ToolbarButton label="Refresh" icon={RefreshCw} onClick={() => void loadDirectory()} />
-        </header>
-        <div className="path-bar">
-          <input value={path} onChange={(event) => setPath(event.target.value)} />
-          <button type="button" onClick={() => void loadDirectory()}>
-            Open
-          </button>
-        </div>
-        <div className="item-list">
-          {entries.map((entry) => (
-            <button
-              key={entry.id}
-              className="list-item"
-              type="button"
-              onClick={() => {
-                if (entry.kind === "directory") {
-                  setPath(entry.path);
-                  void loadDirectory(entry.path);
-                } else {
-                  void readFile(entry.path);
-                }
-              }}
-            >
-              <span>{entry.path}</span>
-              <StatusBadge value={entry.kind} />
-            </button>
-          ))}
-          {entries.length === 0 && <EmptyState label="No entries" />}
-        </div>
-      </div>
-      <div className="detail-pane editor-pane">
-        <div className="path-bar">
-          <input value={filePath} onChange={(event) => setFilePath(event.target.value)} />
-          <ToolbarButton label="Read file" icon={FilePenLine} onClick={() => void readFile()} />
-          <ToolbarButton label="Save file" icon={Save} onClick={() => void writeFile()} />
-        </div>
-        <textarea
-          className="code-editor"
-          value={content}
-          onChange={(event) => setContent(event.target.value)}
+    <section className="panel vfs-panel">
+      <div className="split-panel">
+        <VfsEntryList
+          path={path}
+          entries={entries}
+          newDirectoryPath={newDirectoryPath}
+          onPathChange={setPath}
+          onNewDirectoryPathChange={setNewDirectoryPath}
+          onOpenDirectory={(target) => void loadDirectory(target)}
+          onOpenEntry={(entry) => {
+            if (entry.kind === "directory") {
+              void loadDirectory(entry.path);
+            } else {
+              void readFile(entry.path);
+            }
+          }}
+          onRefresh={() => void loadDirectory(path)}
+          onCreateDirectory={() => void createDirectory()}
+        />
+        <VfsEditorPane
+          file={file}
+          filePath={filePath}
+          content={content}
+          moveTarget={moveTarget}
+          onFilePathChange={setFilePath}
+          onContentChange={setContent}
+          onMoveTargetChange={setMoveTarget}
+          onRead={() => void readFile()}
+          onSave={() => void writeFile()}
+          onDelete={() => void deleteFile()}
+          onMove={() => void moveEntry()}
         />
       </div>
+      <VfsCommandPane
+        command={command}
+        output={commandOutput}
+        onCommandChange={setCommand}
+        onRun={() => void runCommand()}
+      />
     </section>
   );
 }

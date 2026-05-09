@@ -1,6 +1,7 @@
 # VFS Spec
 
-VFS 是 agent 的虚拟文件系统。它不是 Worker 的真实文件系统，而是 R2 + D1 的抽象。
+VFS 是 agent 的虚拟文件系统。它不是 Worker 的真实文件系统，而是
+D1 metadata + D1 小文本内容 + R2 blob 的 workspace 抽象。
 
 ## 路径空间
 
@@ -23,13 +24,14 @@ type VfsEntry = {
   agentId: string
   path: string
   kind: "file" | "directory"
+  storageKind: "d1_text" | "r2_blob" | "legacy_r2" | "directory"
   r2Key?: string
   mimeType?: string
   size?: number
   checksum?: string
+  version: number
   createdAt: string
   updatedAt: string
-  createdBy: string
 }
 ```
 
@@ -39,16 +41,19 @@ type VfsEntry = {
 listDir(path): Promise<VfsEntry[]>
 readFile(path): Promise<VfsFile>
 writeFile(path, content, options): Promise<VfsEntry>
+mkdir(path): Promise<VfsEntry>
 deletePath(path): Promise<void>
 movePath(source, target): Promise<VfsEntry>
-stat(path): Promise<VfsEntry>
+search(path, query): Promise<VfsSearchMatch[]>
+command(command, cwd): Promise<VfsCommandResult>
 ```
 
 ## 路径规则
 
 - 必须以 `/` 开头。
 - 连续 `/` 要归一化。
-- 禁止 `..`。
+- 工具 API 路径禁止 `..`。
+- 虚拟命令可以使用相对路径和 `..`，但解析后不能越过 `/`。
 - 禁止空字节。
 - 禁止越过 agent root。
 - `/skills` 默认只允许受控写入。
@@ -57,9 +62,11 @@ stat(path): Promise<VfsEntry>
 ## 存储规则
 
 - D1 保存 entry metadata。
-- R2 保存 file content。
+- 小文本/JSON 内容直接保存到 `vfs_contents`。
+- 大文件和二进制内容保存到 R2 content-addressed blob。
+- 写入会递增 `version` 并记录 `vfs_revisions`。
 - directory 没有 R2 object。
-- 大文件可以分块或直接拒绝，第一版先限制大小。
+- R2 blob 不按路径覆盖，避免高频重写同一个对象 key。
 
 ## 审计
 

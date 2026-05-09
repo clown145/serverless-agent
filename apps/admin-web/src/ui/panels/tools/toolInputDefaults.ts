@@ -16,6 +16,26 @@ const TOOL_EXAMPLES: Record<string, Record<string, unknown>> = {
     content: "",
     mimeType: "text/markdown"
   },
+  "vfs.mkdir": {
+    path: "/workspace/notes"
+  },
+  "vfs.delete": {
+    path: "/workspace/notes/example.md",
+    recursive: false
+  },
+  "vfs.move": {
+    fromPath: "/workspace/notes/example.md",
+    toPath: "/workspace/notes/renamed.md"
+  },
+  "vfs.search": {
+    path: "/",
+    query: "todo",
+    limit: 10
+  },
+  "vfs.command": {
+    command: "ls /",
+    cwd: "/"
+  },
   "messaging.send_message": {
     platform: "webui",
     conversationId: "tool-debug",

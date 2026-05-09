@@ -5,21 +5,30 @@ export {
   listVfsEntries,
   listVfsTree,
   type CreateVfsDirectoryInput
-} from "../../vfs/storage/entry-store";
+} from "./entry-store";
 export {
   deleteVfsEntry,
   type DeleteVfsEntryInput
-} from "../../vfs/storage/delete-store";
+} from "./delete-store";
 export {
   getVfsFile,
   putVfsFile,
   type PutVfsFileInput
-} from "../../vfs/storage/file-store";
+} from "./file-store";
 export {
   moveVfsEntry,
   type MoveVfsEntryInput
-} from "../../vfs/storage/move-store";
+} from "./move-store";
 export {
   searchVfs,
   type SearchVfsInput
-} from "../../vfs/storage/search-store";
+} from "./search-store";
+export {
+  mapVfsEntry,
+  type VfsEntry,
+  type VfsEntryKind,
+  type VfsEntryRow,
+  type VfsFile,
+  type VfsSearchMatch,
+  type VfsStorageKind
+} from "./types";

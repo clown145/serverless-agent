@@ -22,7 +22,9 @@ import type {
   ToolCallHistoryItem,
   ToolDebugCall,
   VfsEntry,
-  VfsFile
+  VfsFile,
+  VfsCommandResult,
+  VfsSearchMatch
 } from "./types";
 
 export type AdminClient = ReturnType<typeof createAdminClient>;
@@ -97,6 +99,45 @@ export function createAdminClient(getToken: () => string) {
       return request<ApiResult<{ entry: VfsEntry }>>("/admin/vfs", {
         method: "PUT",
         body: JSON.stringify(body)
+      });
+    },
+    mkdirVfs: (path: string) => {
+      return request<ApiResult<{ entry: VfsEntry }>>("/admin/vfs", {
+        method: "POST",
+        body: JSON.stringify({ action: "mkdir", path })
+      });
+    },
+    deleteVfs: (path: string, recursive = false) => {
+      const params = new URLSearchParams({ path });
+      if (recursive) {
+        params.set("recursive", "true");
+      }
+
+      return request<ApiResult<{ result: { deleted: number } }>>(
+        `/admin/vfs?${params.toString()}`,
+        { method: "DELETE" }
+      );
+    },
+    moveVfs: (fromPath: string, toPath: string) => {
+      return request<ApiResult<{ entry: VfsEntry }>>("/admin/vfs", {
+        method: "POST",
+        body: JSON.stringify({ action: "move", fromPath, toPath })
+      });
+    },
+    searchVfs: (body: { path: string; query: string }) => {
+      const params = new URLSearchParams({
+        mode: "search",
+        path: body.path,
+        query: body.query
+      });
+      return request<ApiResult<{ matches: VfsSearchMatch[] }>>(
+        `/admin/vfs?${params.toString()}`
+      );
+    },
+    runVfsCommand: (body: { command: string; cwd?: string }) => {
+      return request<ApiResult<{ result: VfsCommandResult }>>("/admin/vfs", {
+        method: "POST",
+        body: JSON.stringify({ action: "command", ...body })
       });
     },
     listSchedules: () => request<ApiResult<{ schedules: Schedule[] }>>("/admin/schedules"),

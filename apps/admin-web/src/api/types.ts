@@ -36,8 +36,11 @@ export type VfsEntry = {
   agentId: string;
   path: string;
   kind: "file" | "directory";
+  storageKind?: "d1_text" | "r2_blob" | "legacy_r2" | "directory";
   mimeType?: string;
   size?: number;
+  checksum?: string;
+  version?: number;
   updatedAt: string;
 };
 
@@ -45,6 +48,22 @@ export type VfsFile = {
   path: string;
   content: string;
   mimeType?: string;
+  size?: number;
+  checksum?: string;
+  version: number;
+};
+
+export type VfsSearchMatch = {
+  path: string;
+  kind: "file" | "directory";
+  line?: number;
+  preview: string;
+};
+
+export type VfsCommandResult = {
+  command: string;
+  cwd: string;
+  output: string;
 };
 
 export type Schedule = {
