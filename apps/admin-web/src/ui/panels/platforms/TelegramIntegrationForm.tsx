@@ -1,4 +1,5 @@
 import { Plus } from "lucide-react";
+import { useI18n } from "../../i18n/I18nProvider";
 
 export type TelegramIntegrationDraft = {
   agentId: string;
@@ -18,10 +19,12 @@ export function TelegramIntegrationForm({
   onDraftChange,
   onSubmit
 }: TelegramIntegrationFormProps) {
+  const { t } = useI18n();
+
   return (
     <div className="telegram-form">
       <label>
-        Agent
+        {t("platforms.agent")}
         <input
           value={draft.agentId}
           placeholder="default"
@@ -29,14 +32,14 @@ export function TelegramIntegrationForm({
         />
       </label>
       <label>
-        Name
+        {t("platforms.name")}
         <input
           value={draft.name}
           onChange={(event) => onDraftChange({ ...draft, name: event.target.value })}
         />
       </label>
       <label>
-        Bot token
+        {t("platforms.botToken")}
         <input
           type="password"
           value={draft.botToken}
@@ -44,7 +47,7 @@ export function TelegramIntegrationForm({
         />
       </label>
       <label>
-        Webhook secret
+        {t("platforms.webhookSecret")}
         <input
           value={draft.webhookSecret}
           placeholder="auto-generated"
@@ -53,7 +56,7 @@ export function TelegramIntegrationForm({
       </label>
       <button className="primary-button" type="button" onClick={onSubmit}>
         <Plus size={16} />
-        Add
+        {t("common.add")}
       </button>
     </div>
   );

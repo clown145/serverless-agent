@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import type { VfsEntry, VfsFile } from "../../api/types";
+import { useI18n } from "../i18n/I18nProvider";
 import type { PanelProps } from "./types";
 import { VfsCommandPane } from "./vfs/VfsCommandPane";
 import { VfsEditorPane } from "./vfs/VfsEditorPane";
 import { VfsEntryList } from "./vfs/VfsEntryList";
 
 export function VfsPanel({ client, notify }: PanelProps) {
+  const { t } = useI18n();
   const [path, setPath] = useState("/");
   const [newDirectoryPath, setNewDirectoryPath] = useState("/workspace");
   const [filePath, setFilePath] = useState("/workspace/notes/hello.md");
@@ -33,7 +35,7 @@ export function VfsPanel({ client, notify }: PanelProps) {
       setFilePath(result.file.path);
       setMoveTarget(result.file.path);
       setContent(result.file.content);
-      notify("File loaded", "ok");
+      notify(t("vfs.fileLoaded"), "ok");
     } catch (error) {
       notify(error instanceof Error ? error.message : "Failed to read file", "error");
     }
@@ -42,7 +44,7 @@ export function VfsPanel({ client, notify }: PanelProps) {
   async function writeFile() {
     try {
       await client.writeVfsFile({ path: filePath, content, mimeType: "text/plain" });
-      notify("File saved", "ok");
+      notify(t("vfs.fileSaved"), "ok");
       await readFile(filePath);
       await loadDirectory(path);
     } catch (error) {
@@ -53,7 +55,7 @@ export function VfsPanel({ client, notify }: PanelProps) {
   async function createDirectory() {
     try {
       await client.mkdirVfs(newDirectoryPath);
-      notify("Directory created", "ok");
+      notify(t("vfs.directoryCreated"), "ok");
       await loadDirectory(path);
     } catch (error) {
       notify(error instanceof Error ? error.message : "Failed to create directory", "error");
@@ -65,8 +67,10 @@ export function VfsPanel({ client, notify }: PanelProps) {
       const result = await client.initializeVfs();
       notify(
         result.status.initialized
-          ? "Workspace initialized"
-          : `${result.status.missingPaths.length} directories still missing`,
+          ? t("vfs.initialized")
+          : t("vfs.missingDirectories", {
+              count: result.status.missingPaths.length
+            }),
         result.status.initialized ? "ok" : "error"
       );
       await loadDirectory("/");
@@ -78,7 +82,7 @@ export function VfsPanel({ client, notify }: PanelProps) {
   async function deleteFile() {
     try {
       await client.deleteVfs(filePath, false);
-      notify("Entry deleted", "ok");
+      notify(t("vfs.entryDeleted"), "ok");
       setContent("");
       setFile(undefined);
       await loadDirectory(path);
@@ -90,7 +94,7 @@ export function VfsPanel({ client, notify }: PanelProps) {
   async function moveEntry() {
     try {
       const result = await client.moveVfs(filePath, moveTarget);
-      notify("Entry moved", "ok");
+      notify(t("vfs.entryMoved"), "ok");
       setFilePath(result.entry.path);
       setMoveTarget(result.entry.path);
       await loadDirectory(path);

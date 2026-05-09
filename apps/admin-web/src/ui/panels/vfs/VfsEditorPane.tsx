@@ -1,5 +1,6 @@
 import { FilePenLine, GitCompareArrows, Save, Trash2 } from "lucide-react";
 import type { VfsFile } from "../../../api/types";
+import { useI18n } from "../../i18n/I18nProvider";
 import { ToolbarButton } from "../../ToolbarButton";
 
 type VfsEditorPaneProps = {
@@ -29,14 +30,16 @@ export function VfsEditorPane({
   onDelete,
   onMove
 }: VfsEditorPaneProps) {
+  const { t } = useI18n();
+
   return (
     <div className="detail-pane editor-pane">
       <div className="path-bar">
         <input value={filePath} onChange={(event) => onFilePathChange(event.target.value)} />
-        <ToolbarButton label="Read file" icon={FilePenLine} onClick={onRead} />
-        <ToolbarButton label="Save file" icon={Save} onClick={onSave} />
+        <ToolbarButton label={t("vfs.readFile")} icon={FilePenLine} onClick={onRead} />
+        <ToolbarButton label={t("vfs.saveFile")} icon={Save} onClick={onSave} />
         <ToolbarButton
-          label="Delete file"
+          label={t("vfs.deleteFile")}
           icon={Trash2}
           onClick={onDelete}
           variant="danger"
@@ -47,7 +50,7 @@ export function VfsEditorPane({
           value={moveTarget}
           onChange={(event) => onMoveTargetChange(event.target.value)}
         />
-        <ToolbarButton label="Move" icon={GitCompareArrows} onClick={onMove} />
+        <ToolbarButton label={t("vfs.move")} icon={GitCompareArrows} onClick={onMove} />
       </div>
       {file && (
         <div className="vfs-meta-line">

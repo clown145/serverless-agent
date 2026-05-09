@@ -2,6 +2,7 @@ import { ExternalLink, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { AdminClient } from "../../api/client";
 import type { ChatMessage } from "../../api/types";
+import { useI18n } from "../i18n/I18nProvider";
 import { ToolbarButton } from "../ToolbarButton";
 import { ChatComposer } from "./chat/ChatComposer";
 import { ChatTranscript } from "./chat/ChatTranscript";
@@ -13,6 +14,7 @@ type ChatPanelProps = {
 };
 
 export function ChatPanel({ client, notify, onRun }: ChatPanelProps) {
+  const { t } = useI18n();
   const [text, setText] = useState("");
   const [conversationId, setConversationId] = useState("webui:default");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -24,7 +26,7 @@ export function ChatPanel({ client, notify, onRun }: ChatPanelProps) {
       const result = await client.listMessages({ conversationId });
       setMessages(result.messages);
     } catch (error) {
-      notify(error instanceof Error ? error.message : "Failed to load messages", "error");
+      notify(error instanceof Error ? error.message : t("chat.loadFailed"), "error");
     }
   }
 
@@ -40,9 +42,9 @@ export function ChatPanel({ client, notify, onRun }: ChatPanelProps) {
       setText("");
       setLastRunId(runId ?? "");
       await loadMessages();
-      notify(runId ? `Run ${runId} completed` : "Message sent", "ok");
+      notify(runId ? t("chat.runCompleted", { runId }) : t("chat.messageSent"), "ok");
     } catch (error) {
-      notify(error instanceof Error ? error.message : "Send failed", "error");
+      notify(error instanceof Error ? error.message : t("chat.sendFailed"), "error");
       await loadMessages();
     } finally {
       setBusy(false);
@@ -63,20 +65,20 @@ export function ChatPanel({ client, notify, onRun }: ChatPanelProps) {
     <section className="panel chat-panel">
       <header className="panel-header">
         <div>
-          <h1>WebUI Chat</h1>
+          <h1>{t("chat.title")}</h1>
           <p>platform:webui</p>
         </div>
         <div className="tool-meta">
           {lastRunId && (
-            <ToolbarButton label="Open run" icon={ExternalLink} onClick={openLastRun} />
+            <ToolbarButton label={t("chat.openRun")} icon={ExternalLink} onClick={openLastRun} />
           )}
-          <ToolbarButton label="Refresh" icon={RefreshCw} onClick={() => void loadMessages()} />
+          <ToolbarButton label={t("common.refresh")} icon={RefreshCw} onClick={() => void loadMessages()} />
         </div>
       </header>
 
       <div className="field-row">
         <label>
-          Conversation
+          {t("chat.conversation")}
           <input value={conversationId} onChange={(event) => setConversationId(event.target.value)} />
         </label>
       </div>

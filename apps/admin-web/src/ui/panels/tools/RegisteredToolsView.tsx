@@ -1,4 +1,5 @@
 import type { ToolCatalogItem } from "../../../api/types";
+import { useI18n } from "../../i18n/I18nProvider";
 import { JsonBlock } from "../../JsonBlock";
 import { StatusBadge } from "../../StatusBadge";
 
@@ -13,6 +14,7 @@ export function RegisteredToolsView({
   selectedName,
   onSelect
 }: RegisteredToolsViewProps) {
+  const { t } = useI18n();
   const selectedTool =
     tools.find((tool) => tool.name === selectedName) ?? tools[0];
 
@@ -45,7 +47,7 @@ export function RegisteredToolsView({
             <StatusBadge value={selectedTool.source.type} />
             <StatusBadge value={selectedTool.sideEffect} />
             <span>{selectedTool.source.name}</span>
-            <span>level {selectedTool.permission.level}</span>
+            <span>{t("common.level", { level: selectedTool.permission.level })}</span>
             <span>{selectedTool.timeoutMs}ms</span>
           </div>
           <JsonBlock

@@ -1,8 +1,8 @@
 .notice {
   position: fixed;
-  top: 14px;
+  top: 76px;
   right: 18px;
-  z-index: 5;
+  z-index: 20;
   max-width: min(420px, calc(100vw - 36px));
   border-radius: 7px;
   padding: 10px 12px;
@@ -11,13 +11,13 @@
 }
 
 .notice.ok {
-  background: #e6f5ed;
-  color: #16623b;
+  background: #e4f3f1;
+  color: #0b5f59;
 }
 
 .notice.error {
-  background: #fae8e8;
-  color: #922222;
+  background: #fee4e2;
+  color: var(--danger);
 }
 
 .item-list,
@@ -33,18 +33,18 @@
   align-items: center;
   gap: 10px;
   width: 100%;
-  border: 1px solid #dce3ee;
+  border: 1px solid var(--border);
   border-radius: 7px;
-  background: #ffffff;
+  background: var(--surface);
   padding: 10px;
-  color: #253044;
+  color: var(--text);
   text-align: left;
 }
 
 .list-item.selected,
 .list-item:hover {
-  border-color: #7aa0ce;
-  background: #f1f6fc;
+  border-color: #87b8b2;
+  background: var(--accent-muted);
 }
 
 .list-item span,
@@ -61,7 +61,7 @@
 
 .table-row span,
 .meta-line {
-  color: #687386;
+  color: var(--text-muted);
   font-size: 12px;
 }
 
@@ -70,8 +70,8 @@
   margin: 0;
   overflow: auto;
   border-radius: 7px;
-  background: #101820;
-  color: #d7e4ef;
+  background: #111827;
+  color: #d8e4ef;
   padding: 12px;
   font-size: 12px;
   line-height: 1.45;
@@ -101,7 +101,7 @@
 .status-file,
 .status-directory {
   background: #dff3e8;
-  color: #17603b;
+  color: #0b5f59;
 }
 
 .status-failed,
@@ -111,7 +111,7 @@
 .status-permission_denied,
 .status-cancelled {
   background: #f8dfdf;
-  color: #8f2020;
+  color: var(--danger);
 }
 
 .status-pending,
@@ -120,7 +120,7 @@
 .status-workspace_write,
 .status-needs_confirmation {
   background: #fff0cd;
-  color: #7b4c00;
+  color: var(--warning);
 }
 
 .status-mcp {
@@ -145,14 +145,15 @@
   width: 34px;
   height: 34px;
   place-items: center;
-  border: 1px solid #cfd7e4;
+  border: 1px solid var(--border-strong);
   border-radius: 7px;
-  background: #ffffff;
+  background: var(--surface);
   color: #33425a;
+  flex: 0 0 auto;
 }
 
 .icon-button:hover {
-  background: #f0f4f8;
+  background: var(--surface-muted);
 }
 
 .icon-button.danger {
@@ -165,9 +166,87 @@
 }
 
 .empty-state {
-  border: 1px dashed #c9d3e1;
+  border: 1px dashed var(--border-strong);
   border-radius: 7px;
-  color: #687386;
+  color: var(--text-muted);
   padding: 22px;
   text-align: center;
+}
+
+.dropdown-content {
+  z-index: 30;
+  display: grid;
+  min-width: 160px;
+  gap: 4px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  padding: 6px;
+}
+
+.dropdown-item {
+  display: flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-radius: 6px;
+  color: var(--text);
+  padding: 0 8px;
+  outline: 0;
+}
+
+.dropdown-item[data-highlighted] {
+  background: var(--accent-muted);
+}
+
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 25;
+  background: rgb(12 20 30 / 42%);
+}
+
+.drawer-content {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 26;
+  width: min(84vw, 320px);
+  overflow: auto;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  padding: 18px 14px;
+}
+
+.drawer-title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.drawer-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: inline-grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid var(--border-strong);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+@media (max-width: 640px) {
+  .notice {
+    top: auto;
+    right: 12px;
+    bottom: 12px;
+    left: 12px;
+    max-width: none;
+  }
 }

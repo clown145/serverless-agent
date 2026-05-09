@@ -1,11 +1,13 @@
 import { RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { DiagnosticCheck } from "../../api/types";
+import { useI18n } from "../i18n/I18nProvider";
 import { StatusBadge } from "../StatusBadge";
 import { ToolbarButton } from "../ToolbarButton";
 import type { PanelProps } from "./types";
 
 export function DiagnosticsPanel({ client, notify }: PanelProps) {
+  const { t } = useI18n();
   const [checks, setChecks] = useState<DiagnosticCheck[]>([]);
   const [healthy, setHealthy] = useState(false);
 
@@ -27,10 +29,10 @@ export function DiagnosticsPanel({ client, notify }: PanelProps) {
     <section className="panel">
       <header className="panel-header">
         <div>
-          <h1>Diagnostics</h1>
-          <p>{healthy ? "healthy" : "attention needed"}</p>
+          <h1>{t("diagnostics.title")}</h1>
+          <p>{healthy ? t("common.healthy") : t("common.attentionNeeded")}</p>
         </div>
-        <ToolbarButton label="Run diagnostics" icon={RefreshCw} onClick={() => void load()} />
+        <ToolbarButton label={t("diagnostics.run")} icon={RefreshCw} onClick={() => void load()} />
       </header>
 
       <div className="diagnostic-list">

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import type { AdminClient } from "../../../api/client";
 import type { ToolCatalogItem, ToolDebugCall } from "../../../api/types";
 import { EmptyState } from "../../EmptyState";
+import { useI18n } from "../../i18n/I18nProvider";
 import { JsonBlock } from "../../JsonBlock";
 import { StatusBadge } from "../../StatusBadge";
 import { createToolInputDraft } from "./toolInputDefaults";
@@ -20,6 +21,7 @@ export function ToolRunnerView({
   notify,
   onExecuted
 }: ToolRunnerViewProps) {
+  const { t } = useI18n();
   const [inputText, setInputText] = useState("{}");
   const [allowDangerous, setAllowDangerous] = useState(false);
   const [running, setRunning] = useState(false);
@@ -39,7 +41,7 @@ export function ToolRunnerView({
     try {
       input = JSON.parse(inputText);
     } catch {
-      notify("Input JSON is invalid", "error");
+      notify(t("tools.inputInvalid"), "error");
       return;
     }
 
@@ -51,7 +53,7 @@ export function ToolRunnerView({
         allowDangerous
       });
       setCall(result.call);
-      notify(`Tool returned ${result.call.result.status}`, "ok");
+      notify(t("tools.returned", { status: result.call.result.status }), "ok");
       onExecuted();
     } catch (error) {
       notify(error instanceof Error ? error.message : "Failed to run tool", "error");
@@ -61,19 +63,19 @@ export function ToolRunnerView({
   }
 
   if (!tool) {
-    return <EmptyState label="No tools registered" />;
+    return <EmptyState label={t("tools.noTools")} />;
   }
 
   return (
     <div className="tool-runner">
       <header className="subsection-header">
         <div>
-          <h2>Runner</h2>
+          <h2>{t("tools.runner")}</h2>
           <p>{tool.name}</p>
         </div>
         <div className="tool-meta">
           <StatusBadge value={tool.sideEffect} />
-          <span>level {tool.permission.level}</span>
+          <span>{t("common.level", { level: tool.permission.level })}</span>
         </div>
       </header>
 
@@ -91,7 +93,7 @@ export function ToolRunnerView({
             type="checkbox"
             onChange={(event) => setAllowDangerous(event.target.checked)}
           />
-          <span>Bypass confirmation</span>
+          <span>{t("tools.bypassConfirmation")}</span>
         </label>
         <button
           className="secondary-button"
@@ -99,7 +101,7 @@ export function ToolRunnerView({
           onClick={() => setInputText(JSON.stringify(createToolInputDraft(tool), null, 2))}
         >
           <RotateCcw size={16} />
-          Reset
+          {t("common.reset")}
         </button>
         <button
           className="primary-button"
@@ -108,7 +110,7 @@ export function ToolRunnerView({
           onClick={() => void runTool()}
         >
           <Play size={16} />
-          Run
+          {t("common.run")}
         </button>
       </div>
 

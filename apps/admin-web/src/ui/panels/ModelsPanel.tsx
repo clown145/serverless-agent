@@ -1,6 +1,7 @@
 import { RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { ModelCatalogItem, ModelProvider, ModelTestResult } from "../../api/types";
+import { useI18n } from "../i18n/I18nProvider";
 import { ToolbarButton } from "../ToolbarButton";
 import { ModelProviderForm } from "./models/ModelProviderForm";
 import { ModelProviderList } from "./models/ModelProviderList";
@@ -8,6 +9,7 @@ import { providerDraftDefaults, type ModelProviderDraft } from "./models/modelDe
 import type { PanelProps } from "./types";
 
 export function ModelsPanel({ client, notify }: PanelProps) {
+  const { t } = useI18n();
   const [providers, setProviders] = useState<ModelProvider[]>([]);
   const [models, setModels] = useState<ModelCatalogItem[]>([]);
   const [activeProviderId, setActiveProviderId] = useState("");
@@ -48,7 +50,7 @@ export function ModelsPanel({ client, notify }: PanelProps) {
         modelListStrategy: draft.modelListStrategy,
         chatProtocol: draft.chatProtocol
       });
-      notify("Provider created", "ok");
+      notify(t("models.providerCreated"), "ok");
       setDraft({ ...draft, apiKey: "" });
       await load();
     } catch (error) {
@@ -59,7 +61,7 @@ export function ModelsPanel({ client, notify }: PanelProps) {
   async function refresh(providerId: string) {
     try {
       await client.refreshProviderModels(providerId);
-      notify("Models refreshed", "ok");
+      notify(t("models.modelsRefreshed"), "ok");
       await load();
     } catch (error) {
       notify(error instanceof Error ? error.message : "Failed to refresh models", "error");
@@ -72,7 +74,7 @@ export function ModelsPanel({ client, notify }: PanelProps) {
     try {
       const result = await client.testProviderModel(providerId, { modelId });
       setTestResult(result.result);
-      notify(`Model replied in ${result.result.latencyMs}ms`, "ok");
+      notify(t("models.modelReplied", { latency: result.result.latencyMs }), "ok");
     } catch (error) {
       notify(error instanceof Error ? error.message : "Failed to test model", "error");
     } finally {
@@ -83,7 +85,7 @@ export function ModelsPanel({ client, notify }: PanelProps) {
   async function activate(providerId: string, modelId: string) {
     try {
       await client.activateModel({ providerId, modelId });
-      notify("Model activated", "ok");
+      notify(t("models.modelActivated"), "ok");
       await load();
     } catch (error) {
       notify(error instanceof Error ? error.message : "Failed to activate model", "error");
@@ -93,7 +95,7 @@ export function ModelsPanel({ client, notify }: PanelProps) {
   async function removeProvider(providerId: string) {
     try {
       await client.deleteModelProvider(providerId);
-      notify("Provider deleted", "ok");
+      notify(t("models.providerDeleted"), "ok");
       await load();
     } catch (error) {
       notify(error instanceof Error ? error.message : "Failed to delete provider", "error");
@@ -108,10 +110,10 @@ export function ModelsPanel({ client, notify }: PanelProps) {
     <section className="panel">
       <header className="panel-header">
         <div>
-          <h1>Models</h1>
-          <p>{activeModelId ? `${activeProviderId} / ${activeModelId}` : "mock fallback"}</p>
+          <h1>{t("models.title")}</h1>
+          <p>{activeModelId ? `${activeProviderId} / ${activeModelId}` : t("models.mockFallback")}</p>
         </div>
-        <ToolbarButton label="Refresh" icon={RefreshCw} onClick={() => void load()} />
+        <ToolbarButton label={t("common.refresh")} icon={RefreshCw} onClick={() => void load()} />
       </header>
 
       <ModelProviderForm
@@ -123,11 +125,11 @@ export function ModelsPanel({ client, notify }: PanelProps) {
 
       {testResult && (
         <div className="model-test-result">
-          <strong>Last model test</strong>
+          <strong>{t("models.lastTest")}</strong>
           <span>
             {testResult.providerId} / {testResult.modelId} / {testResult.latencyMs}ms
           </span>
-          <pre className="json-block">{testResult.content ?? "(no text response)"}</pre>
+          <pre className="json-block">{testResult.content ?? t("models.noTextResponse")}</pre>
         </div>
       )}
 

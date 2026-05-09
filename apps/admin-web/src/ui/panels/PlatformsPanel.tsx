@@ -1,6 +1,7 @@
 import { RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { TelegramIntegration } from "../../api/types";
+import { useI18n } from "../i18n/I18nProvider";
 import { JsonBlock } from "../JsonBlock";
 import { ToolbarButton } from "../ToolbarButton";
 import {
@@ -11,6 +12,7 @@ import { TelegramIntegrationList } from "./platforms/TelegramIntegrationList";
 import type { PanelProps } from "./types";
 
 export function PlatformsPanel({ client, notify }: PanelProps) {
+  const { t } = useI18n();
   const [integrations, setIntegrations] = useState<TelegramIntegration[]>([]);
   const [webhookUrl, setWebhookUrl] = useState("");
   const [result, setResult] = useState<unknown>();
@@ -51,8 +53,8 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
       setDraft({ ...draft, botToken: "", webhookSecret: "" });
       notify(
         draft.botToken
-          ? "Telegram integration saved and webhook set"
-          : "Telegram integration saved",
+          ? t("platforms.telegramSavedWebhook")
+          : t("platforms.telegramSaved"),
         "ok"
       );
       await load();
@@ -62,19 +64,19 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
   }
 
   async function testIntegration(id: string) {
-    await runAction(() => client.testTelegramIntegration(id), "Telegram bot tested");
+    await runAction(() => client.testTelegramIntegration(id), t("platforms.botTested"));
   }
 
   async function setWebhook(id: string) {
-    await runAction(() => client.setTelegramWebhook(id, webhookUrl), "Telegram webhook set");
+    await runAction(() => client.setTelegramWebhook(id, webhookUrl), t("platforms.webhookSet"));
   }
 
   async function deleteWebhook(id: string) {
-    await runAction(() => client.deleteTelegramWebhook(id), "Telegram webhook deleted");
+    await runAction(() => client.deleteTelegramWebhook(id), t("platforms.webhookDeleted"));
   }
 
   async function deleteIntegration(id: string) {
-    await runAction(() => client.deleteTelegramIntegration(id), "Telegram integration deleted");
+    await runAction(() => client.deleteTelegramIntegration(id), t("platforms.integrationDeleted"));
   }
 
   async function runAction(action: () => Promise<unknown>, okMessage: string) {
@@ -96,15 +98,15 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
     <section className="panel">
       <header className="panel-header">
         <div>
-          <h1>Platforms</h1>
+          <h1>{t("platforms.title")}</h1>
           <p>Telegram</p>
         </div>
-        <ToolbarButton label="Refresh" icon={RefreshCw} onClick={() => void load()} />
+        <ToolbarButton label={t("common.refresh")} icon={RefreshCw} onClick={() => void load()} />
       </header>
 
       <div className="field-row">
         <label>
-          Telegram webhook URL
+          {t("platforms.telegramWebhookUrl")}
           <input value={webhookUrl} onChange={(event) => setWebhookUrl(event.target.value)} />
         </label>
       </div>

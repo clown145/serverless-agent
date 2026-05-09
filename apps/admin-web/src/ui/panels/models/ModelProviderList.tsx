@@ -1,6 +1,7 @@
 import { CheckCircle2, RefreshCw, TestTube2, Trash2 } from "lucide-react";
 import type { ModelCatalogItem, ModelProvider } from "../../../api/types";
 import { EmptyState } from "../../EmptyState";
+import { useI18n } from "../../i18n/I18nProvider";
 import { StatusBadge } from "../../StatusBadge";
 import { ToolbarButton } from "../../ToolbarButton";
 
@@ -27,6 +28,8 @@ export function ModelProviderList({
   onDelete,
   testingKey
 }: ModelProviderListProps) {
+  const { t } = useI18n();
+
   return (
     <div className="model-provider-list">
       {providers.map((provider) => {
@@ -37,24 +40,24 @@ export function ModelProviderList({
               <div>
                 <strong>{provider.name}</strong>
                 <span>
-                  {provider.providerType} / {credentialLabel(provider)}
+                  {provider.providerType} / {credentialLabel(provider, t)}
                 </span>
                 {provider.baseUrl && <span>{provider.baseUrl}</span>}
               </div>
               <StatusBadge value={provider.status} />
               <ToolbarButton
-                label="Test provider"
+                label={t("models.testProvider")}
                 icon={TestTube2}
                 disabled={testingKey === testKey(provider.id)}
                 onClick={() => onTest(provider.id)}
               />
               <ToolbarButton
-                label="Refresh models"
+                label={t("models.refreshModels")}
                 icon={RefreshCw}
                 onClick={() => onRefresh(provider.id)}
               />
               <ToolbarButton
-                label="Delete provider"
+                label={t("models.deleteProvider")}
                 icon={Trash2}
                 variant="danger"
                 onClick={() => onDelete(provider.id)}
@@ -77,7 +80,7 @@ export function ModelProviderList({
                       {active && <CheckCircle2 size={16} />}
                     </button>
                     <ToolbarButton
-                      label="Test model"
+                      label={t("models.testModel")}
                       icon={TestTube2}
                       disabled={testingKey === testKey(provider.id, model.modelId)}
                       onClick={() => onTest(provider.id, model.modelId)}
@@ -85,12 +88,12 @@ export function ModelProviderList({
                   </div>
                 );
               })}
-              {providerModels.length === 0 && <EmptyState label="Refresh to load models" />}
+              {providerModels.length === 0 && <EmptyState label={t("models.refreshToLoad")} />}
             </div>
           </div>
         );
       })}
-      {providers.length === 0 && <EmptyState label="No providers" />}
+      {providers.length === 0 && <EmptyState label={t("models.noProviders")} />}
     </div>
   );
 }
@@ -99,14 +102,17 @@ function testKey(providerId: string, modelId = ""): string {
   return `${providerId}:${modelId}`;
 }
 
-function credentialLabel(provider: ModelProvider): string {
+function credentialLabel(
+  provider: ModelProvider,
+  t: (key: string, vars?: Record<string, string | number>) => string
+): string {
   if (provider.hasCredential) {
-    return "encrypted key";
+    return t("common.encryptedKey");
   }
 
   if (provider.apiKeySecret) {
     return `legacy binding: ${provider.apiKeySecret}`;
   }
 
-  return "no key";
+  return t("common.noKey");
 }

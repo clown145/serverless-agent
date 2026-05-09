@@ -2,6 +2,7 @@ import { RefreshCw } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { ToolCallHistoryItem } from "../../../api/types";
 import { EmptyState } from "../../EmptyState";
+import { useI18n } from "../../i18n/I18nProvider";
 import { JsonBlock } from "../../JsonBlock";
 import { StatusBadge } from "../../StatusBadge";
 
@@ -14,6 +15,7 @@ export function ToolCallHistoryView({
   calls,
   onRefresh
 }: ToolCallHistoryViewProps) {
+  const { t } = useI18n();
   const [selectedId, setSelectedId] = useState("");
   const selectedCall = useMemo(
     () => calls.find((call) => call.id === selectedId) ?? calls[0],
@@ -24,17 +26,17 @@ export function ToolCallHistoryView({
     <div className="tool-history">
       <header className="subsection-header">
         <div>
-          <h2>Recent Calls</h2>
-          <p>{calls.length} loaded</p>
+          <h2>{t("tools.recentCalls")}</h2>
+          <p>{t("common.loadedCount", { count: calls.length })}</p>
         </div>
         <button className="secondary-button" type="button" onClick={onRefresh}>
           <RefreshCw size={16} />
-          Refresh
+          {t("common.refresh")}
         </button>
       </header>
 
       {calls.length === 0 ? (
-        <EmptyState label="No tool calls yet" />
+        <EmptyState label={t("tools.noCalls")} />
       ) : (
         <div className="tool-history-layout">
           <div className="tool-call-list">

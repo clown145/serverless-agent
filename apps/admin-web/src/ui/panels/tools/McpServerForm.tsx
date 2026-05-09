@@ -1,3 +1,5 @@
+import { useI18n } from "../../i18n/I18nProvider";
+
 export type McpServerDraft = {
   name: string;
   url: string;
@@ -17,10 +19,12 @@ export function McpServerForm({
   onDraftChange,
   onSubmit
 }: McpServerFormProps) {
+  const { t } = useI18n();
+
   return (
     <div className="mcp-form">
       <label>
-        MCP server
+        {t("tools.mcpServer")}
         <input
           value={draft.name}
           onChange={(event) => onDraftChange({ ...draft, name: event.target.value })}
@@ -36,7 +40,7 @@ export function McpServerForm({
         />
       </label>
       <label>
-        Auth
+        {t("tools.auth")}
         <select
           value={draft.authType}
           onChange={(event) => {
@@ -52,7 +56,7 @@ export function McpServerForm({
         </select>
       </label>
       <label>
-        Header
+        {t("tools.header")}
         <input
           value={draft.authHeader}
           disabled={draft.authType !== "api-key-header"}
@@ -61,7 +65,7 @@ export function McpServerForm({
         />
       </label>
       <label>
-        Secret
+        {t("tools.secret")}
         <input
           type="password"
           value={draft.credential}
@@ -70,7 +74,7 @@ export function McpServerForm({
         />
       </label>
       <button className="primary-button" type="button" onClick={onSubmit}>
-        Save
+        {t("common.save")}
       </button>
     </div>
   );

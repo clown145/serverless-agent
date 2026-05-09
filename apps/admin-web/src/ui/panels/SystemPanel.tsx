@@ -1,4 +1,5 @@
 import { JsonBlock } from "../JsonBlock";
+import { useI18n } from "../i18n/I18nProvider";
 
 type SystemPanelProps = {
   token: string;
@@ -6,14 +7,16 @@ type SystemPanelProps = {
 };
 
 export function SystemPanel({ token, onTokenChange }: SystemPanelProps) {
+  const { t } = useI18n();
+
   return (
     <section className="panel system-panel">
       <header className="panel-header">
-        <h1>System</h1>
+        <h1>{t("system.title")}</h1>
       </header>
       <div className="form-grid single">
         <label>
-          Admin token
+          {t("system.adminToken")}
           <input
             type="password"
             value={token}

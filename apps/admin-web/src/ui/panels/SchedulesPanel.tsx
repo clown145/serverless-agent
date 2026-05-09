@@ -2,12 +2,14 @@ import { RefreshCw, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { Schedule } from "../../api/types";
 import { EmptyState } from "../EmptyState";
+import { useI18n } from "../i18n/I18nProvider";
 import { JsonBlock } from "../JsonBlock";
 import { StatusBadge } from "../StatusBadge";
 import { ToolbarButton } from "../ToolbarButton";
 import type { PanelProps } from "./types";
 
 export function SchedulesPanel({ client, notify }: PanelProps) {
+  const { t } = useI18n();
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [text, setText] = useState("/ping");
   const [delaySeconds, setDelaySeconds] = useState(60);
@@ -24,7 +26,7 @@ export function SchedulesPanel({ client, notify }: PanelProps) {
   async function create() {
     try {
       await client.createSchedule({ text, delaySeconds });
-      notify("Schedule created", "ok");
+      notify(t("schedules.created"), "ok");
       await load();
     } catch (error) {
       notify(error instanceof Error ? error.message : "Failed to create schedule", "error");
@@ -34,7 +36,7 @@ export function SchedulesPanel({ client, notify }: PanelProps) {
   async function cancel(id: string) {
     try {
       await client.cancelSchedule(id);
-      notify("Schedule cancelled", "ok");
+      notify(t("schedules.cancelled"), "ok");
       await load();
     } catch (error) {
       notify(error instanceof Error ? error.message : "Failed to cancel schedule", "error");
@@ -48,16 +50,16 @@ export function SchedulesPanel({ client, notify }: PanelProps) {
   return (
     <section className="panel">
       <header className="panel-header">
-        <h1>Schedules</h1>
-        <ToolbarButton label="Refresh" icon={RefreshCw} onClick={() => void load()} />
+        <h1>{t("schedules.title")}</h1>
+        <ToolbarButton label={t("common.refresh")} icon={RefreshCw} onClick={() => void load()} />
       </header>
       <div className="form-grid">
         <label>
-          Text
+          {t("schedules.text")}
           <input value={text} onChange={(event) => setText(event.target.value)} />
         </label>
         <label>
-          Delay
+          {t("schedules.delay")}
           <input
             type="number"
             min="0"
@@ -66,7 +68,7 @@ export function SchedulesPanel({ client, notify }: PanelProps) {
           />
         </label>
         <button className="primary-button" type="button" onClick={() => void create()}>
-          Create
+          {t("common.create")}
         </button>
       </div>
       <div className="table-list">
@@ -79,14 +81,14 @@ export function SchedulesPanel({ client, notify }: PanelProps) {
             <StatusBadge value={schedule.status} />
             <JsonBlock value={JSON.parse(schedule.payloadJson)} />
             <ToolbarButton
-              label="Cancel"
+              label={t("common.cancel")}
               icon={Trash2}
               variant="danger"
               onClick={() => void cancel(schedule.id)}
             />
           </div>
         ))}
-        {schedules.length === 0 && <EmptyState label="No schedules" />}
+        {schedules.length === 0 && <EmptyState label={t("schedules.noSchedules")} />}
       </div>
     </section>
   );

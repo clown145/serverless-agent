@@ -6,6 +6,7 @@ import type {
   ToolCallHistoryItem,
   ToolCatalogItem
 } from "../../api/types";
+import { useI18n } from "../i18n/I18nProvider";
 import { ToolbarButton } from "../ToolbarButton";
 import { McpServerForm, type McpServerDraft } from "./tools/McpServerForm";
 import { McpServerList } from "./tools/McpServerList";
@@ -15,6 +16,7 @@ import { ToolRunnerView } from "./tools/ToolRunnerView";
 import type { PanelProps } from "./types";
 
 export function ToolsPanel({ client, notify }: PanelProps) {
+  const { t } = useI18n();
   const [tools, setTools] = useState<ToolCatalogItem[]>([]);
   const [selectedToolName, setSelectedToolName] = useState("");
   const [toolCalls, setToolCalls] = useState<ToolCallHistoryItem[]>([]);
@@ -75,7 +77,7 @@ export function ToolsPanel({ client, notify }: PanelProps) {
         credential: draft.credential || undefined
       });
       setDraft({ ...draft, credential: "" });
-      notify("MCP server saved", "ok");
+      notify(t("tools.serverSaved"), "ok");
       await load();
     } catch (error) {
       notify(error instanceof Error ? error.message : "Failed to save MCP server", "error");
@@ -86,7 +88,7 @@ export function ToolsPanel({ client, notify }: PanelProps) {
     setBusyServerId(serverId);
     try {
       const result = await client.discoverMcpServerTools(serverId);
-      notify(`${result.tools.length} MCP tools discovered`, "ok");
+      notify(t("tools.discovered", { count: result.tools.length }), "ok");
       await load();
     } catch (error) {
       notify(error instanceof Error ? error.message : "Failed to discover MCP tools", "error");
@@ -98,7 +100,7 @@ export function ToolsPanel({ client, notify }: PanelProps) {
   async function remove(serverId: string) {
     try {
       await client.deleteMcpServer(serverId);
-      notify("MCP server deleted", "ok");
+      notify(t("tools.serverDeleted"), "ok");
       await load();
     } catch (error) {
       notify(error instanceof Error ? error.message : "Failed to delete MCP server", "error");
@@ -108,7 +110,7 @@ export function ToolsPanel({ client, notify }: PanelProps) {
   async function updateToolStatus(toolId: string, status: McpTool["status"]) {
     try {
       await client.setMcpToolStatus(toolId, status);
-      notify(status === "enabled" ? "MCP tool enabled" : "MCP tool disabled", "ok");
+      notify(status === "enabled" ? t("tools.toolEnabled") : t("tools.toolDisabled"), "ok");
       await load();
     } catch (error) {
       notify(error instanceof Error ? error.message : "Failed to update MCP tool", "error");
@@ -123,10 +125,10 @@ export function ToolsPanel({ client, notify }: PanelProps) {
     <section className="panel">
       <header className="panel-header">
         <div>
-          <h1>Tools</h1>
-          <p>{tools.length} registered</p>
+          <h1>{t("tools.title")}</h1>
+          <p>{t("tools.registered", { count: tools.length })}</p>
         </div>
-        <ToolbarButton label="Refresh" icon={RefreshCw} onClick={() => void load()} />
+        <ToolbarButton label={t("common.refresh")} icon={RefreshCw} onClick={() => void load()} />
       </header>
 
       <RegisteredToolsView

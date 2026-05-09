@@ -1,5 +1,7 @@
 import { Power, PowerOff, RefreshCw, Trash2 } from "lucide-react";
 import type { McpServer, McpTool } from "../../../api/types";
+import { EmptyState } from "../../EmptyState";
+import { useI18n } from "../../i18n/I18nProvider";
 import { StatusBadge } from "../../StatusBadge";
 import { ToolbarButton } from "../../ToolbarButton";
 
@@ -20,6 +22,8 @@ export function McpServerList({
   onToolStatus,
   onDelete
 }: McpServerListProps) {
+  const { t } = useI18n();
+
   return (
     <div className="mcp-server-list">
       {servers.map((server) => {
@@ -31,19 +35,19 @@ export function McpServerList({
                 <strong>{server.name}</strong>
                 <span>{server.url}</span>
                 <span>
-                  {server.authType} / {server.hasCredential ? "secret saved" : "no secret"}
+                  {server.authType} / {server.hasCredential ? t("common.secretSaved") : t("common.noSecret")}
                 </span>
                 {server.lastError && <span>{server.lastError}</span>}
               </div>
               <StatusBadge value={server.status} />
               <ToolbarButton
-                label="Discover tools"
+                label={t("tools.discoverTools")}
                 icon={RefreshCw}
                 disabled={busyServerId === server.id}
                 onClick={() => onDiscover(server.id)}
               />
               <ToolbarButton
-                label="Delete server"
+                label={t("tools.deleteServer")}
                 icon={Trash2}
                 variant="danger"
                 onClick={() => onDelete(server.id)}
@@ -58,7 +62,7 @@ export function McpServerList({
                   </div>
                   <StatusBadge value={tool.status} />
                   <ToolbarButton
-                    label={tool.status === "enabled" ? "Disable MCP tool" : "Enable MCP tool"}
+                    label={tool.status === "enabled" ? t("tools.disableTool") : t("tools.enableTool")}
                     icon={tool.status === "enabled" ? PowerOff : Power}
                     disabled={tool.status === "unavailable"}
                     onClick={() => {
@@ -71,13 +75,13 @@ export function McpServerList({
                 </div>
               ))}
               {tools.length === 0 && (
-                <div className="empty-state">Discover to cache MCP tools</div>
+                <EmptyState label={t("tools.discoverEmpty")} />
               )}
             </div>
           </div>
         );
       })}
-      {servers.length === 0 && <div className="empty-state">No MCP servers</div>}
+      {servers.length === 0 && <EmptyState label={t("tools.noServers")} />}
     </div>
   );
 }

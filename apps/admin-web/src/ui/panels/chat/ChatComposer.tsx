@@ -1,4 +1,5 @@
 import { Send } from "lucide-react";
+import { useI18n } from "../../i18n/I18nProvider";
 
 type ChatComposerProps = {
   text: string;
@@ -13,6 +14,8 @@ export function ChatComposer({
   onTextChange,
   onSend
 }: ChatComposerProps) {
+  const { t } = useI18n();
+
   return (
     <div className="composer">
       <textarea
@@ -26,7 +29,7 @@ export function ChatComposer({
       />
       <button className="primary-button" type="button" onClick={onSend} disabled={busy}>
         <Send size={16} />
-        Send
+        {t("chat.send")}
       </button>
     </div>
   );

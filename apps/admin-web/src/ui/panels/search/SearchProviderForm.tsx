@@ -1,4 +1,5 @@
 import type { SearchProvider } from "../../../api/types";
+import { useI18n } from "../../i18n/I18nProvider";
 
 export type SearchProviderDraft = {
   name: string;
@@ -18,17 +19,19 @@ export function SearchProviderForm({
   onDraftChange,
   onSubmit
 }: SearchProviderFormProps) {
+  const { t } = useI18n();
+
   return (
     <div className="search-provider-form">
       <label>
-        Name
+        {t("models.name")}
         <input
           value={draft.name}
           onChange={(event) => onDraftChange({ ...draft, name: event.target.value })}
         />
       </label>
       <label>
-        Provider
+        {t("search.provider")}
         <select
           value={draft.providerType}
           onChange={(event) => {
@@ -42,7 +45,7 @@ export function SearchProviderForm({
         </select>
       </label>
       <label>
-        Base URL
+        {t("models.baseUrl")}
         <input
           value={draft.baseUrl}
           onChange={(event) => onDraftChange({ ...draft, baseUrl: event.target.value })}
@@ -50,7 +53,7 @@ export function SearchProviderForm({
         />
       </label>
       <label>
-        API key
+        {t("models.apiKey")}
         <input
           type="password"
           value={draft.apiKey}
@@ -58,7 +61,7 @@ export function SearchProviderForm({
         />
       </label>
       <button className="primary-button" type="button" onClick={onSubmit}>
-        Save
+        {t("common.save")}
       </button>
     </div>
   );

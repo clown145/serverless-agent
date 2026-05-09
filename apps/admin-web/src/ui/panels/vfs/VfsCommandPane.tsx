@@ -1,4 +1,5 @@
 import { Play } from "lucide-react";
+import { useI18n } from "../../i18n/I18nProvider";
 import { ToolbarButton } from "../../ToolbarButton";
 
 type VfsCommandPaneProps = {
@@ -14,6 +15,8 @@ export function VfsCommandPane({
   onCommandChange,
   onRun
 }: VfsCommandPaneProps) {
+  const { t } = useI18n();
+
   return (
     <div className="vfs-command-pane">
       <div className="path-bar">
@@ -21,7 +24,7 @@ export function VfsCommandPane({
           value={command}
           onChange={(event) => onCommandChange(event.target.value)}
         />
-        <ToolbarButton label="Run command" icon={Play} onClick={onRun} />
+        <ToolbarButton label={t("vfs.runCommand")} icon={Play} onClick={onRun} />
       </div>
       <pre className="vfs-command-output">{output}</pre>
     </div>

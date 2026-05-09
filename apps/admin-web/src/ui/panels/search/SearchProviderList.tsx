@@ -1,5 +1,7 @@
 import { CheckCircle2, Search, Trash2 } from "lucide-react";
 import type { SearchProvider } from "../../../api/types";
+import { EmptyState } from "../../EmptyState";
+import { useI18n } from "../../i18n/I18nProvider";
 import { StatusBadge } from "../../StatusBadge";
 import { ToolbarButton } from "../../ToolbarButton";
 
@@ -18,6 +20,8 @@ export function SearchProviderList({
   onTest,
   onDelete
 }: SearchProviderListProps) {
+  const { t } = useI18n();
+
   return (
     <div className="search-provider-list">
       {providers.map((provider) => {
@@ -28,23 +32,23 @@ export function SearchProviderList({
               <strong>{provider.name}</strong>
               <span>{provider.providerType}</span>
               {provider.baseUrl && <span>{provider.baseUrl}</span>}
-              <span>{provider.hasCredential ? "encrypted key" : "no key"}</span>
+              <span>{provider.hasCredential ? t("common.encryptedKey") : t("common.noKey")}</span>
             </div>
             <StatusBadge value={provider.status} />
             {active && <CheckCircle2 size={17} />}
             <ToolbarButton
-              label="Test search"
+              label={t("search.testSearch")}
               icon={Search}
               onClick={() => onTest(provider.id)}
             />
             <ToolbarButton
-              label="Activate"
+              label={t("common.activate")}
               icon={CheckCircle2}
               disabled={active}
               onClick={() => onActivate(provider.id)}
             />
             <ToolbarButton
-              label="Delete"
+              label={t("common.delete")}
               icon={Trash2}
               variant="danger"
               onClick={() => onDelete(provider.id)}
@@ -52,7 +56,7 @@ export function SearchProviderList({
           </div>
         );
       })}
-      {providers.length === 0 && <div className="empty-state">No search providers</div>}
+      {providers.length === 0 && <EmptyState label={t("search.noProviders")} />}
     </div>
   );
 }

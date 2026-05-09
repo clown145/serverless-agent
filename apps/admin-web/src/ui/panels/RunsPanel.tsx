@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import type { AdminClient } from "../../api/client";
 import type { RunDetails, RunListItem } from "../../api/types";
 import { EmptyState } from "../EmptyState";
+import { useI18n } from "../i18n/I18nProvider";
 import { JsonBlock } from "../JsonBlock";
 import { StatusBadge } from "../StatusBadge";
 import { ToolbarButton } from "../ToolbarButton";
@@ -14,6 +15,7 @@ type RunsPanelProps = {
 };
 
 export function RunsPanel({ client, notify, selectedRunId }: RunsPanelProps) {
+  const { t } = useI18n();
   const [runs, setRuns] = useState<RunListItem[]>([]);
   const [activeRunId, setActiveRunId] = useState(selectedRunId ?? "");
   const [details, setDetails] = useState<RunDetails>();
@@ -55,8 +57,8 @@ export function RunsPanel({ client, notify, selectedRunId }: RunsPanelProps) {
     <section className="panel split-panel">
       <div className="list-pane">
         <header className="panel-header compact">
-          <h1>Runs</h1>
-          <ToolbarButton label="Refresh" icon={RefreshCw} onClick={() => void loadRuns()} />
+          <h1>{t("runs.title")}</h1>
+          <ToolbarButton label={t("common.refresh")} icon={RefreshCw} onClick={() => void loadRuns()} />
         </header>
         <div className="item-list">
           {runs.map((run) => (
@@ -70,7 +72,7 @@ export function RunsPanel({ client, notify, selectedRunId }: RunsPanelProps) {
               <StatusBadge value={run.status} />
             </button>
           ))}
-          {runs.length === 0 && <EmptyState label="No runs" />}
+          {runs.length === 0 && <EmptyState label={t("runs.noRuns")} />}
         </div>
       </div>
       <div className="detail-pane">
@@ -86,7 +88,7 @@ export function RunsPanel({ client, notify, selectedRunId }: RunsPanelProps) {
             </div>
           </>
         ) : (
-          <EmptyState label="Select a run" />
+          <EmptyState label={t("runs.selectRun")} />
         )}
       </div>
     </section>

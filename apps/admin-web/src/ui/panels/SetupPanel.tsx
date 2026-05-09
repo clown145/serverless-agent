@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { SetupStatus } from "../../api/types";
+import { useI18n } from "../i18n/I18nProvider";
 import { StatusBadge } from "../StatusBadge";
 import { ToolbarButton } from "../ToolbarButton";
 import type { ViewId } from "../views";
@@ -21,6 +22,7 @@ type SetupPanelProps = PanelProps & {
 };
 
 export function SetupPanel({ client, notify, onNavigate }: SetupPanelProps) {
+  const { t } = useI18n();
   const [status, setStatus] = useState<SetupStatus>();
 
   async function load() {
@@ -40,40 +42,40 @@ export function SetupPanel({ client, notify, onNavigate }: SetupPanelProps) {
     <section className="panel">
       <header className="panel-header">
         <div>
-          <h1>Setup</h1>
-          <p>{status?.ready ? "ready" : "configuration needed"}</p>
+          <h1>{t("setup.title")}</h1>
+          <p>{status?.ready ? t("setup.ready") : t("setup.pending")}</p>
         </div>
-        <ToolbarButton label="Refresh" icon={RefreshCw} onClick={() => void load()} />
+        <ToolbarButton label={t("common.refresh")} icon={RefreshCw} onClick={() => void load()} />
       </header>
 
       <div className="setup-actions">
         <button className="primary-button" type="button" onClick={() => onNavigate("models")}>
           <SlidersHorizontal size={16} />
-          Models
+          {t("nav.models")}
         </button>
         <button className="secondary-button" type="button" onClick={() => onNavigate("diagnostics")}>
           <Wrench size={16} />
-          Diagnostics
+          {t("nav.diagnostics")}
         </button>
         <button className="secondary-button" type="button" onClick={() => onNavigate("tools")}>
           <Plug size={16} />
-          Tools
+          {t("nav.tools")}
         </button>
         <button className="secondary-button" type="button" onClick={() => onNavigate("vfs")}>
           <FileText size={16} />
-          VFS
+          {t("nav.vfs")}
         </button>
         <button className="secondary-button" type="button" onClick={() => onNavigate("platforms")}>
           <Send size={16} />
-          Platforms
+          {t("nav.platforms")}
         </button>
         <button className="secondary-button" type="button" onClick={() => onNavigate("search")}>
           <Search size={16} />
-          Search
+          {t("nav.search")}
         </button>
         <button className="secondary-button" type="button" onClick={() => onNavigate("chat")}>
           <MessageSquare size={16} />
-          Chat
+          {t("nav.chat")}
         </button>
       </div>
 
@@ -82,8 +84,8 @@ export function SetupPanel({ client, notify, onNavigate }: SetupPanelProps) {
           <div className="setup-row" key={step.id}>
             <CheckCircle2 size={18} />
             <div>
-              <strong>{step.label}</strong>
-              <span>{step.detail}</span>
+              <strong>{t(`setup.steps.${step.id}`)}</strong>
+              <span>{formatStepDetail(step, t)}</span>
             </div>
             <StatusBadge value={step.status} />
           </div>
@@ -91,4 +93,18 @@ export function SetupPanel({ client, notify, onNavigate }: SetupPanelProps) {
       </div>
     </section>
   );
+}
+
+function formatStepDetail(
+  step: SetupStatus["steps"][number],
+  t: (key: string, vars?: Record<string, string | number>) => string
+): string {
+  if (step.id === "active_model" && step.status === "done") {
+    return step.detail;
+  }
+
+  const count = Number(step.detail.match(/^\d+/)?.[0] ?? 0);
+  const key = `setup.detail.${step.id}.${step.status}`;
+  const detail = t(key, { count });
+  return detail === key ? step.detail : detail;
 }

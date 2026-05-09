@@ -1,4 +1,5 @@
 import type { ModelProvider } from "../../../api/types";
+import { useI18n } from "../../i18n/I18nProvider";
 import type { ModelProviderDraft } from "./modelDefaults";
 
 const providerTypes: ModelProvider["providerType"][] = ["openai", "gemini", "mock"];
@@ -16,6 +17,8 @@ export function ModelProviderForm({
   onDraftChange,
   onSubmit
 }: ModelProviderFormProps) {
+  const { t } = useI18n();
+
   function update<K extends keyof ModelProviderDraft>(key: K, value: ModelProviderDraft[K]) {
     onDraftChange({ ...draft, [key]: value });
   }
@@ -23,7 +26,7 @@ export function ModelProviderForm({
   return (
     <div className="form-grid model-form">
       <label>
-        Format
+        {t("models.format")}
         <select
           value={draft.providerType}
           onChange={(event) => onProviderTypeChange(event.target.value as ModelProvider["providerType"])}
@@ -36,15 +39,15 @@ export function ModelProviderForm({
         </select>
       </label>
       <label>
-        Name
+        {t("models.name")}
         <input value={draft.name} onChange={(event) => update("name", event.target.value)} />
       </label>
       <label>
-        Base URL
+        {t("models.baseUrl")}
         <input value={draft.baseUrl} onChange={(event) => update("baseUrl", event.target.value)} />
       </label>
       <label>
-        API key
+        {t("models.apiKey")}
         <input
           value={draft.apiKey}
           autoComplete="off"
@@ -54,7 +57,7 @@ export function ModelProviderForm({
         />
       </label>
       <button className="primary-button" type="button" onClick={onSubmit}>
-        Add
+        {t("common.add")}
       </button>
     </div>
   );
