@@ -33,14 +33,28 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
 
   async function createIntegration() {
     try {
-      await client.createTelegramIntegration({
+      const created = await client.createTelegramIntegration({
         agentId: draft.agentId || undefined,
         name: draft.name,
         botToken: draft.botToken || undefined,
         webhookSecret: draft.webhookSecret || undefined
       });
+      if (draft.botToken) {
+        const webhook = await client.setTelegramWebhook(
+          created.integration.id,
+          webhookUrl
+        );
+        setResult(webhook);
+      } else {
+        setResult(created);
+      }
       setDraft({ ...draft, botToken: "", webhookSecret: "" });
-      notify("Telegram integration saved", "ok");
+      notify(
+        draft.botToken
+          ? "Telegram integration saved and webhook set"
+          : "Telegram integration saved",
+        "ok"
+      );
       await load();
     } catch (error) {
       notify(error instanceof Error ? error.message : "Failed to save Telegram", "error");
