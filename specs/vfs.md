@@ -6,14 +6,21 @@ D1 metadata + D1 小文本内容 + R2 blob 的 workspace 抽象。
 ## 路径空间
 
 ```text
+/system/
+/system/skills/
+/system/prompts/
+/system/tool-specs/
+/user/
+/user/skills/
+/user/memory/
+/user/preferences/
 /workspace/
-/workspace/notes/
 /workspace/tasks/
-/workspace/memory/
+/workspace/artifacts/
+/workspace/scratch/
+/workspace/inbox/
+/workspace/notes/
 /skills/
-/artifacts/
-/inbox/
-/outbox/
 ```
 
 ## VfsEntry
@@ -46,6 +53,7 @@ deletePath(path): Promise<void>
 movePath(source, target): Promise<VfsEntry>
 search(path, query): Promise<VfsSearchMatch[]>
 command(command, cwd): Promise<VfsCommandResult>
+initializeWorkspace(): Promise<VfsWorkspaceBootstrapStatus>
 ```
 
 ## 路径规则

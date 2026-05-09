@@ -66,6 +66,13 @@ export type VfsCommandResult = {
   output: string;
 };
 
+export type VfsBootstrapStatus = {
+  initialized: boolean;
+  expected: number;
+  existing: number;
+  missingPaths: string[];
+};
+
 export type Schedule = {
   id: string;
   agentId: string;
@@ -141,7 +148,7 @@ export type ModelSettings = {
 };
 
 export type SetupStep = {
-  id: "provider" | "credential" | "models" | "active_model";
+  id: "provider" | "credential" | "models" | "active_model" | "workspace";
   label: string;
   status: "done" | "pending";
   detail: string;

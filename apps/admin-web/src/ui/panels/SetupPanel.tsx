@@ -1,5 +1,6 @@
 import {
   CheckCircle2,
+  FileText,
   MessageSquare,
   Plug,
   RefreshCw,
@@ -57,6 +58,10 @@ export function SetupPanel({ client, notify, onNavigate }: SetupPanelProps) {
         <button className="secondary-button" type="button" onClick={() => onNavigate("tools")}>
           <Plug size={16} />
           Tools
+        </button>
+        <button className="secondary-button" type="button" onClick={() => onNavigate("vfs")}>
+          <FileText size={16} />
+          VFS
         </button>
         <button className="secondary-button" type="button" onClick={() => onNavigate("platforms")}>
           <Send size={16} />

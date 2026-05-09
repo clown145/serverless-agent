@@ -1,4 +1,4 @@
-import { FolderPlus, RefreshCw } from "lucide-react";
+import { FolderPlus, FolderTree, RefreshCw } from "lucide-react";
 import type { VfsEntry } from "../../../api/types";
 import { EmptyState } from "../../EmptyState";
 import { StatusBadge } from "../../StatusBadge";
@@ -14,6 +14,7 @@ type VfsEntryListProps = {
   onOpenEntry: (entry: VfsEntry) => void;
   onRefresh: () => void;
   onCreateDirectory: () => void;
+  onInitialize: () => void;
 };
 
 export function VfsEntryList({
@@ -25,13 +26,21 @@ export function VfsEntryList({
   onOpenDirectory,
   onOpenEntry,
   onRefresh,
-  onCreateDirectory
+  onCreateDirectory,
+  onInitialize
 }: VfsEntryListProps) {
   return (
     <div className="list-pane">
       <header className="panel-header compact">
         <h1>VFS</h1>
-        <ToolbarButton label="Refresh" icon={RefreshCw} onClick={onRefresh} />
+        <div className="tool-meta">
+          <ToolbarButton
+            label="Initialize workspace"
+            icon={FolderTree}
+            onClick={onInitialize}
+          />
+          <ToolbarButton label="Refresh" icon={RefreshCw} onClick={onRefresh} />
+        </div>
       </header>
       <div className="path-bar">
         <input value={path} onChange={(event) => onPathChange(event.target.value)} />

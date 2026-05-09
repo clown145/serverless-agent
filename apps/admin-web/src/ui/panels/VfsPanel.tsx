@@ -60,6 +60,21 @@ export function VfsPanel({ client, notify }: PanelProps) {
     }
   }
 
+  async function initializeWorkspace() {
+    try {
+      const result = await client.initializeVfs();
+      notify(
+        result.status.initialized
+          ? "Workspace initialized"
+          : `${result.status.missingPaths.length} directories still missing`,
+        result.status.initialized ? "ok" : "error"
+      );
+      await loadDirectory("/");
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "Failed to initialize VFS", "error");
+    }
+  }
+
   async function deleteFile() {
     try {
       await client.deleteVfs(filePath, false);
@@ -117,6 +132,7 @@ export function VfsPanel({ client, notify }: PanelProps) {
           }}
           onRefresh={() => void loadDirectory(path)}
           onCreateDirectory={() => void createDirectory()}
+          onInitialize={() => void initializeWorkspace()}
         />
         <VfsEditorPane
           file={file}

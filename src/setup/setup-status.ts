@@ -3,12 +3,14 @@ import type {
   ModelProviderRecord,
   ModelSettingsRecord
 } from "../storage/repositories/model-settings-types";
+import type { VfsWorkspaceBootstrapStatus } from "../vfs/bootstrap/default-workspace";
 
 export type SetupStepId =
   | "provider"
   | "credential"
   | "models"
-  | "active_model";
+  | "active_model"
+  | "workspace";
 
 export type SetupStep = {
   id: SetupStepId;
@@ -28,6 +30,7 @@ export function buildSetupStatus(input: {
   providers: ModelProviderRecord[];
   models: ModelCatalogRecord[];
   settings?: ModelSettingsRecord;
+  workspace?: VfsWorkspaceBootstrapStatus;
 }): SetupStatus {
   const activeProvider = input.providers.find(
     (provider) => provider.id === input.settings?.providerId
@@ -74,6 +77,17 @@ export function buildSetupStatus(input: {
         : "Select a default model"
     }
   ];
+
+  if (input.workspace) {
+    steps.push({
+      id: "workspace",
+      label: "Workspace",
+      status: input.workspace.initialized ? "done" : "pending",
+      detail: input.workspace.initialized
+        ? `${input.workspace.existing} default directories ready`
+        : `${input.workspace.missingPaths.length} default directories missing`
+    });
+  }
 
   return {
     ready: steps.every((step) => step.status === "done"),

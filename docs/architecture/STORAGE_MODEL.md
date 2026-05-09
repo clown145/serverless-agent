@@ -74,6 +74,7 @@ delete(path)
 move(path, target)
 search(path, query)
 command("ls /workspace")
+initializeWorkspace()
 ```
 
 VFS 约束：
@@ -84,4 +85,5 @@ VFS 约束：
 - 小文本和 JSON 内容写 D1。
 - 大文件和二进制内容走 R2 content-addressed blob。
 - metadata、版本号和 revision 写 D1。
+- 默认 workspace 初始化是幂等操作，只补齐缺失目录。
 - 操作写 audit log。

@@ -15,3 +15,4 @@
 
 底层通过 VFS workspace service 访问 D1/R2，不直接在 tool 里拼接存储细节。
 `vfs.command` 是安全的虚拟命令层，只支持 VFS 内部命令，不执行真实 shell。
+默认 workspace 由 admin VFS 初始化动作创建，不作为模型工具暴露。

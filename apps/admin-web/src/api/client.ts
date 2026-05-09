@@ -24,7 +24,8 @@ import type {
   VfsEntry,
   VfsFile,
   VfsCommandResult,
-  VfsSearchMatch
+  VfsSearchMatch,
+  VfsBootstrapStatus
 } from "./types";
 
 export type AdminClient = ReturnType<typeof createAdminClient>;
@@ -138,6 +139,12 @@ export function createAdminClient(getToken: () => string) {
       return request<ApiResult<{ result: VfsCommandResult }>>("/admin/vfs", {
         method: "POST",
         body: JSON.stringify({ action: "command", ...body })
+      });
+    },
+    initializeVfs: () => {
+      return request<ApiResult<{ status: VfsBootstrapStatus }>>("/admin/vfs", {
+        method: "POST",
+        body: JSON.stringify({ action: "initialize" })
       });
     },
     listSchedules: () => request<ApiResult<{ schedules: Schedule[] }>>("/admin/schedules"),

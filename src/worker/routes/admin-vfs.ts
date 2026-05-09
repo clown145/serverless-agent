@@ -1,6 +1,7 @@
 import { executeVfsCommand } from "../../vfs/commands";
 import { VfsError } from "../../vfs/core/errors";
 import { createVfsWorkspace } from "../../vfs/services/workspace-service";
+import { initializeVfsWorkspace } from "../../vfs/bootstrap/default-workspace";
 import { errorResponse, jsonResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
 import { requireAdmin } from "../admin-auth";
@@ -29,6 +30,10 @@ type VfsActionPayload =
       action: "command";
       command: string;
       cwd?: string;
+    }
+  | {
+      agentId?: string;
+      action: "initialize";
     };
 
 export async function handleAdminVfs(
@@ -156,6 +161,14 @@ async function handleAction(request: Request, env: Env): Promise<Response> {
         { command: payload.command, cwd: payload.cwd }
       );
       return jsonResponse({ ok: true, result });
+    }
+
+    if (payload.action === "initialize") {
+      const status = await initializeVfsWorkspace(env, {
+        agentId,
+        actorId: "admin"
+      });
+      return jsonResponse({ ok: true, status });
     }
 
     return errorResponse(400, "invalid_payload", "Unknown VFS action");

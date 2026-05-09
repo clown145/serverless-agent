@@ -39,6 +39,25 @@ describe("setup status", () => {
     expect(status.activeProvider).toBe("Gemini");
     expect(status.activeModel).toBe("Gemini Flash");
   });
+
+  it("includes workspace setup when bootstrap status is provided", () => {
+    const status = buildSetupStatus({
+      providers: [],
+      models: [],
+      workspace: {
+        initialized: false,
+        expected: 2,
+        existing: 1,
+        missingPaths: ["/workspace"]
+      }
+    });
+
+    expect(status.steps.at(-1)).toMatchObject({
+      id: "workspace",
+      status: "pending",
+      detail: "1 default directories missing"
+    });
+  });
 });
 
 function providerRecord(): ModelProviderRecord {
