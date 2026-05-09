@@ -23,4 +23,11 @@ describe("default policy", () => {
       maxLevel: 4
     });
   });
+
+  it("allows admin-owned final replies to send messages", () => {
+    expect(resolveDefaultPolicy({ ...base, actorRole: "admin" })).toMatchObject({
+      maxLevel: 4,
+      scopes: expect.arrayContaining(["message:send"])
+    });
+  });
 });

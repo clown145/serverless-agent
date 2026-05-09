@@ -95,6 +95,12 @@ export function createToolRegistry(
           createdAt: startedAt
         });
 
+        await completeToolCall(env.AGENT_DB, toolCallId, {
+          status: "permission_denied",
+          errorCode: "permission_denied",
+          completedAt: nowIso()
+        });
+
         return {
           status: "permission_denied",
           error: {
