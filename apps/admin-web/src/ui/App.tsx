@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { createAdminClient } from "../api/client";
 import { ChatPanel } from "./panels/ChatPanel";
+import { ConversationsPanel } from "./panels/ConversationsPanel";
 import { DiagnosticsPanel } from "./panels/DiagnosticsPanel";
 import { ModelsPanel } from "./panels/ModelsPanel";
 import { PlatformsPanel } from "./panels/PlatformsPanel";
@@ -27,6 +28,7 @@ export function App() {
     localStorage.getItem(tokenKey) ? "setup" : "system"
   );
   const [selectedRunId, setSelectedRunId] = useState("");
+  const [selectedConversationId, setSelectedConversationId] = useState("webui:default");
   const [token, setToken] = useState(() => localStorage.getItem(tokenKey) ?? "");
   const [notice, setNotice] = useState<{ message: string; tone: "ok" | "error" }>();
   const client = useMemo(() => createAdminClient(() => token), [token]);
@@ -44,6 +46,11 @@ export function App() {
   function openRun(runId: string) {
     setSelectedRunId(runId);
     setActive("runs");
+  }
+
+  function openConversation(conversationId: string) {
+    setSelectedConversationId(conversationId);
+    setActive("chat");
   }
 
   const activeItem = NAV_ITEMS.find((item) => item.id === active);
@@ -69,7 +76,22 @@ export function App() {
           {active === "setup" && (
             <SetupPanel client={client} notify={notify} onNavigate={setActive} />
           )}
-          {active === "chat" && <ChatPanel client={client} notify={notify} onRun={openRun} />}
+          {active === "chat" && (
+            <ChatPanel
+              client={client}
+              notify={notify}
+              onConversationChange={setSelectedConversationId}
+              onRun={openRun}
+              selectedConversationId={selectedConversationId}
+            />
+          )}
+          {active === "conversations" && (
+            <ConversationsPanel
+              client={client}
+              notify={notify}
+              onOpenConversation={openConversation}
+            />
+          )}
           {active === "models" && <ModelsPanel client={client} notify={notify} />}
           {active === "platforms" && <PlatformsPanel client={client} notify={notify} />}
           {active === "diagnostics" && <DiagnosticsPanel client={client} notify={notify} />}

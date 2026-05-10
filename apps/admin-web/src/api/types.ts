@@ -42,6 +42,28 @@ export type MessageAttachment = {
   sourceUrl?: string;
 };
 
+export type ConversationSettings = {
+  id: string;
+  agentId: string;
+  conversationId: string;
+  sessionId: string;
+  platform: "telegram" | "qq" | "webhook" | "admin" | "webui";
+  rootConversationId: string;
+  title?: string;
+  modelProviderId?: string;
+  modelId?: string;
+  historyLimit: number;
+  summaryEnabled: boolean;
+  summaryProviderId?: string;
+  summaryModelId?: string;
+  summaryText?: string;
+  summaryPreview?: string;
+  summaryUpdatedAt?: string;
+  compactedUntilMessageId?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type VfsEntry = {
   id: string;
   agentId: string;

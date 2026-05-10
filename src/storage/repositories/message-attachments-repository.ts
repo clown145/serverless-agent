@@ -82,6 +82,24 @@ export async function listMessageAttachments(
   return records;
 }
 
+export async function getMessageAttachmentRecord(
+  db: D1Database,
+  input: {
+    messageId: string;
+    attachmentId: string;
+  }
+): Promise<MessageAttachmentRecord | undefined> {
+  const row = await db
+    .prepare(
+      `SELECT * FROM message_attachments
+       WHERE message_id = ? AND id = ?`
+    )
+    .bind(input.messageId, input.attachmentId)
+    .first<MessageAttachmentRow>();
+
+  return row ? mapAttachmentRow(row) : undefined;
+}
+
 function mapAttachmentRow(row: MessageAttachmentRow): MessageAttachmentRecord {
   return {
     id: row.id,

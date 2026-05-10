@@ -6,6 +6,7 @@ import {
   FileText,
   KeyRound,
   MessageSquare,
+  MessagesSquare,
   Plug,
   Search,
   Send,
@@ -22,6 +23,7 @@ export const NAV_ITEMS: Array<{
 }> = [
   { id: "setup", labelKey: "nav.setup", icon: ClipboardCheck },
   { id: "chat", labelKey: "nav.chat", icon: MessageSquare },
+  { id: "conversations", labelKey: "nav.conversations", icon: MessagesSquare },
   { id: "models", labelKey: "nav.models", icon: SlidersHorizontal },
   { id: "platforms", labelKey: "nav.platforms", icon: Send },
   { id: "diagnostics", labelKey: "nav.diagnostics", icon: Activity },

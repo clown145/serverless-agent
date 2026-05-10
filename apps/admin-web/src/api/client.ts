@@ -1,6 +1,7 @@
 import type {
   ApiResult,
   ChatMessage,
+  ConversationSettings,
   MessageAttachment,
   ModelCatalogItem,
   DiagnosticCheck,
@@ -57,6 +58,21 @@ export function createAdminClient(getToken: () => string) {
     return data as T;
   }
 
+  async function requestBlob(path: string): Promise<Blob> {
+    const headers = new Headers();
+    const token = getToken().trim();
+    if (token) {
+      headers.set("authorization", `Bearer ${token}`);
+    }
+
+    const response = await fetch(path, { headers });
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.blob();
+  }
+
   return {
     sendMessage: (body: {
       text: string;
@@ -89,6 +105,82 @@ export function createAdminClient(getToken: () => string) {
       return request<ApiResult<{ messages: ChatMessage[] }>>(
         `/admin/messages?${params.toString()}`
       );
+    },
+    getMessageAttachmentBlob: (messageId: string, attachmentId: string) => {
+      return requestBlob(
+        `/admin/messages/${encodeURIComponent(messageId)}/attachments/${encodeURIComponent(attachmentId)}`
+      );
+    },
+    listConversations: (body: {
+      agentId?: string;
+      platform?: ConversationSettings["platform"];
+      rootConversationId?: string;
+      limit?: number;
+    } = {}) => {
+      const params = new URLSearchParams();
+      if (body.agentId) {
+        params.set("agentId", body.agentId);
+      }
+      if (body.platform) {
+        params.set("platform", body.platform);
+      }
+      if (body.rootConversationId) {
+        params.set("rootConversationId", body.rootConversationId);
+      }
+      if (body.limit) {
+        params.set("limit", String(body.limit));
+      }
+      const query = params.toString();
+
+      return request<ApiResult<{ conversations: ConversationSettings[] }>>(
+        `/admin/conversations${query ? `?${query}` : ""}`
+      );
+    },
+    createConversation: (body: {
+      agentId?: string;
+      platform?: ConversationSettings["platform"];
+      conversationId?: string;
+      rootConversationId?: string;
+      title?: string;
+    }) => {
+      return request<ApiResult<{ conversation: ConversationSettings }>>(
+        "/admin/conversations",
+        {
+          method: "POST",
+          body: JSON.stringify(body)
+        }
+      );
+    },
+    updateConversation: (
+      conversationId: string,
+      body: {
+        title?: string | null;
+        modelProviderId?: string | null;
+        modelId?: string | null;
+        historyLimit?: number;
+        summaryEnabled?: boolean;
+        summaryProviderId?: string | null;
+        summaryModelId?: string | null;
+      }
+    ) => {
+      return request<ApiResult<{ conversation: ConversationSettings }>>(
+        `/admin/conversations/${encodeURIComponent(conversationId)}`,
+        {
+          method: "PUT",
+          body: JSON.stringify(body)
+        }
+      );
+    },
+    compactConversation: (conversationId: string) => {
+      return request<
+        ApiResult<{
+          conversation: ConversationSettings;
+          summaryText?: string;
+        }>
+      >(`/admin/conversations/${encodeURIComponent(conversationId)}/compact`, {
+        method: "POST",
+        body: JSON.stringify({})
+      });
     },
     listRuns: () => request<ApiResult<{ runs: RunListItem[] }>>("/admin/runs?limit=30"),
     getRun: (runId: string) => request<ApiResult<RunDetails>>(`/admin/runs/${runId}`),

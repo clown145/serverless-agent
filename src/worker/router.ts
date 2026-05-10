@@ -1,6 +1,11 @@
 import type { Env } from "../shared/types/env";
 import { errorResponse, jsonResponse } from "../shared/http";
+import {
+  handleAdminConversationDetail,
+  handleAdminConversations
+} from "./routes/admin-conversations";
 import { handleAdminDiagnostics } from "./routes/admin-diagnostics";
+import { handleAdminMessageAttachment } from "./routes/admin-message-attachment";
 import { handleAdminHeartbeats } from "./routes/admin-heartbeats";
 import { handleAdminMessage } from "./routes/admin-message";
 import { handleAdminMcpServerDetail } from "./routes/admin-mcp-server-detail";
@@ -49,6 +54,28 @@ export async function routeRequest(
 
   if (url.pathname === "/admin/messages") {
     return handleAdminMessage(request, env, ctx);
+  }
+
+  if (url.pathname.startsWith("/admin/messages/")) {
+    const match = url.pathname.match(/^\/admin\/messages\/([^/]+)\/attachments\/([^/]+)$/);
+    if (match) {
+      return handleAdminMessageAttachment(request, env, {
+        messageId: decodeURIComponent(match[1]),
+        attachmentId: decodeURIComponent(match[2])
+      });
+    }
+  }
+
+  if (url.pathname === "/admin/conversations") {
+    return handleAdminConversations(request, env);
+  }
+
+  if (url.pathname.startsWith("/admin/conversations/")) {
+    const conversationPath = url.pathname.replace("/admin/conversations/", "");
+    const conversationId = decodeURIComponent(
+      conversationPath.replace(/\/compact$/, "")
+    );
+    return handleAdminConversationDetail(request, env, conversationId);
   }
 
   if (request.method === "GET" && url.pathname === "/admin/setup/status") {
@@ -195,6 +222,10 @@ export async function routeRequest(
         "/health",
         "/webhooks/telegram",
         "/admin/messages",
+        "/admin/messages/:messageId/attachments/:attachmentId",
+        "/admin/conversations",
+        "/admin/conversations/:conversationId",
+        "/admin/conversations/:conversationId/compact",
         "/admin/setup/status",
         "/admin/diagnostics",
         "/admin/platforms/telegram",

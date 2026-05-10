@@ -1,12 +1,15 @@
+import type { AdminClient } from "../../../api/client";
 import type { ChatMessage } from "../../../api/types";
 import { EmptyState } from "../../EmptyState";
 import { useI18n } from "../../i18n/I18nProvider";
+import { ChatAttachmentPreview } from "./ChatAttachmentPreview";
 
 type ChatTranscriptProps = {
+  client: AdminClient;
   messages: ChatMessage[];
 };
 
-export function ChatTranscript({ messages }: ChatTranscriptProps) {
+export function ChatTranscript({ client, messages }: ChatTranscriptProps) {
   const { t } = useI18n();
 
   if (messages.length === 0) {
@@ -25,10 +28,12 @@ export function ChatTranscript({ messages }: ChatTranscriptProps) {
             {message.attachments.length > 0 && (
               <div className="chat-attachments">
                 {message.attachments.map((attachment) => (
-                  <span key={attachment.id}>
-                    {attachment.type}
-                    {attachment.name ? ` · ${attachment.name}` : ""}
-                  </span>
+                  <ChatAttachmentPreview
+                    attachment={attachment}
+                    client={client}
+                    key={attachment.id}
+                    message={message}
+                  />
                 ))}
               </div>
             )}

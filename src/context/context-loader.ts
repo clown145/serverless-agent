@@ -51,15 +51,30 @@ export async function compactConversationNow(
   env: Env,
   message: InternalMessage
 ): Promise<string | undefined> {
-  const settings = await ensureConversationSettings(env.AGENT_DB, {
+  return compactConversationById(env, {
     agentId: message.agentId,
     conversationId: message.conversationId,
-    platform: message.platform,
-    rootConversationId: rootConversationId(message.conversationId)
+    platform: message.platform
+  });
+}
+
+export async function compactConversationById(
+  env: Env,
+  input: {
+    agentId: string;
+    conversationId: string;
+    platform: InternalMessage["platform"];
+  }
+): Promise<string | undefined> {
+  const settings = await ensureConversationSettings(env.AGENT_DB, {
+    agentId: input.agentId,
+    conversationId: input.conversationId,
+    platform: input.platform,
+    rootConversationId: rootConversationId(input.conversationId)
   });
   const allMessages = await listConversationMessages(env.AGENT_DB, {
-    agentId: message.agentId,
-    conversationId: message.conversationId,
+    agentId: input.agentId,
+    conversationId: input.conversationId,
     limit: CONTEXT_SCAN_LIMIT
   });
   const oldMessages = allMessages.slice(0, Math.max(allMessages.length - settings.historyLimit, 0));

@@ -106,6 +106,44 @@ export async function listConversationSettingsByRoot(
   return (result.results ?? []).map(mapConversationSettingsRow);
 }
 
+export async function listConversationSettings(
+  db: D1Database,
+  input: {
+    agentId?: string;
+    platform?: Platform;
+    rootConversationId?: string;
+    limit?: number;
+  } = {}
+): Promise<ConversationSettingsRecord[]> {
+  const clauses = ["1 = 1"];
+  const values: string[] = [];
+  if (input.agentId) {
+    clauses.push("agent_id = ?");
+    values.push(input.agentId);
+  }
+  if (input.platform) {
+    clauses.push("platform = ?");
+    values.push(input.platform);
+  }
+  if (input.rootConversationId) {
+    clauses.push("root_conversation_id = ?");
+    values.push(input.rootConversationId);
+  }
+
+  const limit = Math.min(Math.max(input.limit ?? 80, 1), 200);
+  const result = await db
+    .prepare(
+      `SELECT * FROM conversation_settings
+       WHERE ${clauses.join(" AND ")}
+       ORDER BY updated_at DESC
+       LIMIT ?`
+    )
+    .bind(...values, limit)
+    .all<ConversationSettingsRow>();
+
+  return (result.results ?? []).map(mapConversationSettingsRow);
+}
+
 export async function updateConversationSettings(
   db: D1Database,
   agentId: string,

@@ -12,7 +12,7 @@ import { bold, code } from "./format";
 
 export const switchConversationCommand: CommandDefinition = {
   name: "switch",
-  aliases: ["chat", "use"],
+  aliases: ["chat", "use", "sessions"],
   title: "Switch Conversation",
   description: "Switch or list logical conversations.",
   async execute({ env, message, rootConversationId, command }) {
@@ -26,7 +26,11 @@ export const switchConversationCommand: CommandDefinition = {
       const lines = [
         bold("会话列表", message.platform),
         ...sessions.slice(0, 12).map((session) =>
-          `${code(conversationSessionSuffix(session.conversationId), message.platform)} ${session.title ?? ""}`.trim()
+          [
+            code(conversationSessionSuffix(session.conversationId), message.platform),
+            session.title ?? "",
+            session.updatedAt
+          ].filter(Boolean).join(" · ")
         )
       ];
       return {
