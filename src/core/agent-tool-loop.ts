@@ -8,11 +8,13 @@ import {
   completeRun
 } from "../storage/repositories/runs-repository";
 import { listConversationMessages } from "../storage/repositories/messages-repository";
+import { findActivePlatformIntegration } from "../storage/repositories/platform-integrations-repository";
 import {
   createRuntimeToolRegistry,
   type ToolRegistry
 } from "../tools/registry/tool-registry";
 import type { ToolResult } from "../tools/types";
+import { normalizeTelegramParseMode } from "../adapters/telegram/formatting";
 import { createInitialModelMessages, createModelTools } from "./agent-context";
 import { sendFinalMessage } from "./agent-final-message";
 import { stringifyToolResult } from "./model/json";
@@ -48,7 +50,8 @@ export async function executeAgentToolLoop(
     registryTools.map((tool) => tool.definition.name)
   );
   const messages = createInitialModelMessages(message, selectedSkill, history, {
-    timeZone: env.AGENT_TIMEZONE
+    timeZone: env.AGENT_TIMEZONE,
+    telegramParseMode: await resolveTelegramParseMode(env, message)
   });
   const tools = createModelTools(registryTools);
   let sentMessageTool = false;
@@ -85,6 +88,22 @@ export async function executeAgentToolLoop(
 
   await sendFinalMessage(env, runId, message, "任务已停止：超过最大工具调用步数。");
   await completeRun(env.AGENT_DB, runId, "failed");
+}
+
+async function resolveTelegramParseMode(
+  env: Env,
+  message: InternalMessage
+) {
+  if (message.platform !== "telegram") {
+    return undefined;
+  }
+
+  const integration = await findActivePlatformIntegration(env.AGENT_DB, {
+    agentId: message.agentId,
+    platform: "telegram"
+  });
+
+  return normalizeTelegramParseMode(integration?.config.parseMode);
 }
 
 async function executeToolCall(

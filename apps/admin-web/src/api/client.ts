@@ -216,11 +216,24 @@ export function createAdminClient(getToken: () => string) {
       name: string;
       botToken?: string;
       webhookSecret?: string;
+      parseMode?: TelegramIntegration["parseMode"];
     }) => {
       return request<ApiResult<{ integration: TelegramIntegration }>>(
         "/admin/platforms/telegram",
         {
           method: "POST",
+          body: JSON.stringify(body)
+        }
+      );
+    },
+    updateTelegramIntegration: (
+      integrationId: string,
+      body: { parseMode?: TelegramIntegration["parseMode"] }
+    ) => {
+      return request<ApiResult<{ integration: TelegramIntegration }>>(
+        `/admin/platforms/telegram/${integrationId}`,
+        {
+          method: "PUT",
           body: JSON.stringify(body)
         }
       );

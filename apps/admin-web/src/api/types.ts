@@ -309,6 +309,7 @@ export type TelegramIntegration = {
   name: string;
   status: string;
   webhookSecretConfigured: boolean;
+  parseMode: "none" | "HTML" | "MarkdownV2";
   hasCredential: boolean;
   lastCheckedAt?: string;
   lastError?: string;

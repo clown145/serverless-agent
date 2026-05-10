@@ -20,7 +20,8 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
     agentId: "default",
     name: "Telegram",
     botToken: "",
-    webhookSecret: ""
+    webhookSecret: "",
+    parseMode: "HTML"
   });
 
   async function load() {
@@ -39,7 +40,8 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
         agentId: draft.agentId || undefined,
         name: draft.name,
         botToken: draft.botToken || undefined,
-        webhookSecret: draft.webhookSecret || undefined
+        webhookSecret: draft.webhookSecret || undefined,
+        parseMode: draft.parseMode
       });
       if (draft.botToken) {
         const webhook = await client.setTelegramWebhook(
@@ -73,6 +75,16 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
 
   async function deleteWebhook(id: string) {
     await runAction(() => client.deleteTelegramWebhook(id), t("platforms.webhookDeleted"));
+  }
+
+  async function updateParseMode(
+    id: string,
+    parseMode: TelegramIntegration["parseMode"]
+  ) {
+    await runAction(
+      () => client.updateTelegramIntegration(id, { parseMode }),
+      t("platforms.integrationUpdated")
+    );
   }
 
   async function deleteIntegration(id: string) {
@@ -119,6 +131,7 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
 
       <TelegramIntegrationList
         integrations={integrations}
+        onUpdateParseMode={(id, parseMode) => void updateParseMode(id, parseMode)}
         onTest={(id) => void testIntegration(id)}
         onSetWebhook={(id) => void setWebhook(id)}
         onDeleteWebhook={(id) => void deleteWebhook(id)}

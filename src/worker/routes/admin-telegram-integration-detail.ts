@@ -1,6 +1,7 @@
 import {
   deletePlatformIntegrationRecord,
-  getPlatformIntegrationRecord
+  getPlatformIntegrationRecord,
+  updatePlatformIntegrationConfig
 } from "../../storage/repositories/platform-integrations-repository";
 import { errorResponse, jsonResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
@@ -10,6 +11,11 @@ import {
   setTelegramIntegrationWebhook,
   testTelegramIntegration
 } from "./platforms/telegram-admin-actions";
+import { toTelegramIntegrationDto } from "./platforms/telegram-dto";
+import {
+  updateTelegramIntegrationSchema,
+  zodMessage
+} from "./platforms/telegram-schemas";
 
 export async function handleAdminTelegramIntegrationDetail(
   request: Request,
@@ -33,6 +39,25 @@ export async function handleAdminTelegramIntegrationDetail(
 
   if (request.method === "POST" && pathname.endsWith("/test")) {
     return testTelegramIntegration(env, integration);
+  }
+
+  if (request.method === "PUT") {
+    const parsed = updateTelegramIntegrationSchema.safeParse(
+      await request.json().catch(() => ({}))
+    );
+    if (!parsed.success) {
+      return errorResponse(400, "invalid_payload", zodMessage(parsed.error));
+    }
+
+    const updated = await updatePlatformIntegrationConfig(env.AGENT_DB, integration.id, {
+      ...integration.config,
+      ...parsed.data
+    });
+
+    return jsonResponse({
+      ok: true,
+      integration: toTelegramIntegrationDto(updated ?? integration)
+    });
   }
 
   if (request.method === "POST" && pathname.endsWith("/webhook")) {

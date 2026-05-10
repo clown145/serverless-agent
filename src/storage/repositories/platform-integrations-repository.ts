@@ -138,6 +138,19 @@ export async function updatePlatformIntegrationCredential(
   return getPlatformIntegrationRecord(db, id);
 }
 
+export async function updatePlatformIntegrationConfig(
+  db: D1Database,
+  id: string,
+  config: Record<string, unknown>
+): Promise<PlatformIntegrationRecord | undefined> {
+  await db
+    .prepare("UPDATE platform_integrations SET config_json = ?, updated_at = ? WHERE id = ?")
+    .bind(JSON.stringify(config), nowIso(), id)
+    .run();
+
+  return getPlatformIntegrationRecord(db, id);
+}
+
 export async function updatePlatformIntegrationCheck(
   db: D1Database,
   id: string,

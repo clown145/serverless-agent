@@ -1,4 +1,5 @@
 import { Plus } from "lucide-react";
+import type { TelegramIntegration } from "../../../api/types";
 import { useI18n } from "../../i18n/I18nProvider";
 
 export type TelegramIntegrationDraft = {
@@ -6,6 +7,7 @@ export type TelegramIntegrationDraft = {
   name: string;
   botToken: string;
   webhookSecret: string;
+  parseMode: TelegramIntegration["parseMode"];
 };
 
 type TelegramIntegrationFormProps = {
@@ -53,6 +55,22 @@ export function TelegramIntegrationForm({
           placeholder="auto-generated"
           onChange={(event) => onDraftChange({ ...draft, webhookSecret: event.target.value })}
         />
+      </label>
+      <label>
+        {t("platforms.parseMode")}
+        <select
+          value={draft.parseMode}
+          onChange={(event) =>
+            onDraftChange({
+              ...draft,
+              parseMode: event.target.value as TelegramIntegration["parseMode"]
+            })
+          }
+        >
+          <option value="HTML">HTML</option>
+          <option value="MarkdownV2">MarkdownV2</option>
+          <option value="none">{t("platforms.parseModeNone")}</option>
+        </select>
       </label>
       <button className="primary-button" type="button" onClick={onSubmit}>
         <Plus size={16} />

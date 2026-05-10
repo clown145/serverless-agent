@@ -36,7 +36,7 @@ describe("agent context", () => {
     expect(system.content).toContain("Current platform: telegram");
     expect(system.content).toContain("Current conversation: telegram:123");
     expect(system.content).toContain("Telegram formatting");
-    expect(system.content).toContain("plain text without parse_mode");
+    expect(system.content).toContain("parse_mode HTML");
   });
 });
 

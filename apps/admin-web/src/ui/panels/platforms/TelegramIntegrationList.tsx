@@ -6,6 +6,10 @@ import { ToolbarButton } from "../../ToolbarButton";
 
 type TelegramIntegrationListProps = {
   integrations: TelegramIntegration[];
+  onUpdateParseMode: (
+    integrationId: string,
+    parseMode: TelegramIntegration["parseMode"]
+  ) => void;
   onTest: (integrationId: string) => void;
   onSetWebhook: (integrationId: string) => void;
   onDeleteWebhook: (integrationId: string) => void;
@@ -14,6 +18,7 @@ type TelegramIntegrationListProps = {
 
 export function TelegramIntegrationList({
   integrations,
+  onUpdateParseMode,
   onTest,
   onSetWebhook,
   onDeleteWebhook,
@@ -36,6 +41,22 @@ export function TelegramIntegrationList({
             </span>
             {integration.lastError && <span>{integration.lastError}</span>}
           </div>
+          <label className="inline-select-label">
+            {t("platforms.parseMode")}
+            <select
+              value={integration.parseMode}
+              onChange={(event) =>
+                onUpdateParseMode(
+                  integration.id,
+                  event.target.value as TelegramIntegration["parseMode"]
+                )
+              }
+            >
+              <option value="HTML">HTML</option>
+              <option value="MarkdownV2">MarkdownV2</option>
+              <option value="none">{t("platforms.parseModeNone")}</option>
+            </select>
+          </label>
           <StatusBadge value={integration.status} />
           <ToolbarButton
             label={t("platforms.testBot")}

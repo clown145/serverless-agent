@@ -46,6 +46,9 @@ export async function handleAdminTelegramIntegrations(
     agentId: parsed.data.agentId ?? env.DEFAULT_AGENT_ID ?? "default",
     platform: "telegram",
     name: parsed.data.name,
+    config: {
+      parseMode: parsed.data.parseMode
+    },
     webhookSecret: parsed.data.webhookSecret ?? crypto.randomUUID()
   });
 
