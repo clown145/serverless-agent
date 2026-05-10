@@ -23,6 +23,21 @@ describe("agent context", () => {
       content: "hello"
     });
   });
+
+  it("adds runtime time and platform formatting guidance", () => {
+    const [system] = createInitialModelMessages(
+      { ...message("msg-1", "hello"), platform: "telegram", conversationId: "telegram:123" },
+      undefined,
+      [],
+      { timeZone: "Asia/Shanghai" }
+    );
+
+    expect(system.content).toContain("Configured timezone: Asia/Shanghai");
+    expect(system.content).toContain("Current platform: telegram");
+    expect(system.content).toContain("Current conversation: telegram:123");
+    expect(system.content).toContain("Telegram formatting");
+    expect(system.content).toContain("plain text without parse_mode");
+  });
 });
 
 function message(id: string, text: string): InternalMessage {

@@ -334,6 +334,12 @@ export function createAdminClient(getToken: () => string) {
         body: JSON.stringify({ providerId })
       });
     },
+    updateSearchSettings: (body: { defaultMaxResults?: number }) => {
+      return request<ApiResult<{ settings: SearchSettings }>>("/admin/search-providers", {
+        method: "PUT",
+        body: JSON.stringify(body)
+      });
+    },
     testSearchProvider: (providerId: string, body: { query: string; maxResults?: number }) => {
       return request<ApiResult<{ result: SearchTestResult }>>(
         `/admin/search-providers/${providerId}/test`,

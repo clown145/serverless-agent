@@ -9,7 +9,10 @@ export const createSearchProviderSchema = z.object({
 
 export const setSearchProviderSchema = z.object({
   agentId: z.string().min(1).optional(),
-  providerId: z.string().min(1)
+  providerId: z.string().min(1).optional(),
+  defaultMaxResults: z.number().int().min(1).max(10).optional()
+}).refine((input) => input.providerId || input.defaultMaxResults !== undefined, {
+  message: "providerId or defaultMaxResults is required"
 });
 
 export const testSearchProviderSchema = z.object({

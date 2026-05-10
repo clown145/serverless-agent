@@ -12,6 +12,7 @@ export function SearchPanel({ client, notify }: PanelProps) {
   const { t } = useI18n();
   const [providers, setProviders] = useState<SearchProvider[]>([]);
   const [activeProviderId, setActiveProviderId] = useState("");
+  const [defaultMaxResults, setDefaultMaxResults] = useState(5);
   const [testQuery, setTestQuery] = useState("Cloudflare Workers serverless agent");
   const [testResult, setTestResult] = useState<SearchTestResult>();
   const [draft, setDraft] = useState<SearchProviderDraft>({
@@ -26,6 +27,7 @@ export function SearchPanel({ client, notify }: PanelProps) {
       const result = await client.getSearchProviders();
       setProviders(result.providers);
       setActiveProviderId(result.settings?.providerId ?? "");
+      setDefaultMaxResults(result.settings?.defaultMaxResults ?? 5);
     } catch (error) {
       notify(error instanceof Error ? error.message : "Failed to load search providers", "error");
     }
@@ -70,6 +72,16 @@ export function SearchPanel({ client, notify }: PanelProps) {
     }
   }
 
+  async function saveSearchSettings() {
+    try {
+      await client.updateSearchSettings({ defaultMaxResults });
+      notify(t("search.settingsSaved"), "ok");
+      await load();
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "Failed to save search settings", "error");
+    }
+  }
+
   async function remove(providerId: string) {
     try {
       await client.deleteSearchProvider(providerId);
@@ -105,6 +117,22 @@ export function SearchPanel({ client, notify }: PanelProps) {
           {t("search.testQuery")}
           <input value={testQuery} onChange={(event) => setTestQuery(event.target.value)} />
         </label>
+      </div>
+
+      <div className="form-grid single search-settings-form">
+        <label>
+          {t("search.defaultResults")}
+          <input
+            type="number"
+            min="1"
+            max="10"
+            value={defaultMaxResults}
+            onChange={(event) => setDefaultMaxResults(Number(event.target.value))}
+          />
+        </label>
+        <button className="secondary-button" type="button" onClick={() => void saveSearchSettings()}>
+          {t("common.save")}
+        </button>
       </div>
 
       <SearchProviderList

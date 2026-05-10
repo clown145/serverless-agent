@@ -11,6 +11,7 @@ export interface Env {
   DEFAULT_AGENT_ID?: string;
   AGENT_MASTER_KEY?: string;
   INTERNAL_ADMIN_TOKEN?: string;
+  AGENT_TIMEZONE?: string;
   TELEGRAM_BOT_TOKEN?: string;
   TELEGRAM_WEBHOOK_SECRET?: string;
   MODEL_PROVIDER?: "openai" | "gemini" | "mock";

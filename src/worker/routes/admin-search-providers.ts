@@ -98,7 +98,7 @@ export async function handleAdminSearchProviders(
 
     const agentId = env.DEFAULT_AGENT_ID ?? "default";
     const settings = await getSearchSettings(env.AGENT_DB, agentId);
-    if (!settings) {
+    if (!settings?.providerId) {
       await setSearchSettings(env.AGENT_DB, { agentId, providerId: provider.id });
     }
 
@@ -111,24 +111,27 @@ export async function handleAdminSearchProviders(
       return errorResponse(400, "invalid_payload", zodMessage(parsed.error));
     }
 
-    const provider = await getSearchProviderRecord(env.AGENT_DB, parsed.data.providerId);
-    if (!provider) {
-      return errorResponse(404, "search_provider_not_found", "Search provider not found");
-    }
+    if (parsed.data.providerId) {
+      const provider = await getSearchProviderRecord(env.AGENT_DB, parsed.data.providerId);
+      if (!provider) {
+        return errorResponse(404, "search_provider_not_found", "Search provider not found");
+      }
 
-    try {
-      await createSearchProviderFromRecord(env, provider);
-    } catch (error) {
-      return errorResponse(
-        400,
-        "search_provider_unavailable",
-        error instanceof Error ? error.message : "Search provider unavailable"
-      );
+      try {
+        await createSearchProviderFromRecord(env, provider);
+      } catch (error) {
+        return errorResponse(
+          400,
+          "search_provider_unavailable",
+          error instanceof Error ? error.message : "Search provider unavailable"
+        );
+      }
     }
 
     const settings = await setSearchSettings(env.AGENT_DB, {
       agentId: parsed.data.agentId ?? env.DEFAULT_AGENT_ID ?? "default",
-      providerId: parsed.data.providerId
+      providerId: parsed.data.providerId,
+      defaultMaxResults: parsed.data.defaultMaxResults
     });
 
     return jsonResponse({ ok: true, settings });

@@ -9,15 +9,20 @@ export type ConversationContextMessage = {
   text?: string;
 };
 
+export type AgentContextOptions = {
+  timeZone?: string;
+};
+
 export function createInitialModelMessages(
   message: InternalMessage,
   selectedSkill?: SelectedSkill,
-  history: ConversationContextMessage[] = []
+  history: ConversationContextMessage[] = [],
+  options: AgentContextOptions = {}
 ): ModelMessage[] {
   return [
     {
       role: "system",
-      content: createBaseInstructions()
+      content: createBaseInstructions(message, options)
     },
     ...createSkillMessages(selectedSkill),
     ...createConversationMessages(message, selectedSkill, history)
@@ -32,14 +37,71 @@ export function createModelTools(tools: RegisteredTool[]): ModelTool[] {
   }));
 }
 
-function createBaseInstructions(): string {
+function createBaseInstructions(
+  message: InternalMessage,
+  options: AgentContextOptions
+): string {
   return [
     "You are serverless-agent, a Cloudflare serverless agent.",
+    createRuntimeContext(message, options.timeZone),
     "Use tools when a task requires reading or writing the virtual filesystem, sending messages, or performing external actions.",
     "Use search.web to find candidate pages, then use web.fetch_page to read and verify pages when the user asks for details, latest information, or claims that need support.",
+    "Do not force a search result count unless the user explicitly requests one; the system search settings control the normal result count.",
+    platformFormatInstruction(message.platform),
     "When the task is complete, answer concisely in the user's language.",
     "Do not claim a tool action succeeded unless a tool result confirms it."
   ].join("\n");
+}
+
+function createRuntimeContext(
+  message: InternalMessage,
+  timeZone = "UTC"
+): string {
+  const now = new Date();
+  return [
+    `Current time: ${formatLocalTime(now, timeZone)}`,
+    `Current time ISO: ${now.toISOString()}`,
+    `Configured timezone: ${normalizeTimeZone(timeZone)}`,
+    `Current platform: ${message.platform}`,
+    `Current conversation: ${message.conversationId}`
+  ].join("\n");
+}
+
+function formatLocalTime(date: Date, timeZone: string): string {
+  const normalized = normalizeTimeZone(timeZone);
+  try {
+    return new Intl.DateTimeFormat("en-US", {
+      dateStyle: "full",
+      timeStyle: "long",
+      timeZone: normalized
+    }).format(date);
+  } catch {
+    return new Intl.DateTimeFormat("en-US", {
+      dateStyle: "full",
+      timeStyle: "long",
+      timeZone: "UTC"
+    }).format(date);
+  }
+}
+
+function normalizeTimeZone(timeZone?: string): string {
+  return timeZone?.trim() || "UTC";
+}
+
+function platformFormatInstruction(platform: InternalMessage["platform"]): string {
+  if (platform === "telegram") {
+    return [
+      "Telegram formatting: messages are currently sent as plain text without parse_mode.",
+      "Avoid Markdown tables, HTML tags, and formatting that requires Telegram Markdown parsing.",
+      "Use short sections, numbered lines, plain URLs, and compact text."
+    ].join("\n");
+  }
+
+  if (platform === "webui" || platform === "admin") {
+    return "WebUI formatting: concise Markdown-style text is acceptable, but avoid very wide tables.";
+  }
+
+  return "Platform formatting: keep output plain, compact, and compatible with chat clients.";
 }
 
 function createConversationMessages(

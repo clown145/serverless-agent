@@ -13,6 +13,7 @@ jobs:
       WORKER_NAME: ${{ vars.WORKER_NAME || 'serverless-agent' }}
       DEFAULT_AGENT_ID: ${{ vars.DEFAULT_AGENT_ID || 'default' }}
       MODEL_PROVIDER: ${{ vars.MODEL_PROVIDER || 'mock' }}
+      AGENT_TIMEZONE: ${{ vars.AGENT_TIMEZONE || 'Asia/Shanghai' }}
       D1_DATABASE_NAME: ${{ vars.D1_DATABASE_NAME || vars.WORKER_NAME || 'serverless-agent' }}
       D1_DATABASE_ID: ${{ secrets.D1_DATABASE_ID || vars.D1_DATABASE_ID }}
       KV_NAMESPACE_TITLE: ${{ vars.KV_NAMESPACE_TITLE || vars.WORKER_NAME || 'serverless-agent' }}
@@ -125,6 +126,7 @@ jobs:
           replace WORKER_NAME "$WORKER_NAME"
           replace DEFAULT_AGENT_ID "$DEFAULT_AGENT_ID"
           replace MODEL_PROVIDER "$MODEL_PROVIDER"
+          replace AGENT_TIMEZONE "$AGENT_TIMEZONE"
           replace D1_DATABASE_NAME "$D1_DATABASE_NAME"
           replace D1_DATABASE_ID "$D1_DATABASE_ID"
           replace KV_NAMESPACE_ID "$KV_NAMESPACE_ID"

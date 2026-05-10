@@ -25,6 +25,7 @@ export type SearchProviderCredentialRecord = {
 export type SearchSettingsRecord = {
   agentId: string;
   providerId?: string;
+  defaultMaxResults: number;
   updatedAt: string;
 };
 
@@ -53,6 +54,7 @@ export type SearchProviderCredentialRow = {
 export type SearchSettingsRow = {
   agent_id: string;
   provider_id?: string;
+  default_max_results?: number;
   updated_at: string;
 };
 
@@ -88,6 +90,7 @@ export function mapSearchSettingsRow(row: SearchSettingsRow): SearchSettingsReco
   return {
     agentId: row.agent_id,
     providerId: row.provider_id ?? undefined,
+    defaultMaxResults: row.default_max_results ?? 5,
     updatedAt: row.updated_at
   };
 }

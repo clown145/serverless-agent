@@ -280,6 +280,7 @@ export type SearchProvider = {
 export type SearchSettings = {
   agentId: string;
   providerId?: string;
+  defaultMaxResults: number;
   updatedAt: string;
 };
 

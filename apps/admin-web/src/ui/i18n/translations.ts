@@ -162,6 +162,8 @@ export const translations: Record<Locale, Record<string, string>> = {
     "search.providerDeleted": "搜索供应商已删除",
     "search.results": "{count} 条结果",
     "search.testSearch": "测试搜索",
+    "search.defaultResults": "默认返回数量",
+    "search.settingsSaved": "搜索设置已保存",
     "search.noProviders": "暂无搜索供应商",
 
     "platforms.title": "平台",
@@ -408,6 +410,8 @@ export const translations: Record<Locale, Record<string, string>> = {
     "search.providerDeleted": "Search provider deleted",
     "search.results": "{count} results",
     "search.testSearch": "Test search",
+    "search.defaultResults": "Default results",
+    "search.settingsSaved": "Search settings saved",
     "search.noProviders": "No search providers",
 
     "platforms.title": "Platforms",

@@ -47,7 +47,9 @@ export async function executeAgentToolLoop(
   const allowedToolNames = new Set(
     registryTools.map((tool) => tool.definition.name)
   );
-  const messages = createInitialModelMessages(message, selectedSkill, history);
+  const messages = createInitialModelMessages(message, selectedSkill, history, {
+    timeZone: env.AGENT_TIMEZONE
+  });
   const tools = createModelTools(registryTools);
   let sentMessageTool = false;
 

@@ -1,5 +1,6 @@
 import { builtinTool } from "../builtin/source";
 import type { RegisteredTool, ToolResult } from "../types";
+import { getSearchSettings } from "../../storage/repositories/search-settings-repository";
 import { createSearchProvider } from "./provider-factory";
 import { webSearchInputJsonSchema, webSearchInputSchema } from "./schema";
 
@@ -26,7 +27,11 @@ export function createSearchTools(): RegisteredTool[] {
         }
 
         const provider = await createSearchProvider(context.env, context.agentId);
-        const result = await provider.search(parsed.data);
+        const settings = await getSearchSettings(context.env.AGENT_DB, context.agentId);
+        const result = await provider.search({
+          ...parsed.data,
+          maxResults: settings?.defaultMaxResults ?? parsed.data.maxResults
+        });
         return { status: "success", output: result };
       }
     })
