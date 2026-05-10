@@ -4,6 +4,7 @@ import { getSearchProviderRecord } from "../../storage/repositories/search-provi
 import type { SearchProviderRecord } from "../../storage/repositories/search-types";
 import { resolveSearchCredential } from "./credential";
 import type { SearchProvider } from "./provider-types";
+import { ExaSearchProvider } from "./exa-provider";
 import { TavilySearchProvider } from "./tavily-provider";
 
 export async function createSearchProvider(
@@ -37,6 +38,18 @@ export async function createSearchProviderFromRecord(
     });
   }
 
+  if (provider.providerType === "exa") {
+    const apiKey = await resolveSearchCredential(env, provider);
+    if (!apiKey) {
+      throw new Error("Exa API key is missing");
+    }
+
+    return new ExaSearchProvider({
+      apiKey,
+      baseUrl: provider.baseUrl
+    });
+  }
+
   throw new Error(`Unsupported search provider: ${provider.providerType}`);
 }
 
@@ -45,6 +58,13 @@ function createEnvSearchProvider(env: Env): SearchProvider {
     return new TavilySearchProvider({
       apiKey: env.TAVILY_API_KEY,
       baseUrl: env.TAVILY_BASE_URL
+    });
+  }
+
+  if (env.EXA_API_KEY) {
+    return new ExaSearchProvider({
+      apiKey: env.EXA_API_KEY,
+      baseUrl: env.EXA_BASE_URL
     });
   }
 

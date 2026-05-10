@@ -1,4 +1,4 @@
-export type SearchProviderType = "tavily" | "custom";
+export type SearchProviderType = "tavily" | "exa" | "custom";
 
 export type SearchProviderRecord = {
   id: string;

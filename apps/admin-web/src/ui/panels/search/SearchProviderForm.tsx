@@ -20,6 +20,7 @@ export function SearchProviderForm({
   onSubmit
 }: SearchProviderFormProps) {
   const { t } = useI18n();
+  const defaultBaseUrl = defaultSearchBaseUrl(draft.providerType);
 
   return (
     <div className="search-provider-form">
@@ -35,13 +36,17 @@ export function SearchProviderForm({
         <select
           value={draft.providerType}
           onChange={(event) => {
+            const providerType = event.target.value as SearchProvider["providerType"];
+            const shouldRename = draft.name === defaultSearchName(draft.providerType);
             onDraftChange({
               ...draft,
-              providerType: event.target.value as SearchProvider["providerType"]
+              providerType,
+              name: shouldRename ? defaultSearchName(providerType) : draft.name
             });
           }}
         >
           <option value="tavily">Tavily</option>
+          <option value="exa">Exa</option>
         </select>
       </label>
       <label>
@@ -49,7 +54,7 @@ export function SearchProviderForm({
         <input
           value={draft.baseUrl}
           onChange={(event) => onDraftChange({ ...draft, baseUrl: event.target.value })}
-          placeholder="https://api.tavily.com/search"
+          placeholder={defaultBaseUrl}
         />
       </label>
       <label>
@@ -65,4 +70,14 @@ export function SearchProviderForm({
       </button>
     </div>
   );
+}
+
+function defaultSearchName(providerType: SearchProvider["providerType"]): string {
+  return providerType === "exa" ? "Exa" : "Tavily";
+}
+
+function defaultSearchBaseUrl(providerType: SearchProvider["providerType"]): string {
+  return providerType === "exa"
+    ? "https://api.exa.ai/search"
+    : "https://api.tavily.com/search";
 }

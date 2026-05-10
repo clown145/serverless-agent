@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const createSearchProviderSchema = z.object({
   name: z.string().min(1).max(80),
-  providerType: z.enum(["tavily", "custom"]).default("tavily"),
+  providerType: z.enum(["tavily", "exa", "custom"]).default("tavily"),
   baseUrl: z.string().url().optional(),
   apiKey: z.string().min(1).optional()
 });

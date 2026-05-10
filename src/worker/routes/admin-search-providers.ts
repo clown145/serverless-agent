@@ -53,15 +53,19 @@ export async function handleAdminSearchProviders(
       return errorResponse(400, "invalid_payload", zodMessage(parsed.error));
     }
 
-    if (parsed.data.providerType === "tavily" && !parsed.data.apiKey?.trim()) {
-      return errorResponse(400, "missing_search_api_key", "Tavily API key is required");
+    if (requiresApiKey(parsed.data.providerType) && !parsed.data.apiKey?.trim()) {
+      return errorResponse(
+        400,
+        "missing_search_api_key",
+        `${searchProviderDisplayName(parsed.data.providerType)} API key is required`
+      );
     }
 
-    if (parsed.data.providerType !== "tavily") {
+    if (!isSupportedSearchProvider(parsed.data.providerType)) {
       return errorResponse(
         400,
         "unsupported_search_provider",
-        "Only Tavily search providers are supported currently"
+        "Only Tavily and Exa search providers are supported currently"
       );
     }
 
@@ -131,4 +135,16 @@ export async function handleAdminSearchProviders(
   }
 
   return errorResponse(405, "method_not_allowed", "Method not allowed");
+}
+
+function isSupportedSearchProvider(providerType: string): boolean {
+  return providerType === "tavily" || providerType === "exa";
+}
+
+function requiresApiKey(providerType: string): boolean {
+  return isSupportedSearchProvider(providerType);
+}
+
+function searchProviderDisplayName(providerType: string): string {
+  return providerType === "exa" ? "Exa" : "Tavily";
 }

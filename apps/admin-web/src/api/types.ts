@@ -269,7 +269,7 @@ export type McpTool = {
 export type SearchProvider = {
   id: string;
   name: string;
-  providerType: "tavily" | "custom";
+  providerType: "tavily" | "exa" | "custom";
   baseUrl?: string;
   status: string;
   createdAt: string;
@@ -293,7 +293,7 @@ export type SearchResultItem = {
 };
 
 export type SearchTestResult = {
-  provider: "tavily" | "custom";
+  provider: "tavily" | "exa" | "custom";
   query: string;
   answer?: string;
   results: SearchResultItem[];

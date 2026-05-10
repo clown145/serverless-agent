@@ -5,6 +5,7 @@
 Current provider:
 
 - `tavily`: POST `/search` with Bearer auth.
+- `exa`: POST `/search` with `x-api-key` auth.
 
 Provider extension points:
 

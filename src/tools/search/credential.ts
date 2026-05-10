@@ -46,7 +46,15 @@ export async function resolveSearchCredential(
     );
   }
 
-  return provider.providerType === "tavily" ? env.TAVILY_API_KEY : undefined;
+  if (provider.providerType === "tavily") {
+    return env.TAVILY_API_KEY;
+  }
+
+  if (provider.providerType === "exa") {
+    return env.EXA_API_KEY;
+  }
+
+  return undefined;
 }
 
 function resolveCredentialMasterKey(env: Env): string | undefined {
