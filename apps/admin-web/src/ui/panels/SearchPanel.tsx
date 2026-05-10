@@ -63,7 +63,7 @@ export function SearchPanel({ client, notify }: PanelProps) {
     try {
       const result = await client.testSearchProvider(providerId, {
         query: testQuery,
-        maxResults: 3
+        maxResults: defaultMaxResults
       });
       setTestResult(result.result);
       notify(t("search.results", { count: result.result.results.length }), "ok");
