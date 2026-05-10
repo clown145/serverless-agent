@@ -18,5 +18,6 @@ describe("tool catalog", () => {
     expect(readFile?.inputSchema).toMatchObject({ type: "object" });
     expect(catalog.map((tool) => tool.name)).toContain("vfs.command");
     expect(catalog.map((tool) => tool.name)).toContain("vfs.search");
+    expect(catalog.map((tool) => tool.name)).toContain("web.fetch_page");
   });
 });

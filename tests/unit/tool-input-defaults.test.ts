@@ -8,6 +8,10 @@ describe("tool input defaults", () => {
       query: "Cloudflare Workers serverless agent",
       maxResults: 3
     });
+    expect(createToolInputDraft(tool("web.fetch_page"))).toMatchObject({
+      url: "https://workers.cloudflare.com",
+      maxChars: 6000
+    });
   });
 
   it("falls back to required JSON schema properties", () => {

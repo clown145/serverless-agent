@@ -5,6 +5,11 @@ const TOOL_EXAMPLES: Record<string, Record<string, unknown>> = {
     query: "Cloudflare Workers serverless agent",
     maxResults: 3
   },
+  "web.fetch_page": {
+    url: "https://workers.cloudflare.com",
+    maxChars: 6000,
+    includeLinks: false
+  },
   "vfs.list_dir": {
     path: "/"
   },
