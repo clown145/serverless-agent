@@ -1,10 +1,11 @@
 import { Plus, RefreshCw, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import type { PermissionPolicy } from "../../api/types";
+import type { PermissionPolicy, ToolCatalogItem } from "../../api/types";
 import { EmptyState } from "../EmptyState";
 import { useI18n } from "../i18n/I18nProvider";
 import { StatusBadge } from "../StatusBadge";
 import { ToolbarButton } from "../ToolbarButton";
+import { PermissionScopePicker } from "./permissions/PermissionScopePicker";
 import type { PanelProps } from "./types";
 
 const subjectTypes: PermissionPolicy["subjectType"][] = [
@@ -18,15 +19,25 @@ const subjectTypes: PermissionPolicy["subjectType"][] = [
 export function PermissionsPanel({ client, notify }: PanelProps) {
   const { t } = useI18n();
   const [policies, setPolicies] = useState<PermissionPolicy[]>([]);
+  const [tools, setTools] = useState<ToolCatalogItem[]>([]);
   const [subjectType, setSubjectType] = useState<PermissionPolicy["subjectType"]>("platform");
   const [subjectId, setSubjectId] = useState("webui");
   const [maxLevel, setMaxLevel] = useState(4);
-  const [scopes, setScopes] = useState("workspace:read,workspace:write,message:send");
+  const [selectedScopes, setSelectedScopes] = useState<string[]>([
+    "workspace:read",
+    "workspace:write",
+    "message:send"
+  ]);
+  const [manualScopes, setManualScopes] = useState("");
 
   async function load() {
     try {
-      const result = await client.listPolicies();
-      setPolicies(result.policies);
+      const [policyResult, toolResult] = await Promise.all([
+        client.listPolicies(),
+        client.listTools()
+      ]);
+      setPolicies(policyResult.policies);
+      setTools(toolResult.tools);
     } catch (error) {
       notify(error instanceof Error ? error.message : "Failed to load policies", "error");
     }
@@ -34,11 +45,12 @@ export function PermissionsPanel({ client, notify }: PanelProps) {
 
   async function create() {
     try {
+      const scopes = mergeScopes(selectedScopes, parseScopes(manualScopes));
       await client.createPolicy({
         subjectType,
         subjectId,
         maxLevel,
-        scopes: scopes.split(",").map((scope) => scope.trim()).filter(Boolean)
+        scopes
       });
       notify(t("permissions.created"), "ok");
       await load();
@@ -92,15 +104,20 @@ export function PermissionsPanel({ client, notify }: PanelProps) {
             onChange={(event) => setMaxLevel(Number(event.target.value))}
           />
         </label>
-        <label>
-          {t("permissions.scopes")}
-          <input value={scopes} onChange={(event) => setScopes(event.target.value)} />
-        </label>
         <button className="primary-button" type="button" onClick={() => void create()}>
           <Plus size={16} />
           {t("common.add")}
         </button>
       </div>
+      <PermissionScopePicker
+        tools={tools}
+        maxLevel={maxLevel}
+        onMaxLevelChange={setMaxLevel}
+        selectedScopes={selectedScopes}
+        onSelectedScopesChange={setSelectedScopes}
+        manualScopes={manualScopes}
+        onManualScopesChange={setManualScopes}
+      />
       <div className="table-list">
         {policies.map((policy) => (
           <div className="table-row" key={policy.id}>
@@ -122,4 +139,15 @@ export function PermissionsPanel({ client, notify }: PanelProps) {
       </div>
     </section>
   );
+}
+
+function parseScopes(input: string): string[] {
+  return input
+    .split(",")
+    .map((scope) => scope.trim())
+    .filter(Boolean);
+}
+
+function mergeScopes(...groups: string[][]): string[] {
+  return Array.from(new Set(groups.flat())).sort();
 }
