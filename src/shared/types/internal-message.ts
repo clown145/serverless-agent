@@ -18,6 +18,7 @@ export type MessageAttachment = {
   size?: number;
   r2Key?: string;
   sourceUrl?: string;
+  dataBase64?: string;
 };
 
 export type InternalMessage = {

@@ -1,6 +1,7 @@
 import type {
   ApiResult,
   ChatMessage,
+  MessageAttachment,
   ModelCatalogItem,
   DiagnosticCheck,
   McpServer,
@@ -57,7 +58,12 @@ export function createAdminClient(getToken: () => string) {
   }
 
   return {
-    sendMessage: (body: { text: string; agentId?: string; conversationId?: string }) => {
+    sendMessage: (body: {
+      text: string;
+      agentId?: string;
+      conversationId?: string;
+      attachments?: Array<MessageAttachment & { dataBase64?: string }>;
+    }) => {
       return request<ApiResult<{ eventId: string; result?: { runId?: string } }>>(
         "/admin/messages",
         {

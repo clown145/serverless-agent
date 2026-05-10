@@ -4,6 +4,9 @@ import type { InternalMessage } from "../shared/types/internal-message";
 import { nowIso } from "../shared/time";
 import { executeAgentToolLoop } from "./agent-tool-loop";
 import { sendFinalMessage } from "./agent-final-message";
+import { handleCommandMessage } from "../commands/handler";
+import { persistInboundAttachments } from "../media/persist-attachments";
+import { resolveInboundConversation } from "../conversations/resolve";
 import { insertMessage } from "../storage/repositories/messages-repository";
 import {
   appendRunStep,
@@ -14,8 +17,10 @@ import { recordRunFailedStep } from "./run-step-recorder";
 
 export async function runAgentForMessage(
   env: Env,
-  message: InternalMessage
+  inboundMessage: InternalMessage
 ): Promise<string> {
+  const resolved = await resolveInboundConversation(env, inboundMessage);
+  const message = await persistInboundAttachments(env, resolved.message);
   await insertMessage(env.AGENT_DB, message);
 
   const runId = createId("run");
@@ -40,6 +45,17 @@ export async function runAgentForMessage(
   });
 
   try {
+    const command = await handleCommandMessage(env, runId, message, {
+      rootConversationId: resolved.rootConversationId
+    });
+    if (command.handled) {
+      if (command.responseText) {
+        await sendFinalMessage(env, runId, message, command.responseText);
+      }
+      await completeRun(env.AGENT_DB, runId, command.status ?? "completed");
+      return runId;
+    }
+
     await executeAgentToolLoop(env, runId, message);
   } catch (error) {
     const summary = error instanceof Error ? error.message : "Agent run failed";

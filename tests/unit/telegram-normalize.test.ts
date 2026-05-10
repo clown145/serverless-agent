@@ -40,4 +40,32 @@ describe("Telegram normalize", () => {
     expect(message?.text).toBe("photo note");
     expect(message?.kind).toBe("text");
   });
+
+  it("converts photos into image attachments", () => {
+    const message = normalizeTelegramUpdate(
+      {
+        update_id: 3,
+        message: {
+          message_id: 12,
+          from: { id: 21, first_name: "Grace" },
+          chat: { id: 31, type: "group" },
+          date: 1760000000,
+          photo: [
+            { file_id: "small", width: 64, height: 64, file_size: 100 },
+            { file_id: "large", file_unique_id: "u1", width: 512, height: 512, file_size: 900 }
+          ]
+        }
+      },
+      "default"
+    );
+
+    expect(message?.kind).toBe("attachment");
+    expect(message?.attachments).toMatchObject([
+      {
+        type: "image",
+        mimeType: "image/jpeg",
+        sourceUrl: "telegram:file:large"
+      }
+    ]);
+  });
 });

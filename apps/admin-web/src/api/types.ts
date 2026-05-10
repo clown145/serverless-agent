@@ -27,8 +27,19 @@ export type ChatMessage = {
   role: "user" | "assistant";
   kind: string;
   text?: string;
+  attachments: MessageAttachment[];
   receivedAt: string;
   createdAt: string;
+};
+
+export type MessageAttachment = {
+  id: string;
+  type: "image" | "file" | "audio" | "video" | "unknown";
+  name?: string;
+  mimeType?: string;
+  size?: number;
+  r2Key?: string;
+  sourceUrl?: string;
 };
 
 export type VfsEntry = {

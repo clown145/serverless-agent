@@ -14,6 +14,19 @@ export type ModelToolCall = {
   arguments: Record<string, unknown>;
 };
 
+export type ModelContentPart =
+  | {
+      type: "text";
+      text: string;
+    }
+  | {
+      type: "image";
+      mimeType: string;
+      dataBase64: string;
+    };
+
+export type ModelContent = string | ModelContentPart[];
+
 export type ModelMessage =
   | {
       role: "system";
@@ -21,7 +34,7 @@ export type ModelMessage =
     }
   | {
       role: "user";
-      content: string;
+      content: ModelContent;
     }
   | {
       role: "assistant";

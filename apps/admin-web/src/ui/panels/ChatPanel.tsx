@@ -5,6 +5,7 @@ import type { ChatMessage } from "../../api/types";
 import { useI18n } from "../i18n/I18nProvider";
 import { ToolbarButton } from "../ToolbarButton";
 import { ChatComposer } from "./chat/ChatComposer";
+import type { PendingChatAttachment } from "./chat/ChatComposer";
 import { ChatTranscript } from "./chat/ChatTranscript";
 
 type ChatPanelProps = {
@@ -16,6 +17,7 @@ type ChatPanelProps = {
 export function ChatPanel({ client, notify, onRun }: ChatPanelProps) {
   const { t } = useI18n();
   const [text, setText] = useState("");
+  const [attachments, setAttachments] = useState<PendingChatAttachment[]>([]);
   const [conversationId, setConversationId] = useState("webui:default");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [lastRunId, setLastRunId] = useState("");
@@ -31,15 +33,16 @@ export function ChatPanel({ client, notify, onRun }: ChatPanelProps) {
   }
 
   async function send() {
-    if (!text.trim()) {
+    if (!text.trim() && attachments.length === 0) {
       return;
     }
 
     setBusy(true);
     try {
-      const result = await client.sendMessage({ text, conversationId });
+      const result = await client.sendMessage({ text, conversationId, attachments });
       const runId = result.result?.runId;
       setText("");
+      setAttachments([]);
       setLastRunId(runId ?? "");
       await loadMessages();
       notify(runId ? t("chat.runCompleted", { runId }) : t("chat.messageSent"), "ok");
@@ -84,7 +87,14 @@ export function ChatPanel({ client, notify, onRun }: ChatPanelProps) {
       </div>
 
       <ChatTranscript messages={messages} />
-      <ChatComposer text={text} busy={busy} onTextChange={setText} onSend={() => void send()} />
+      <ChatComposer
+        text={text}
+        busy={busy}
+        attachments={attachments}
+        onTextChange={setText}
+        onAttachmentsChange={setAttachments}
+        onSend={() => void send()}
+      />
     </section>
   );
 }

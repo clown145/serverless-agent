@@ -1,7 +1,11 @@
-import type { ModelMessage, ModelTool } from "./types";
+import type { ModelContent, ModelMessage, ModelTool } from "./types";
 
 export type GeminiPart = {
   text?: string;
+  inlineData?: {
+    mimeType: string;
+    data: string;
+  };
   functionCall?: {
     id?: string;
     name: string;
@@ -71,7 +75,7 @@ function toGeminiContent(
   }
 
   if (message.role === "user") {
-    return { role: "user", parts: [{ text: message.content }] };
+    return { role: "user", parts: toGeminiParts(message.content) };
   }
 
   if (message.role === "tool") {
@@ -106,6 +110,25 @@ function toGeminiContent(
     role: "model",
     parts: [{ text: message.content ?? "" }]
   };
+}
+
+function toGeminiParts(content: ModelContent): GeminiPart[] {
+  if (typeof content === "string") {
+    return [{ text: content }];
+  }
+
+  return content.map((part) => {
+    if (part.type === "text") {
+      return { text: part.text };
+    }
+
+    return {
+      inlineData: {
+        mimeType: part.mimeType,
+        data: part.dataBase64
+      }
+    };
+  });
 }
 
 function parseToolContent(content: string): Record<string, unknown> {

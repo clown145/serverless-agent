@@ -1,18 +1,20 @@
 import type { RegisteredTool } from "../tools/types";
 import type { InternalMessage } from "../shared/types/internal-message";
 import type { SelectedSkill } from "../skills/skill-selector";
-import type { ModelMessage, ModelTool } from "./model/types";
+import type { ModelContentPart, ModelMessage, ModelTool } from "./model/types";
 import type { TelegramParseMode } from "../adapters/telegram/formatting";
 
 export type ConversationContextMessage = {
   id: string;
   role: "user" | "assistant";
   text?: string;
+  attachments?: ModelContentPart[];
 };
 
 export type AgentContextOptions = {
   timeZone?: string;
   telegramParseMode?: TelegramParseMode;
+  conversationSummary?: string;
 };
 
 export function createInitialModelMessages(
@@ -26,6 +28,7 @@ export function createInitialModelMessages(
       role: "system",
       content: createBaseInstructions(message, options)
     },
+    ...createSummaryMessages(options.conversationSummary),
     ...createSkillMessages(selectedSkill),
     ...createConversationMessages(message, selectedSkill, history)
   ];
@@ -135,11 +138,20 @@ function createConversationMessages(
     const content =
       entry.id === message.id && selectedSkill ? selectedSkill.userText : entry.text;
 
-    if (!content) {
+    if (content === undefined && !entry.attachments?.length) {
       return [];
     }
 
-    return [{ role: entry.role, content }];
+    if (entry.role === "assistant") {
+      return [{ role: "assistant", content: content ?? "" }];
+    }
+
+    return [
+      {
+        role: "user",
+        content: contentWithAttachments(content ?? "", entry.attachments)
+      }
+    ];
   });
 
   if (history.some((entry) => entry.id === message.id)) {
@@ -171,5 +183,35 @@ function createSkillMessages(selectedSkill?: SelectedSkill): ModelMessage[] {
         selectedSkill.skill.instructions
       ].join("\n")
     }
+  ];
+}
+
+function createSummaryMessages(summary: string | undefined): ModelMessage[] {
+  if (!summary?.trim()) {
+    return [];
+  }
+
+  return [
+    {
+      role: "system",
+      content: [
+        "Conversation summary from earlier messages:",
+        summary.trim()
+      ].join("\n")
+    }
+  ];
+}
+
+function contentWithAttachments(
+  text: string,
+  attachments: ModelContentPart[] | undefined
+): string | ModelContentPart[] {
+  if (!attachments?.length) {
+    return text;
+  }
+
+  return [
+    { type: "text", text },
+    ...attachments
   ];
 }

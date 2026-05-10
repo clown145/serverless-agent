@@ -7,6 +7,10 @@ import {
   type ConversationMessage,
   type MessageRow
 } from "./message-types";
+import {
+  insertMessageAttachments,
+  listMessageAttachments
+} from "./message-attachments-repository";
 
 export async function insertMessage(
   db: D1Database,
@@ -33,6 +37,13 @@ export async function insertMessage(
       nowIso()
     )
     .run();
+
+  await insertMessageAttachments(db, {
+    messageId: message.id,
+    agentId: message.agentId,
+    conversationId: message.conversationId,
+    attachments: message.attachments.map(({ dataBase64, ...attachment }) => attachment)
+  });
 }
 
 export async function insertOutboundTextMessage(
@@ -80,6 +91,7 @@ export async function insertOutboundTextMessage(
     role: "assistant",
     kind: "text",
     text: input.text,
+    attachments: [],
     receivedAt: now,
     createdAt: now
   };
@@ -118,5 +130,23 @@ export async function listConversationMessages(
         .bind(input.agentId, input.conversationId, limit);
 
   const result = await query.all<MessageRow>();
-  return (result.results ?? []).map(mapMessageRow);
+  const messages = (result.results ?? []).map(mapMessageRow);
+  const attachments = await listMessageAttachments(
+    db,
+    messages.map((message) => message.id)
+  );
+  const byMessage = new Map<string, typeof attachments>();
+  for (const attachment of attachments) {
+    const current = byMessage.get(attachment.messageId) ?? [];
+    current.push(attachment);
+    byMessage.set(attachment.messageId, current);
+  }
+
+  return messages.map((message) => ({
+    ...message,
+    attachments: (byMessage.get(message.id) ?? []).map(
+      ({ messageId: _messageId, agentId: _agentId, conversationId: _conversationId, createdAt: _createdAt, ...attachment }) =>
+        attachment
+    )
+  }));
 }

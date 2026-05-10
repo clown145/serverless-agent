@@ -1,4 +1,8 @@
-import type { MessageKind, Platform } from "../../shared/types/internal-message";
+import type {
+  MessageAttachment,
+  MessageKind,
+  Platform
+} from "../../shared/types/internal-message";
 
 export type ConversationMessage = {
   id: string;
@@ -10,6 +14,7 @@ export type ConversationMessage = {
   role: "user" | "assistant";
   kind: MessageKind;
   text?: string;
+  attachments: MessageAttachment[];
   receivedAt: string;
   createdAt: string;
 };
@@ -38,6 +43,7 @@ export function mapMessageRow(row: MessageRow): ConversationMessage {
     role: row.sender_id.startsWith("agent:") ? "assistant" : "user",
     kind: row.kind,
     text: row.text ?? undefined,
+    attachments: [],
     receivedAt: row.received_at,
     createdAt: row.created_at
   };

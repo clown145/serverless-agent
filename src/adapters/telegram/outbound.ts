@@ -6,6 +6,7 @@ import {
   stripTelegramMarkup,
   telegramParseModePayload
 } from "./formatting";
+import { physicalConversationForPlatform } from "../../conversations/ids";
 
 export type PlatformSendResult = {
   ok: boolean;
@@ -24,7 +25,7 @@ export async function sendTelegramText(
     return { ok: false, error: "Telegram bot token is not configured" };
   }
 
-  const chatId = conversationId.replace(/^telegram:/, "");
+  const chatId = physicalConversationForPlatform("telegram", conversationId).replace(/^telegram:/, "");
   const parseMode = normalizeTelegramParseMode(bot.integration?.config.parseMode);
   const requestBody: Record<string, unknown> = {
     chat_id: chatId,

@@ -22,6 +22,16 @@ export function ChatTranscript({ messages }: ChatTranscriptProps) {
               {message.role === "assistant" ? t("chat.agent") : message.senderId}
             </span>
             <p>{message.text}</p>
+            {message.attachments.length > 0 && (
+              <div className="chat-attachments">
+                {message.attachments.map((attachment) => (
+                  <span key={attachment.id}>
+                    {attachment.type}
+                    {attachment.name ? ` · ${attachment.name}` : ""}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         </article>
       ))}

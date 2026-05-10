@@ -1,5 +1,6 @@
 import type { Env } from "../../shared/types/env";
 import { getModelSettings } from "../../storage/repositories/agent-model-settings-repository";
+import { getConversationSettings } from "../../storage/repositories/conversation-settings-repository";
 import { getModelProviderRecord } from "../../storage/repositories/model-providers-repository";
 import type {
   ChatProtocol,
@@ -22,8 +23,34 @@ export type ResolvedModelConfig = {
 
 export async function resolveModelConfig(
   env: Env,
-  agentId: string
+  agentId: string,
+  options: {
+    conversationId?: string;
+    providerId?: string;
+    modelId?: string;
+  } = {}
 ): Promise<ResolvedModelConfig> {
+  if (options.providerId && options.modelId) {
+    const provider = await getModelProviderRecord(env.AGENT_DB, options.providerId);
+    if (provider && provider.status === "active") {
+      return resolveModelConfigFromProvider(env, provider, options.modelId);
+    }
+  }
+
+  if (options.conversationId) {
+    const conversation = await getConversationSettings(
+      env.AGENT_DB,
+      agentId,
+      options.conversationId
+    );
+    if (conversation?.modelProviderId && conversation.modelId) {
+      const provider = await getModelProviderRecord(env.AGENT_DB, conversation.modelProviderId);
+      if (provider && provider.status === "active") {
+        return resolveModelConfigFromProvider(env, provider, conversation.modelId);
+      }
+    }
+  }
+
   const settings = await getModelSettings(env.AGENT_DB, agentId);
   if (settings?.providerId && settings.modelId) {
     const provider = await getModelProviderRecord(env.AGENT_DB, settings.providerId);

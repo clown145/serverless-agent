@@ -1,6 +1,10 @@
 import { createId } from "../../shared/ids";
 import { nowIso } from "../../shared/time";
-import type { InternalMessage, SenderRole } from "../../shared/types/internal-message";
+import type {
+  InternalMessage,
+  MessageAttachment,
+  SenderRole
+} from "../../shared/types/internal-message";
 
 export type WebUiMessageInput = {
   agentId: string;
@@ -9,11 +13,13 @@ export type WebUiMessageInput = {
   senderId?: string;
   displayName?: string;
   role?: SenderRole;
+  attachments?: MessageAttachment[];
 };
 
 export function createWebUiMessage(input: WebUiMessageInput): InternalMessage {
   const id = createId("msg");
   const text = input.text.trim();
+  const attachments = input.attachments ?? [];
 
   return {
     id,
@@ -26,9 +32,9 @@ export function createWebUiMessage(input: WebUiMessageInput): InternalMessage {
       displayName: input.displayName ?? "WebUI",
       role: input.role ?? "owner"
     },
-    kind: text.startsWith("/") ? "command" : "text",
-    text,
-    attachments: [],
+    kind: text.startsWith("/") ? "command" : attachments.length ? "attachment" : "text",
+    text: text || undefined,
+    attachments,
     receivedAt: nowIso()
   };
 }

@@ -19,10 +19,22 @@ type OpenAiCompatibleOptions = {
 
 type OpenAiMessage = {
   role: "system" | "user" | "assistant" | "tool";
-  content?: string | null;
+  content?: string | OpenAiContentPart[] | null;
   tool_call_id?: string;
   tool_calls?: OpenAiToolCall[];
 };
+
+type OpenAiContentPart =
+  | {
+      type: "text";
+      text: string;
+    }
+  | {
+      type: "image_url";
+      image_url: {
+        url: string;
+      };
+    };
 
 type OpenAiToolCall = {
   id: string;
@@ -140,7 +152,18 @@ function toOpenAiMessage(
 
   return {
     role: message.role,
-    content: message.content
+    content: Array.isArray(message.content)
+      ? message.content.map((part) =>
+          part.type === "text"
+            ? { type: "text", text: part.text }
+            : {
+                type: "image_url",
+                image_url: {
+                  url: `data:${part.mimeType};base64,${part.dataBase64}`
+                }
+              }
+        )
+      : message.content
   };
 }
 

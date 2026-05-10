@@ -8,9 +8,14 @@ import type { ModelProvider } from "./types";
 
 export async function createModelProvider(
   env: Env,
-  agentId: string
+  agentId: string,
+  options: {
+    conversationId?: string;
+    providerId?: string;
+    modelId?: string;
+  } = {}
 ): Promise<ModelProvider> {
-  const config = await resolveModelConfig(env, agentId);
+  const config = await resolveModelConfig(env, agentId, options);
   return createModelProviderFromConfig(config);
 }
 

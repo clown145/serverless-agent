@@ -7,7 +7,6 @@ import type { SelectedSkill } from "../skills/skill-selector";
 import {
   completeRun
 } from "../storage/repositories/runs-repository";
-import { listConversationMessages } from "../storage/repositories/messages-repository";
 import { findActivePlatformIntegration } from "../storage/repositories/platform-integrations-repository";
 import {
   createRuntimeToolRegistry,
@@ -15,6 +14,7 @@ import {
 } from "../tools/registry/tool-registry";
 import type { ToolResult } from "../tools/types";
 import { normalizeTelegramParseMode } from "../adapters/telegram/formatting";
+import { loadAgentContext } from "../context/context-loader";
 import { createInitialModelMessages, createModelTools } from "./agent-context";
 import { sendFinalMessage } from "./agent-final-message";
 import { stringifyToolResult } from "./model/json";
@@ -36,22 +36,21 @@ export async function executeAgentToolLoop(
   message: InternalMessage
 ): Promise<void> {
   const registry = await createRuntimeToolRegistry(env);
-  const provider = await createModelProvider(env, message.agentId);
-  const selectedSkill = await selectSkillForMessage(env, message);
-  const history = await listConversationMessages(env.AGENT_DB, {
-    agentId: message.agentId,
-    conversationId: message.conversationId,
-    limit: 16
+  const provider = await createModelProvider(env, message.agentId, {
+    conversationId: message.conversationId
   });
+  const selectedSkill = await selectSkillForMessage(env, message);
+  const context = await loadAgentContext(env, message);
   await recordContextStep(env, runId, message.agentId, selectedSkill);
 
   const registryTools = filterToolsForSkill(registry.list(), selectedSkill);
   const allowedToolNames = new Set(
     registryTools.map((tool) => tool.definition.name)
   );
-  const messages = createInitialModelMessages(message, selectedSkill, history, {
+  const messages = createInitialModelMessages(message, selectedSkill, context.history, {
     timeZone: env.AGENT_TIMEZONE,
-    telegramParseMode: await resolveTelegramParseMode(env, message)
+    telegramParseMode: await resolveTelegramParseMode(env, message),
+    conversationSummary: context.summary
   });
   const tools = createModelTools(registryTools);
   let sentMessageTool = false;

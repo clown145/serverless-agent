@@ -74,6 +74,10 @@ function buildSubjects(
 
   if (context.conversationId) {
     subjects.push({ type: "conversation", id: context.conversationId });
+    const rootConversationId = context.conversationId.split("#")[0];
+    if (rootConversationId && rootConversationId !== context.conversationId) {
+      subjects.push({ type: "conversation", id: rootConversationId });
+    }
   }
 
   return subjects;

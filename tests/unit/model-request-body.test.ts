@@ -49,6 +49,76 @@ describe("model request bodies", () => {
     expect(body).not.toHaveProperty("tools");
     expect(body).not.toHaveProperty("toolConfig");
   });
+
+  it("sends OpenAI-compatible image parts", async () => {
+    const fetchMock = vi.fn(async () => {
+      return jsonResponse({ choices: [{ message: { content: "seen" } }] });
+    });
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+
+    const provider = new OpenAiCompatibleProvider({
+      apiKey: "test",
+      model: "gpt-test"
+    });
+    await provider.complete({
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: "look" },
+            { type: "image", mimeType: "image/png", dataBase64: "aGVsbG8=" }
+          ]
+        }
+      ],
+      tools: []
+    });
+
+    const body = fetchBody(fetchMock);
+    expect(body.messages).toMatchObject([
+      {
+        role: "user",
+        content: [
+          { type: "text", text: "look" },
+          { type: "image_url", image_url: { url: "data:image/png;base64,aGVsbG8=" } }
+        ]
+      }
+    ]);
+  });
+
+  it("sends Gemini inline image parts", async () => {
+    const fetchMock = vi.fn(async () => {
+      return jsonResponse({ candidates: [{ content: { parts: [{ text: "seen" }] } }] });
+    });
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+
+    const provider = new GeminiProvider({
+      apiKey: "test",
+      model: "gemini-test"
+    });
+    await provider.complete({
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: "look" },
+            { type: "image", mimeType: "image/png", dataBase64: "aGVsbG8=" }
+          ]
+        }
+      ],
+      tools: []
+    });
+
+    const body = fetchBody(fetchMock);
+    expect(body.contents).toMatchObject([
+      {
+        role: "user",
+        parts: [
+          { text: "look" },
+          { inlineData: { mimeType: "image/png", data: "aGVsbG8=" } }
+        ]
+      }
+    ]);
+  });
 });
 
 function fetchBody(fetchMock: ReturnType<typeof vi.fn>): Record<string, unknown> {

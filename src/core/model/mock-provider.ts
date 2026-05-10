@@ -17,7 +17,7 @@ export class MockModelProvider implements ModelProvider {
       return message.role === "user";
     });
 
-    const content = latestUser?.role === "user" ? latestUser.content : "";
+    const content = latestUser?.role === "user" ? textContent(latestUser.content) : "";
     const writeMatch = content.match(/^\/write\s+(\S+)\s+([\s\S]+)$/);
     if (writeMatch) {
       if (!hasTool(request, "vfs.write_file")) {
@@ -63,6 +63,17 @@ export class MockModelProvider implements ModelProvider {
 
     return { content: `收到：${content}`, toolCalls: [] };
   }
+}
+
+function textContent(content: string | Array<{ type: string; text?: string }>): string {
+  if (typeof content === "string") {
+    return content;
+  }
+
+  return content
+    .map((part) => part.text)
+    .filter(Boolean)
+    .join("\n");
 }
 
 function hasTool(request: ModelRequest, toolName: string): boolean {

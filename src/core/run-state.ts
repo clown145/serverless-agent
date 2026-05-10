@@ -2,6 +2,7 @@ export type RunStatus = "queued" | "running" | "completed" | "failed";
 
 export type RunStepKind =
   | "received"
+  | "command_handled"
   | "context_loaded"
   | "model_called"
   | "tool_requested"
