@@ -7,6 +7,7 @@ import type {
   ModelCapability,
   ModelCatalogItem,
   DiagnosticCheck,
+  DiagnosticSummary,
   McpServer,
   McpTool,
   ModelProvider,
@@ -312,7 +313,13 @@ export function createAdminClient(getToken: () => string) {
       return request<ApiResult<{ status: SetupStatus }>>("/admin/setup/status");
     },
     getDiagnostics: () => {
-      return request<ApiResult<{ checks: DiagnosticCheck[]; healthy: boolean }>>(
+      return request<
+        ApiResult<{
+          checks: DiagnosticCheck[];
+          summary: DiagnosticSummary;
+          healthy: boolean;
+        }>
+      >(
         "/admin/diagnostics"
       );
     },

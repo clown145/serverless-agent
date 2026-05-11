@@ -247,6 +247,14 @@ export const translations: Record<Locale, Record<string, string>> = {
 
     "diagnostics.title": "诊断",
     "diagnostics.run": "运行诊断",
+    "diagnostics.summary": "正常 {ok} · 警告 {warn} · 错误 {error}",
+    "diagnostics.category.runtime": "运行环境",
+    "diagnostics.category.model": "模型",
+    "diagnostics.category.search": "搜索",
+    "diagnostics.category.platforms": "平台",
+    "diagnostics.category.workspace": "工作区",
+    "diagnostics.category.mcp": "MCP",
+    "diagnostics.category.activity": "最近活动",
 
     "runs.title": "运行",
     "runs.noRuns": "暂无运行",
@@ -542,6 +550,14 @@ export const translations: Record<Locale, Record<string, string>> = {
 
     "diagnostics.title": "Diagnostics",
     "diagnostics.run": "Run diagnostics",
+    "diagnostics.summary": "{ok} ok · {warn} warn · {error} error",
+    "diagnostics.category.runtime": "Runtime",
+    "diagnostics.category.model": "Models",
+    "diagnostics.category.search": "Search",
+    "diagnostics.category.platforms": "Platforms",
+    "diagnostics.category.workspace": "Workspace",
+    "diagnostics.category.mcp": "MCP",
+    "diagnostics.category.activity": "Recent Activity",
 
     "runs.title": "Runs",
     "runs.noRuns": "No runs",

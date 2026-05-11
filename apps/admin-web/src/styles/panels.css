@@ -406,6 +406,24 @@
   font-size: 12px;
 }
 
+.diagnostic-groups {
+  display: grid;
+  gap: 18px;
+}
+
+.diagnostic-group {
+  display: grid;
+  gap: 8px;
+}
+
+.diagnostic-row small {
+  display: block;
+  margin-top: 4px;
+  color: #536579;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
 .tools-layout {
   display: grid;
   grid-template-columns: minmax(220px, 0.9fr) minmax(320px, 1.4fr);

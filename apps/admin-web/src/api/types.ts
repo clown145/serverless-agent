@@ -228,9 +228,25 @@ export type SetupStatus = {
 
 export type DiagnosticCheck = {
   id: string;
+  category:
+    | "runtime"
+    | "model"
+    | "search"
+    | "platforms"
+    | "workspace"
+    | "mcp"
+    | "activity";
   label: string;
   status: "ok" | "warn" | "error";
   detail: string;
+  action?: string;
+};
+
+export type DiagnosticSummary = {
+  ok: number;
+  warn: number;
+  error: number;
+  total: number;
 };
 
 export type ModelTestResult = {
