@@ -78,14 +78,59 @@ export function RunsPanel({ client, notify, selectedRunId }: RunsPanelProps) {
       <div className="detail-pane">
         {details ? (
           <>
-            <div className="detail-grid">
-              <JsonBlock value={details.run} />
-              <JsonBlock value={{ steps: details.steps }} />
+            <div className="run-diagnostics">
+              <div>
+                <strong>{String(details.run.id ?? activeRunId)}</strong>
+                <span>{String(details.run.conversation_id ?? "")}</span>
+              </div>
+              <StatusBadge value={String(details.run.status ?? "unknown")} />
+              <span>{details.diagnostics.durationMs ?? 0}ms</span>
+              <span>{t("runs.modelCalls", { count: details.diagnostics.modelCallCount })}</span>
+              <span>{t("runs.toolCalls", { count: details.diagnostics.toolCallCount })}</span>
+              {details.diagnostics.lastError && (
+                <span className="danger-text">{details.diagnostics.lastError}</span>
+              )}
             </div>
-            <div className="detail-grid">
-              <JsonBlock value={{ toolCalls: details.toolCalls }} />
+            <div className="run-timeline">
+              {details.steps.map((step) => (
+                <article className="run-step-row" key={String(step.id)}>
+                  <StatusBadge value={String(step.status ?? "unknown")} />
+                  <div>
+                    <strong>{String(step.kind ?? "step")}</strong>
+                    <span>{String(step.summary ?? "")}</span>
+                    <span>{String(step.created_at ?? "")}</span>
+                  </div>
+                </article>
+              ))}
+            </div>
+            <section className="run-section">
+              <h2>{t("runs.toolCallsTitle")}</h2>
+              {details.toolCalls.map((toolCall) => (
+                <details className="run-tool-call" key={String(toolCall.id)}>
+                  <summary>
+                    <span>{String(toolCall.tool_name)}</span>
+                    <StatusBadge value={String(toolCall.status ?? "unknown")} />
+                    {toolCall.latency_ms !== undefined && <span>{String(toolCall.latency_ms)}ms</span>}
+                  </summary>
+                  <div className="detail-grid">
+                    <JsonBlock value={toolCall.input ?? toolCall.input_json} />
+                    <JsonBlock value={toolCall.output ?? toolCall.output_json ?? toolCall.error_code} />
+                  </div>
+                </details>
+              ))}
+              {details.toolCalls.length === 0 && <EmptyState label={t("runs.noToolCalls")} />}
+            </section>
+            <section className="run-section">
+              <h2>{t("runs.context")}</h2>
+              <div className="detail-grid">
+                <JsonBlock value={details.triggerMessage ?? {}} />
+                <JsonBlock value={details.conversation ?? {}} />
+              </div>
+            </section>
+            <section className="run-section">
+              <h2>{t("runs.auditLogs")}</h2>
               <JsonBlock value={{ auditLogs: details.auditLogs }} />
-            </div>
+            </section>
           </>
         ) : (
           <EmptyState label={t("runs.selectRun")} />

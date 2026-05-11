@@ -5,6 +5,7 @@ export type ViewId =
   | "models"
   | "platforms"
   | "diagnostics"
+  | "debug"
   | "tools"
   | "search"
   | "runs"

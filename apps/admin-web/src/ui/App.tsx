@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { createAdminClient } from "../api/client";
 import { ChatPanel } from "./panels/ChatPanel";
 import { ConversationsPanel } from "./panels/ConversationsPanel";
+import { DebugPanel } from "./panels/DebugPanel";
 import { DiagnosticsPanel } from "./panels/DiagnosticsPanel";
 import { ModelsPanel } from "./panels/ModelsPanel";
 import { PlatformsPanel } from "./panels/PlatformsPanel";
@@ -95,6 +96,7 @@ export function App() {
           {active === "models" && <ModelsPanel client={client} notify={notify} />}
           {active === "platforms" && <PlatformsPanel client={client} notify={notify} />}
           {active === "diagnostics" && <DiagnosticsPanel client={client} notify={notify} />}
+          {active === "debug" && <DebugPanel client={client} notify={notify} onRun={openRun} />}
           {active === "tools" && <ToolsPanel client={client} notify={notify} />}
           {active === "search" && <SearchPanel client={client} notify={notify} />}
           {active === "runs" && (

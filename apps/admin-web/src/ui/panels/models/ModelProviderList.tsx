@@ -1,5 +1,9 @@
 import { CheckCircle2, RefreshCw, TestTube2, Trash2 } from "lucide-react";
-import type { ModelCatalogItem, ModelProvider } from "../../../api/types";
+import type {
+  ModelCapability,
+  ModelCatalogItem,
+  ModelProvider
+} from "../../../api/types";
 import { EmptyState } from "../../EmptyState";
 import { useI18n } from "../../i18n/I18nProvider";
 import { StatusBadge } from "../../StatusBadge";
@@ -13,6 +17,7 @@ type ModelProviderListProps = {
   onRefresh: (providerId: string) => void;
   onTest: (providerId: string, modelId?: string) => void;
   onActivate: (providerId: string, modelId: string) => void;
+  onCapabilitiesChange: (modelId: string, capabilities: ModelCapability[]) => void;
   onDelete: (providerId: string) => void;
   testingKey?: string;
 };
@@ -25,6 +30,7 @@ export function ModelProviderList({
   onRefresh,
   onTest,
   onActivate,
+  onCapabilitiesChange,
   onDelete,
   testingKey
 }: ModelProviderListProps) {
@@ -85,6 +91,27 @@ export function ModelProviderList({
                       disabled={testingKey === testKey(provider.id, model.modelId)}
                       onClick={() => onTest(provider.id, model.modelId)}
                     />
+                    <div className="model-capability-list">
+                      {MODEL_CAPABILITIES.map((capability) => (
+                        <label key={capability}>
+                          <input
+                            checked={model.capabilities.includes(capability)}
+                            type="checkbox"
+                            onChange={(event) =>
+                              onCapabilitiesChange(
+                                model.id,
+                                toggleCapability(
+                                  model.capabilities,
+                                  capability,
+                                  event.target.checked
+                                )
+                              )
+                            }
+                          />
+                          {t(`models.capability.${capability}`)}
+                        </label>
+                      ))}
+                    </div>
                   </div>
                 );
               })}
@@ -96,6 +123,22 @@ export function ModelProviderList({
       {providers.length === 0 && <EmptyState label={t("models.noProviders")} />}
     </div>
   );
+}
+
+const MODEL_CAPABILITIES: ModelCapability[] = ["tools", "vision", "long_context"];
+
+function toggleCapability(
+  capabilities: ModelCapability[],
+  capability: ModelCapability,
+  enabled: boolean
+): ModelCapability[] {
+  if (enabled) {
+    return MODEL_CAPABILITIES.filter(
+      (item) => item === capability || capabilities.includes(item)
+    );
+  }
+
+  return capabilities.filter((item) => item !== capability);
 }
 
 function testKey(providerId: string, modelId = ""): string {

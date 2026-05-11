@@ -822,6 +822,22 @@
   text-align: left;
 }
 
+.model-capability-list {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px 8px 8px;
+}
+
+.model-capability-list label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
 .model-choice.selected {
   border-color: var(--accent);
   background: var(--accent-muted);
@@ -888,6 +904,81 @@
   white-space: pre-wrap;
 }
 
+.debug-message-list,
+.run-timeline {
+  display: grid;
+  gap: 8px;
+}
+
+.debug-message-row,
+.run-step-row,
+.run-diagnostics {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  padding: 12px;
+}
+
+.debug-message-row strong,
+.debug-message-row span,
+.run-step-row strong,
+.run-step-row span,
+.run-diagnostics strong,
+.run-diagnostics span {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.debug-message-row span,
+.run-step-row span,
+.run-diagnostics span {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.debug-message-row p {
+  margin: 4px 0;
+  color: var(--text);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.run-section {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.run-section h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: 15px;
+}
+
+.run-tool-call {
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  padding: 10px;
+}
+
+.run-tool-call summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  cursor: pointer;
+}
+
+.danger-text {
+  color: var(--danger) !important;
+}
+
 @media (max-width: 980px) {
   .form-grid,
   .form-grid.policy-form,
@@ -901,6 +992,9 @@
   .telegram-row,
   .search-provider-row,
   .model-provider-head,
+  .debug-message-row,
+  .run-step-row,
+  .run-diagnostics,
   .mcp-server-head,
   .composer,
   .tools-layout,

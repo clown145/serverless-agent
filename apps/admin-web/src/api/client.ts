@@ -2,7 +2,9 @@ import type {
   ApiResult,
   ChatMessage,
   ConversationSettings,
+  DebugMessageItem,
   MessageAttachment,
+  ModelCapability,
   ModelCatalogItem,
   DiagnosticCheck,
   McpServer,
@@ -184,6 +186,19 @@ export function createAdminClient(getToken: () => string) {
     },
     listRuns: () => request<ApiResult<{ runs: RunListItem[] }>>("/admin/runs?limit=30"),
     getRun: (runId: string) => request<ApiResult<RunDetails>>(`/admin/runs/${runId}`),
+    listDebugMessages: (body: { platform?: ChatMessage["platform"]; limit?: number } = {}) => {
+      const params = new URLSearchParams();
+      if (body.platform) {
+        params.set("platform", body.platform);
+      }
+      if (body.limit) {
+        params.set("limit", String(body.limit));
+      }
+      const query = params.toString();
+      return request<ApiResult<{ messages: DebugMessageItem[] }>>(
+        `/admin/debug/messages${query ? `?${query}` : ""}`
+      );
+    },
     listVfs: (path: string) => {
       return request<ApiResult<{ entries: VfsEntry[] }>>(
         `/admin/vfs?path=${encodeURIComponent(path)}`
@@ -501,6 +516,15 @@ export function createAdminClient(getToken: () => string) {
         method: "PUT",
         body: JSON.stringify(body)
       });
+    },
+    updateModelCapabilities: (modelCatalogId: string, capabilities: ModelCapability[]) => {
+      return request<ApiResult<{ model: ModelCatalogItem }>>(
+        `/admin/model-catalog/${encodeURIComponent(modelCatalogId)}`,
+        {
+          method: "PUT",
+          body: JSON.stringify({ capabilities })
+        }
+      );
     },
     deleteModelProvider: (id: string) => {
       return request<ApiResult<{ deleted: boolean }>>(`/admin/model-providers/${id}`, {

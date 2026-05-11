@@ -12,9 +12,11 @@ import { handleAdminMcpServerDetail } from "./routes/admin-mcp-server-detail";
 import { handleAdminMcpServers } from "./routes/admin-mcp-servers";
 import { handleAdminMcpToolDetail } from "./routes/admin-mcp-tool-detail";
 import {
+  handleAdminModelCatalogDetail,
   handleAdminModelProviderDetail,
   handleAdminModelSettings
 } from "./routes/admin-model-settings";
+import { handleAdminDebugMessages } from "./routes/admin-debug-messages";
 import { handleAdminPendingActionConfirm } from "./routes/admin-pending-action-confirm";
 import { handleAdminPendingActions } from "./routes/admin-pending-actions";
 import { handleAdminPermissionPolicies } from "./routes/admin-permission-policies";
@@ -86,6 +88,10 @@ export async function routeRequest(
     return handleAdminDiagnostics(request, env);
   }
 
+  if (url.pathname === "/admin/debug/messages") {
+    return handleAdminDebugMessages(request, env);
+  }
+
   if (url.pathname === "/admin/platforms/telegram") {
     return handleAdminTelegramIntegrations(request, env);
   }
@@ -125,6 +131,11 @@ export async function routeRequest(
 
   if (url.pathname === "/admin/model-settings") {
     return handleAdminModelSettings(request, env);
+  }
+
+  if (url.pathname.startsWith("/admin/model-catalog/")) {
+    const modelCatalogId = decodeURIComponent(url.pathname.replace("/admin/model-catalog/", ""));
+    return handleAdminModelCatalogDetail(request, env, modelCatalogId);
   }
 
   if (url.pathname === "/admin/search-providers") {
@@ -228,6 +239,7 @@ export async function routeRequest(
         "/admin/conversations/:conversationId/compact",
         "/admin/setup/status",
         "/admin/diagnostics",
+        "/admin/debug/messages",
         "/admin/platforms/telegram",
         "/admin/platforms/telegram/:integrationId/test",
         "/admin/platforms/telegram/:integrationId/webhook",
@@ -238,6 +250,7 @@ export async function routeRequest(
         "/admin/mcp/servers/:serverId/discover",
         "/admin/mcp/tools/:toolId",
         "/admin/model-settings",
+        "/admin/model-catalog/:modelCatalogId",
         "/admin/model-providers/:providerId/refresh",
         "/admin/model-providers/:providerId/test",
         "/admin/search-providers",

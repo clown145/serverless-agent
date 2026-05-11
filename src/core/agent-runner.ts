@@ -5,6 +5,7 @@ import { nowIso } from "../shared/time";
 import { executeAgentToolLoop } from "./agent-tool-loop";
 import { sendFinalMessage } from "./agent-final-message";
 import { handleCommandMessage } from "../commands/handler";
+import { resolveActiveModelCapabilities, supportsVision } from "./model/capabilities";
 import { persistInboundAttachments } from "../media/persist-attachments";
 import { resolveInboundConversation } from "../conversations/resolve";
 import { insertMessage } from "../storage/repositories/messages-repository";
@@ -45,6 +46,25 @@ export async function runAgentForMessage(
   });
 
   try {
+    const capabilities = await resolveActiveModelCapabilities(
+      env,
+      message.agentId,
+      message.conversationId
+    );
+    if (message.attachments.some((attachment) => attachment.type === "image") &&
+      !supportsVision(capabilities.capabilities)
+    ) {
+      const text = [
+        "当前模型未标记为支持图片输入。",
+        `模型：${capabilities.modelId}`,
+        "请在 WebUI 的模型页给该模型启用 vision 能力，或切换到支持图片的模型。"
+      ].join("\n");
+      await recordRunFailedStep(env, runId, message.agentId, "Model lacks vision capability");
+      await sendFinalMessage(env, runId, message, text);
+      await completeRun(env.AGENT_DB, runId, "failed");
+      return runId;
+    }
+
     const command = await handleCommandMessage(env, runId, message, {
       rootConversationId: resolved.rootConversationId
     });

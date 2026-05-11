@@ -1,3 +1,8 @@
+import {
+  normalizeModelCapabilities,
+  type ModelCapability
+} from "../../core/model/capability-defaults";
+
 export type ModelProviderType = "openai" | "gemini" | "mock" | "custom";
 
 export type ModelAuthType =
@@ -46,6 +51,7 @@ export type ModelCatalogRecord = {
   providerId: string;
   modelId: string;
   displayName?: string;
+  capabilities: ModelCapability[];
   status: string;
   createdAt: string;
   updatedAt: string;
@@ -91,6 +97,7 @@ export type ModelCatalogRow = {
   provider_id: string;
   model_id: string;
   display_name?: string;
+  capabilities_json?: string | null;
   status: string;
   created_at: string;
   updated_at: string;
@@ -141,6 +148,7 @@ export function mapModelCatalogRow(row: ModelCatalogRow): ModelCatalogRecord {
     providerId: row.provider_id,
     modelId: row.model_id,
     displayName: row.display_name ?? undefined,
+    capabilities: normalizeModelCapabilities(row.capabilities_json, row.model_id),
     status: row.status,
     createdAt: row.created_at,
     updatedAt: row.updated_at

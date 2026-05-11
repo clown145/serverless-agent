@@ -1,6 +1,11 @@
 import { RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import type { ModelCatalogItem, ModelProvider, ModelTestResult } from "../../api/types";
+import type {
+  ModelCapability,
+  ModelCatalogItem,
+  ModelProvider,
+  ModelTestResult
+} from "../../api/types";
 import { useI18n } from "../i18n/I18nProvider";
 import { ToolbarButton } from "../ToolbarButton";
 import { ModelProviderForm } from "./models/ModelProviderForm";
@@ -92,6 +97,18 @@ export function ModelsPanel({ client, notify }: PanelProps) {
     }
   }
 
+  async function updateCapabilities(modelCatalogId: string, capabilities: ModelCapability[]) {
+    try {
+      const result = await client.updateModelCapabilities(modelCatalogId, capabilities);
+      setModels((current) =>
+        current.map((model) => model.id === result.model.id ? result.model : model)
+      );
+      notify(t("models.capabilitiesSaved"), "ok");
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "Failed to update capabilities", "error");
+    }
+  }
+
   async function removeProvider(providerId: string) {
     try {
       await client.deleteModelProvider(providerId);
@@ -141,6 +158,9 @@ export function ModelsPanel({ client, notify }: PanelProps) {
         onRefresh={(providerId) => void refresh(providerId)}
         onTest={(providerId, modelId) => void test(providerId, modelId)}
         onActivate={(providerId, modelId) => void activate(providerId, modelId)}
+        onCapabilitiesChange={(modelId, capabilities) =>
+          void updateCapabilities(modelId, capabilities)
+        }
         onDelete={(providerId) => void removeProvider(providerId)}
         testingKey={testingKey}
       />

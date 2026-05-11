@@ -15,6 +15,35 @@ export type RunDetails = {
   steps: Record<string, unknown>[];
   toolCalls: Record<string, unknown>[];
   auditLogs: Record<string, unknown>[];
+  triggerMessage?: Record<string, unknown>;
+  conversation?: Record<string, unknown>;
+  diagnostics: {
+    durationMs?: number;
+    stepCount: number;
+    modelCallCount: number;
+    toolCallCount: number;
+    failedStepCount: number;
+    failedToolCallCount: number;
+    lastError?: string;
+  };
+};
+
+export type DebugMessageItem = {
+  id: string;
+  agentId: string;
+  conversationId: string;
+  platform: ChatMessage["platform"];
+  platformMessageId: string;
+  senderId: string;
+  role: "user" | "assistant";
+  kind: string;
+  text?: string;
+  rawRef?: string;
+  receivedAt: string;
+  createdAt: string;
+  runId?: string;
+  runStatus?: string;
+  runUpdatedAt?: string;
 };
 
 export type ChatMessage = {
@@ -168,10 +197,13 @@ export type ModelCatalogItem = {
   providerId: string;
   modelId: string;
   displayName?: string;
+  capabilities: ModelCapability[];
   status: string;
   createdAt: string;
   updatedAt: string;
 };
+
+export type ModelCapability = "tools" | "vision" | "long_context";
 
 export type ModelSettings = {
   agentId: string;

@@ -14,6 +14,7 @@ import {
 import { createModelCredentialRecord } from "../../storage/repositories/model-credentials-repository";
 import {
   listModelCatalog,
+  updateModelCatalogCapabilities,
   upsertModelCatalog
 } from "../../storage/repositories/model-catalog-repository";
 import {
@@ -28,6 +29,7 @@ import {
   createProviderSchema,
   setActiveModelSchema,
   testModelSchema,
+  updateModelCapabilitiesSchema,
   zodMessage
 } from "./model-settings/model-settings-schemas";
 import { toProviderDto } from "./model-settings/model-provider-dto";
@@ -224,4 +226,37 @@ export async function handleAdminModelProviderDetail(
   }
 
   return errorResponse(405, "method_not_allowed", "Method not allowed");
+}
+
+export async function handleAdminModelCatalogDetail(
+  request: Request,
+  env: Env,
+  modelCatalogId: string
+): Promise<Response> {
+  const authError = requireAdmin(request, env);
+  if (authError) {
+    return authError;
+  }
+
+  if (request.method !== "PUT") {
+    return errorResponse(405, "method_not_allowed", "Method not allowed");
+  }
+
+  const parsed = updateModelCapabilitiesSchema.safeParse(
+    await request.json().catch(() => ({}))
+  );
+  if (!parsed.success) {
+    return errorResponse(400, "invalid_payload", zodMessage(parsed.error));
+  }
+
+  const model = await updateModelCatalogCapabilities(
+    env.AGENT_DB,
+    modelCatalogId,
+    parsed.data.capabilities
+  );
+  if (!model) {
+    return errorResponse(404, "model_not_found", "Model not found");
+  }
+
+  return jsonResponse({ ok: true, model });
 }
