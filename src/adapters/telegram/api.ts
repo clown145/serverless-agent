@@ -42,7 +42,7 @@ export async function setTelegramWebhook(input: {
   return callTelegramApi<boolean>(input.token, "setWebhook", {
     url: input.url,
     secret_token: input.secretToken,
-    allowed_updates: ["message", "edited_message"]
+    allowed_updates: ["message", "edited_message", "callback_query"]
   });
 }
 
@@ -50,6 +50,30 @@ export async function deleteTelegramWebhook(token: string): Promise<boolean> {
   return callTelegramApi<boolean>(token, "deleteWebhook", {
     drop_pending_updates: false
   });
+}
+
+export async function callTelegramMultipartApi<T>(
+  token: string,
+  method: string,
+  body: FormData
+): Promise<T> {
+  const response = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
+    method: "POST",
+    body
+  });
+  const payload = (await response.json().catch(() => undefined)) as
+    | TelegramApiResult<T>
+    | undefined;
+
+  if (!response.ok || !payload?.ok) {
+    throw new Error(
+      payload && !payload.ok
+        ? payload.description ?? `Telegram API error ${payload.error_code ?? response.status}`
+        : `Telegram API error ${response.status}`
+    );
+  }
+
+  return payload.result;
 }
 
 export async function callTelegramApi<T>(

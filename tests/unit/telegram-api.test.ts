@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  callTelegramMultipartApi,
   getTelegramMe,
   setTelegramWebhook
 } from "../../src/adapters/telegram/api";
@@ -36,8 +37,23 @@ describe("telegram api", () => {
     expect(fetchBody(fetchMock)).toMatchObject({
       url: "https://agent.example/webhooks/telegram",
       secret_token: "secret",
-      allowed_updates: ["message", "edited_message"]
+      allowed_updates: ["message", "edited_message", "callback_query"]
     });
+  });
+
+  it("sends multipart API requests without forcing JSON headers", async () => {
+    const fetchMock = vi.fn(async () => jsonResponse({ ok: true, result: { message_id: 42 } }));
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+
+    const form = new FormData();
+    form.append("chat_id", "123");
+    await callTelegramMultipartApi("token", "sendDocument", form);
+
+    const call = fetchMock.mock.calls[0] as unknown as [RequestInfo | URL, RequestInit];
+    const init = call[1];
+    expect(String(call[0])).toContain("/bottoken/sendDocument");
+    expect(init?.body).toBe(form);
+    expect(init?.headers).toBeUndefined();
   });
 });
 

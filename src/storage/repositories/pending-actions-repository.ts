@@ -115,6 +115,23 @@ export async function markPendingActionConfirmed(
   return Boolean(result.meta.changes);
 }
 
+export async function markPendingActionCancelled(
+  db: D1Database,
+  id: string
+): Promise<boolean> {
+  const now = nowIso();
+  const result = await db
+    .prepare(
+      `UPDATE pending_actions
+       SET status = 'cancelled', updated_at = ?
+       WHERE id = ? AND status = 'pending'`
+    )
+    .bind(now, id)
+    .run();
+
+  return Boolean(result.meta.changes);
+}
+
 export async function markPendingActionExecuted(
   db: D1Database,
   id: string,

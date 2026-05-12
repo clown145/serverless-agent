@@ -12,6 +12,12 @@ describe("tool input defaults", () => {
       url: "https://workers.cloudflare.com",
       maxChars: 6000
     });
+    expect(createToolInputDraft(tool("messaging.send_file"))).toMatchObject({
+      platform: "telegram",
+      source: {
+        type: "vfs"
+      }
+    });
   });
 
   it("falls back to required JSON schema properties", () => {

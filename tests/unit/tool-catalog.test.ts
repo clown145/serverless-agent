@@ -21,5 +21,8 @@ describe("tool catalog", () => {
     expect(catalog.map((tool) => tool.name)).toContain("web.fetch_page");
     expect(catalog.map((tool) => tool.name)).toContain("schedule.create");
     expect(catalog.map((tool) => tool.name)).toContain("schedule.list");
+    expect(catalog.map((tool) => tool.name)).toContain("messaging.send_file");
+    expect(catalog.map((tool) => tool.name)).toContain("messaging.send_image");
+    expect(catalog.map((tool) => tool.name)).toContain("messaging.send_buttons");
   });
 });

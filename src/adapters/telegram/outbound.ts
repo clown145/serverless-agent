@@ -1,18 +1,40 @@
+import { physicalConversationForPlatform } from "../../conversations/ids";
+import type {
+  OutboundButton,
+  OutboundFile,
+  PlatformOutboundAdapter,
+  PlatformSendResult
+} from "../../platforms/outbound/types";
+import { createPlatformCallback } from "../../storage/repositories/platform-callbacks-repository";
 import type { Env } from "../../shared/types/env";
-import { callTelegramApi } from "./api";
+import { callTelegramApi, callTelegramMultipartApi } from "./api";
 import { resolveTelegramBotForAgent } from "./config";
 import {
   normalizeTelegramParseMode,
   stripTelegramMarkup,
   telegramParseModePayload
 } from "./formatting";
-import { physicalConversationForPlatform } from "../../conversations/ids";
 
-export type PlatformSendResult = {
-  ok: boolean;
-  providerMessageId?: string;
-  error?: string;
-};
+export function createTelegramOutboundAdapter(env: Env): PlatformOutboundAdapter {
+  return {
+    platform: "telegram",
+    sendText: (input) =>
+      sendTelegramText(env, input.agentId, input.conversationId, input.text),
+    sendFile: (input) =>
+      sendTelegramDocument(env, input.agentId, input.conversationId, input.file, {
+        caption: input.caption
+      }),
+    sendImage: (input) =>
+      sendTelegramPhoto(env, input.agentId, input.conversationId, input.file, {
+        caption: input.caption
+      }),
+    sendButtons: (input) =>
+      sendTelegramButtons(env, input.agentId, input.conversationId, input.text, {
+        buttons: input.buttons,
+        expiresInSeconds: input.expiresInSeconds
+      })
+  };
+}
 
 export async function sendTelegramText(
   env: Env,
@@ -24,8 +46,9 @@ export async function sendTelegramText(
   if (!bot.token) {
     return { ok: false, error: "Telegram bot token is not configured" };
   }
+  const token = bot.token;
 
-  const chatId = physicalConversationForPlatform("telegram", conversationId).replace(/^telegram:/, "");
+  const chatId = telegramChatId(conversationId);
   const parseMode = normalizeTelegramParseMode(bot.integration?.config.parseMode);
   const requestBody: Record<string, unknown> = {
     chat_id: chatId,
@@ -39,18 +62,15 @@ export async function sendTelegramText(
 
   try {
     const payload = await callTelegramApi<{ message_id?: number }>(
-      bot.token,
+      token,
       "sendMessage",
       requestBody
     );
 
-    return {
-      ok: true,
-      providerMessageId: payload.message_id ? String(payload.message_id) : undefined
-    };
+    return messageResult(payload);
   } catch (error) {
     if (parseMode !== "none") {
-      const fallback = await sendPlainTextFallback(bot.token, chatId, text).catch(
+      const fallback = await sendPlainTextFallback(token, chatId, text).catch(
         (fallbackError) => ({
           ok: false as const,
           error: fallbackError instanceof Error
@@ -65,6 +85,156 @@ export async function sendTelegramText(
 
     return { ok: false, error: error instanceof Error ? error.message : "Telegram send failed" };
   }
+}
+
+export async function sendTelegramDocument(
+  env: Env,
+  agentId: string,
+  conversationId: string,
+  file: OutboundFile,
+  options: { caption?: string } = {}
+): Promise<PlatformSendResult> {
+  const bot = await resolveTelegramBotForAgent(env, agentId);
+  if (!bot.token) {
+    return { ok: false, error: "Telegram bot token is not configured" };
+  }
+
+  const form = createTelegramFileForm({
+    chatId: telegramChatId(conversationId),
+    fieldName: "document",
+    file,
+    caption: options.caption
+  });
+
+  return callTelegramMultipartApi<{ message_id?: number }>(
+    bot.token,
+    "sendDocument",
+    form
+  ).then(messageResult, sendError);
+}
+
+export async function sendTelegramPhoto(
+  env: Env,
+  agentId: string,
+  conversationId: string,
+  file: OutboundFile,
+  options: { caption?: string } = {}
+): Promise<PlatformSendResult> {
+  const bot = await resolveTelegramBotForAgent(env, agentId);
+  if (!bot.token) {
+    return { ok: false, error: "Telegram bot token is not configured" };
+  }
+
+  const form = createTelegramFileForm({
+    chatId: telegramChatId(conversationId),
+    fieldName: "photo",
+    file,
+    caption: options.caption
+  });
+
+  return callTelegramMultipartApi<{ message_id?: number }>(
+    bot.token,
+    "sendPhoto",
+    form
+  ).then(messageResult, sendError);
+}
+
+export async function sendTelegramButtons(
+  env: Env,
+  agentId: string,
+  conversationId: string,
+  text: string,
+  input: {
+    buttons: OutboundButton[];
+    expiresInSeconds?: number;
+  }
+): Promise<PlatformSendResult> {
+  const bot = await resolveTelegramBotForAgent(env, agentId);
+  if (!bot.token) {
+    return { ok: false, error: "Telegram bot token is not configured" };
+  }
+  const token = bot.token;
+
+  const expiresAt = new Date(
+    Date.now() + (input.expiresInSeconds ?? 600) * 1000
+  ).toISOString();
+  const buttons = await Promise.all(
+    input.buttons.map(async (button) => {
+      const callback = await createPlatformCallback(env.AGENT_DB, {
+        agentId,
+        platform: "telegram",
+        conversationId,
+        action: button.action,
+        payloadJson: JSON.stringify(button.payload ?? {}),
+        expiresAt
+      });
+      return {
+        text: button.label,
+        callback_data: callback.id
+      };
+    })
+  );
+
+  const body: Record<string, unknown> = {
+    chat_id: telegramChatId(conversationId),
+    text,
+    disable_web_page_preview: true,
+    reply_markup: {
+      inline_keyboard: buttons.map((button) => [button])
+    }
+  };
+  const parseMode = normalizeTelegramParseMode(bot.integration?.config.parseMode);
+  const parseModePayload = telegramParseModePayload(parseMode);
+  if (parseModePayload) {
+    body.parse_mode = parseModePayload;
+  }
+
+  return callTelegramApi<{ message_id?: number }>(
+    token,
+    "sendMessage",
+    body
+  ).then(messageResult, async (error) => {
+    if (parseMode === "none") {
+      return sendError(error);
+    }
+
+    return callTelegramApi<{ message_id?: number }>(token, "sendMessage", {
+      ...body,
+      text: stripTelegramMarkup(text),
+      parse_mode: undefined
+    }).then(messageResult, sendError);
+  });
+}
+
+export async function answerTelegramCallbackQuery(
+  token: string,
+  callbackQueryId: string,
+  options: { text?: string; showAlert?: boolean } = {}
+): Promise<boolean> {
+  return callTelegramApi<boolean>(token, "answerCallbackQuery", {
+    callback_query_id: callbackQueryId,
+    text: options.text,
+    show_alert: options.showAlert
+  });
+}
+
+function createTelegramFileForm(input: {
+  chatId: string;
+  fieldName: "document" | "photo";
+  file: OutboundFile;
+  caption?: string;
+}): FormData {
+  const form = new FormData();
+  form.append("chat_id", input.chatId);
+  if (input.caption) {
+    form.append("caption", input.caption);
+  }
+  form.append(
+    input.fieldName,
+    new Blob([input.file.bytes], { type: input.file.mimeType }),
+    input.file.fileName
+  );
+  return form;
 }
 
 async function sendPlainTextFallback(
@@ -82,8 +252,26 @@ async function sendPlainTextFallback(
     }
   );
 
+  return messageResult(payload);
+}
+
+function telegramChatId(conversationId: string): string {
+  return physicalConversationForPlatform("telegram", conversationId).replace(
+    /^telegram:/,
+    ""
+  );
+}
+
+function messageResult(payload: { message_id?: number }): PlatformSendResult {
   return {
     ok: true,
     providerMessageId: payload.message_id ? String(payload.message_id) : undefined
+  };
+}
+
+function sendError(error: unknown): PlatformSendResult {
+  return {
+    ok: false,
+    error: error instanceof Error ? error.message : "Telegram send failed"
   };
 }

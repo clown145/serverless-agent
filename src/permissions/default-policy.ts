@@ -5,6 +5,9 @@ const OWNER_SCOPES = [
   "workspace:read",
   "workspace:write",
   "message:send",
+  "message:send_file",
+  "message:send_image",
+  "message:send_buttons",
   "web:search",
   "schedule:read",
   "schedule:write"

@@ -48,7 +48,7 @@ const quickGrants: ScopeGrant[] = [
     labelKey: "permissions.grantMessaging",
     detailKey: "permissions.grantMessagingDetail",
     level: 3,
-    scopes: ["message:send"]
+    scopes: ["message:send", "message:send_file", "message:send_image", "message:send_buttons"]
   },
   {
     id: "schedule-manage",

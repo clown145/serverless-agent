@@ -26,7 +26,10 @@ export function PermissionsPanel({ client, notify }: PanelProps) {
   const [selectedScopes, setSelectedScopes] = useState<string[]>([
     "workspace:read",
     "workspace:write",
-    "message:send"
+    "message:send",
+    "message:send_file",
+    "message:send_image",
+    "message:send_buttons"
   ]);
   const [manualScopes, setManualScopes] = useState("");
 

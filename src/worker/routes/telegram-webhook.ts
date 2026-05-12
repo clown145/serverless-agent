@@ -1,5 +1,7 @@
 import { normalizeTelegramUpdate } from "../../adapters/telegram/normalize";
 import { resolveTelegramBotForWebhook } from "../../adapters/telegram/config";
+import { handleTelegramCallbackQuery } from "../../adapters/telegram/callbacks/handler";
+import type { TelegramUpdate } from "../../adapters/telegram/types";
 import { errorResponse, jsonResponse } from "../../shared/http";
 import { createId } from "../../shared/ids";
 import type { Env } from "../../shared/types/env";
@@ -19,6 +21,19 @@ export async function handleTelegramWebhook(
 
   const payload = await request.json();
   const agentId = bot.agentId;
+  const callbackQuery = (payload as TelegramUpdate).callback_query;
+  if (callbackQuery) {
+    const result = await handleTelegramCallbackQuery(
+      env,
+      {
+        agentId,
+        query: callbackQuery
+      },
+      bot.token
+    );
+    return jsonResponse({ ok: true, result });
+  }
+
   const message = normalizeTelegramUpdate(payload, agentId);
 
   if (!message) {
