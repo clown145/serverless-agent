@@ -3,6 +3,7 @@ import type {
   ButtonLayout,
   OutboundButton,
   OutboundFile,
+  PlatformActivityType,
   PlatformOutboundAdapter,
   PlatformSendResult
 } from "../../platforms/outbound/types";
@@ -34,7 +35,14 @@ export function createTelegramOutboundAdapter(env: Env): PlatformOutboundAdapter
         buttons: input.buttons,
         layout: input.layout,
         expiresInSeconds: input.expiresInSeconds
-      })
+      }),
+    sendActivity: (input) =>
+      sendTelegramChatAction(
+        env,
+        input.agentId,
+        input.conversationId,
+        input.activity
+      )
   };
 }
 
@@ -210,6 +218,33 @@ export async function sendTelegramButtons(
       parse_mode: undefined
     }).then(messageResult, sendError);
   });
+}
+
+export async function sendTelegramChatAction(
+  env: Env,
+  agentId: string,
+  conversationId: string,
+  activity: PlatformActivityType
+): Promise<PlatformSendResult> {
+  const bot = await resolveTelegramBotForAgent(env, agentId);
+  if (!bot.token) {
+    return { ok: false, error: "Telegram bot token is not configured" };
+  }
+
+  return callTelegramApi<boolean>(bot.token, "sendChatAction", {
+    chat_id: telegramChatId(conversationId),
+    action: telegramChatAction(activity)
+  }).then(() => ({ ok: true }), sendError);
+}
+
+function telegramChatAction(activity: PlatformActivityType): string {
+  if (activity === "upload_photo") {
+    return "upload_photo";
+  }
+  if (activity === "upload_document") {
+    return "upload_document";
+  }
+  return "typing";
 }
 
 function chunkButtons<T>(buttons: T[], columns: number): T[][] {

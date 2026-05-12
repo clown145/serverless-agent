@@ -1,5 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { sendTelegramButtons } from "../../src/adapters/telegram/outbound";
+import {
+  sendTelegramButtons,
+  sendTelegramChatAction
+} from "../../src/adapters/telegram/outbound";
 import type { Env } from "../../src/shared/types/env";
 
 const originalFetch = globalThis.fetch;
@@ -10,6 +13,30 @@ afterEach(() => {
 });
 
 describe("telegram outbound", () => {
+  it("sends chat action activity", async () => {
+    const fetchMock = vi.fn(async () =>
+      jsonResponse({ ok: true, result: true })
+    );
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+
+    const result = await sendTelegramChatAction(
+      {
+        AGENT_DB: createOutboundDb() as unknown as D1Database,
+        TELEGRAM_BOT_TOKEN: "token"
+      } as unknown as Env,
+      "default",
+      "telegram:123",
+      "typing"
+    );
+
+    expect(result).toMatchObject({ ok: true });
+    expect(fetchUrl(fetchMock)).toContain("/bottoken/sendChatAction");
+    expect(fetchBody(fetchMock)).toMatchObject({
+      chat_id: "123",
+      action: "typing"
+    });
+  });
+
   it("chunks inline buttons by requested layout columns", async () => {
     const fetchMock = vi.fn(async () =>
       jsonResponse({ ok: true, result: { message_id: 42 } })
@@ -76,6 +103,11 @@ function createOutboundDb() {
 function fetchBody(fetchMock: ReturnType<typeof vi.fn>): Record<string, unknown> {
   const init = fetchMock.mock.calls[0]?.[1] as RequestInit | undefined;
   return JSON.parse(String(init?.body ?? "{}")) as Record<string, unknown>;
+}
+
+function fetchUrl(fetchMock: ReturnType<typeof vi.fn>): string {
+  const call = fetchMock.mock.calls[0] as unknown as [RequestInfo | URL, RequestInit];
+  return String(call[0]);
 }
 
 function jsonResponse(body: unknown): Response {

@@ -16,6 +16,8 @@ export type ButtonLayout = {
   columns?: number;
 };
 
+export type PlatformActivityType = "typing" | "upload_photo" | "upload_document";
+
 export type PlatformSendResult = {
   ok: boolean;
   providerMessageId?: string;
@@ -51,10 +53,17 @@ export type SendButtonsInput = {
   expiresInSeconds?: number;
 };
 
+export type SendActivityInput = {
+  agentId: string;
+  conversationId: string;
+  activity: PlatformActivityType;
+};
+
 export type PlatformOutboundAdapter = {
   platform: Platform;
   sendText?: (input: SendTextInput) => Promise<PlatformSendResult>;
   sendFile?: (input: SendFileInput) => Promise<PlatformSendResult>;
   sendImage?: (input: SendImageInput) => Promise<PlatformSendResult>;
   sendButtons?: (input: SendButtonsInput) => Promise<PlatformSendResult>;
+  sendActivity?: (input: SendActivityInput) => Promise<PlatformSendResult>;
 };

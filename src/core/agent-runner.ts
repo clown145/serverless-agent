@@ -2,6 +2,7 @@ import { createId } from "../shared/ids";
 import type { Env } from "../shared/types/env";
 import type { InternalMessage } from "../shared/types/internal-message";
 import { nowIso } from "../shared/time";
+import { withPlatformActivity } from "./activity-indicator";
 import { executeAgentToolLoop } from "./agent-tool-loop";
 import { sendFinalMessage } from "./agent-final-message";
 import { handleCommandMessage } from "../commands/handler";
@@ -17,6 +18,15 @@ import {
 import { recordRunFailedStep } from "./run-step-recorder";
 
 export async function runAgentForMessage(
+  env: Env,
+  inboundMessage: InternalMessage
+): Promise<string> {
+  return withPlatformActivity(env, inboundMessage, () =>
+    runAgentForMessageInternal(env, inboundMessage)
+  );
+}
+
+async function runAgentForMessageInternal(
   env: Env,
   inboundMessage: InternalMessage
 ): Promise<string> {
