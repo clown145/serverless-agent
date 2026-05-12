@@ -394,8 +394,14 @@ export function createAdminClient(getToken: () => string) {
         { method: "POST" }
       );
     },
+    syncTelegramCommands: (integrationId: string) => {
+      return request<ApiResult<{ integration: TelegramIntegration; commands: unknown[] }>>(
+        `/admin/platforms/telegram/${integrationId}/commands`,
+        { method: "POST" }
+      );
+    },
     setTelegramWebhook: (integrationId: string, webhookUrl?: string) => {
-      return request<ApiResult<{ webhookUrl: string; webhook: unknown }>>(
+      return request<ApiResult<{ webhookUrl: string; webhook: unknown; commands?: unknown[] }>>(
         `/admin/platforms/telegram/${integrationId}/webhook`,
         {
           method: "POST",

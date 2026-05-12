@@ -9,6 +9,7 @@ import { requireAdmin } from "../admin-auth";
 import {
   deleteTelegramIntegrationWebhook,
   setTelegramIntegrationWebhook,
+  syncTelegramIntegrationCommands,
   testTelegramIntegration
 } from "./platforms/telegram-admin-actions";
 import { toTelegramIntegrationDto } from "./platforms/telegram-dto";
@@ -39,6 +40,10 @@ export async function handleAdminTelegramIntegrationDetail(
 
   if (request.method === "POST" && pathname.endsWith("/test")) {
     return testTelegramIntegration(env, integration);
+  }
+
+  if (request.method === "POST" && pathname.endsWith("/commands")) {
+    return syncTelegramIntegrationCommands(env, integration);
   }
 
   if (request.method === "PUT") {

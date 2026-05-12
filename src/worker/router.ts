@@ -242,6 +242,7 @@ export async function routeRequest(
         "/admin/debug/messages",
         "/admin/platforms/telegram",
         "/admin/platforms/telegram/:integrationId/test",
+        "/admin/platforms/telegram/:integrationId/commands",
         "/admin/platforms/telegram/:integrationId/webhook",
         "/admin/tools",
         "/admin/tools/call",

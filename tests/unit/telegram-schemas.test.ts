@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   createTelegramIntegrationSchema,
-  setTelegramWebhookSchema
+  setTelegramWebhookSchema,
+  updateTelegramIntegrationSchema
 } from "../../src/worker/routes/platforms/telegram-schemas";
 
 describe("telegram schemas", () => {
@@ -13,11 +14,7 @@ describe("telegram schemas", () => {
     ).toMatchObject({ name: "Telegram", parseMode: "HTML" });
   });
 
-  it("validates Telegram parse mode updates", async () => {
-    const { updateTelegramIntegrationSchema } = await import(
-      "../../src/worker/routes/platforms/telegram-schemas"
-    );
-
+  it("validates Telegram parse mode updates", () => {
     expect(updateTelegramIntegrationSchema.parse({ parseMode: "MarkdownV2" })).toEqual({
       parseMode: "MarkdownV2"
     });

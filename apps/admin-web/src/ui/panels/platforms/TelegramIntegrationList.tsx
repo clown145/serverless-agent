@@ -1,4 +1,4 @@
-import { PlugZap, Radio, Trash2, Unplug, UserCheck } from "lucide-react";
+import { ListChecks, PlugZap, Radio, Trash2, Unplug, UserCheck } from "lucide-react";
 import type { TelegramIntegration } from "../../../api/types";
 import { useI18n } from "../../i18n/I18nProvider";
 import { StatusBadge } from "../../StatusBadge";
@@ -11,6 +11,7 @@ type TelegramIntegrationListProps = {
     parseMode: TelegramIntegration["parseMode"]
   ) => void;
   onTest: (integrationId: string) => void;
+  onSyncCommands: (integrationId: string) => void;
   onSetWebhook: (integrationId: string) => void;
   onDeleteWebhook: (integrationId: string) => void;
   onDelete: (integrationId: string) => void;
@@ -20,6 +21,7 @@ export function TelegramIntegrationList({
   integrations,
   onUpdateParseMode,
   onTest,
+  onSyncCommands,
   onSetWebhook,
   onDeleteWebhook,
   onDelete
@@ -62,6 +64,11 @@ export function TelegramIntegrationList({
             label={t("platforms.testBot")}
             icon={UserCheck}
             onClick={() => onTest(integration.id)}
+          />
+          <ToolbarButton
+            label={t("platforms.syncCommands")}
+            icon={ListChecks}
+            onClick={() => onSyncCommands(integration.id)}
           />
           <ToolbarButton
             label={t("platforms.setWebhook")}

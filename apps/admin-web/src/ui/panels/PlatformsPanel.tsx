@@ -69,6 +69,10 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
     await runAction(() => client.testTelegramIntegration(id), t("platforms.botTested"));
   }
 
+  async function syncCommands(id: string) {
+    await runAction(() => client.syncTelegramCommands(id), t("platforms.commandsSynced"));
+  }
+
   async function setWebhook(id: string) {
     await runAction(() => client.setTelegramWebhook(id, webhookUrl), t("platforms.webhookSet"));
   }
@@ -133,6 +137,7 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
         integrations={integrations}
         onUpdateParseMode={(id, parseMode) => void updateParseMode(id, parseMode)}
         onTest={(id) => void testIntegration(id)}
+        onSyncCommands={(id) => void syncCommands(id)}
         onSetWebhook={(id) => void setWebhook(id)}
         onDeleteWebhook={(id) => void deleteWebhook(id)}
         onDelete={(id) => void deleteIntegration(id)}

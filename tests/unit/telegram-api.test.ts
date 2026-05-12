@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   callTelegramMultipartApi,
   getTelegramMe,
+  setTelegramBotCommands,
   setTelegramWebhook
 } from "../../src/adapters/telegram/api";
 
@@ -38,6 +39,25 @@ describe("telegram api", () => {
       url: "https://agent.example/webhooks/telegram",
       secret_token: "secret",
       allowed_updates: ["message", "edited_message", "callback_query"]
+    });
+  });
+
+  it("sets bot command menu", async () => {
+    const fetchMock = vi.fn(async () => jsonResponse({ ok: true, result: true }));
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+
+    await setTelegramBotCommands("token", [
+      { command: "help", description: "Show available commands" },
+      { command: "new", description: "Open a new conversation" }
+    ]);
+
+    const call = fetchMock.mock.calls[0] as unknown as [RequestInfo | URL, RequestInit];
+    expect(String(call[0])).toContain("/bottoken/setMyCommands");
+    expect(fetchBody(fetchMock)).toEqual({
+      commands: [
+        { command: "help", description: "Show available commands" },
+        { command: "new", description: "Open a new conversation" }
+      ]
     });
   });
 

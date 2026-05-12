@@ -24,6 +24,11 @@ export type TelegramWebhookInfo = {
   allowed_updates?: string[];
 };
 
+export type TelegramBotCommand = {
+  command: string;
+  description: string;
+};
+
 export async function getTelegramMe(token: string): Promise<TelegramMe> {
   return callTelegramApi<TelegramMe>(token, "getMe");
 }
@@ -49,6 +54,15 @@ export async function setTelegramWebhook(input: {
 export async function deleteTelegramWebhook(token: string): Promise<boolean> {
   return callTelegramApi<boolean>(token, "deleteWebhook", {
     drop_pending_updates: false
+  });
+}
+
+export async function setTelegramBotCommands(
+  token: string,
+  commands: TelegramBotCommand[]
+): Promise<boolean> {
+  return callTelegramApi<boolean>(token, "setMyCommands", {
+    commands
   });
 }
 
