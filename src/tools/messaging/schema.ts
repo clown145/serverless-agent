@@ -49,6 +49,12 @@ export const buttonActionSchema = z.enum([
   "pending.reject"
 ]);
 
+const buttonSchema = z.object({
+  label: z.string().min(1).max(64),
+  action: buttonActionSchema,
+  payload: z.record(z.string(), z.unknown()).optional()
+});
+
 export const buttonLayoutSchema = z.object({
   columns: z.number().int().min(1).max(4).default(1)
 });
@@ -57,16 +63,10 @@ export const sendButtonsInputSchema = z.object({
   platform: messagingPlatformSchema,
   conversationId: z.string().min(1),
   text: z.string().min(1).max(4096),
-  buttons: z
-    .array(
-      z.object({
-        label: z.string().min(1).max(64),
-        action: buttonActionSchema,
-        payload: z.record(z.string(), z.unknown()).optional()
-      })
-    )
-    .min(1)
-    .max(12),
+  buttons: z.preprocess(
+    parseJsonString,
+    z.array(buttonSchema).min(1).max(12)
+  ),
   layout: buttonLayoutSchema.optional(),
   expiresInSeconds: z.number().int().min(60).max(86_400).optional()
 });
@@ -233,3 +233,15 @@ export const sendButtonsInputJsonSchema = {
   required: ["platform", "conversationId", "text", "buttons"],
   additionalProperties: false
 } as const;
+
+function parseJsonString(value: unknown): unknown {
+  if (typeof value !== "string") {
+    return value;
+  }
+
+  try {
+    return JSON.parse(value) as unknown;
+  } catch {
+    return value;
+  }
+}

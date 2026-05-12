@@ -107,4 +107,36 @@ describe("messaging schemas", () => {
       layout: { columns: 1 }
     });
   });
+
+  it("accepts stringified button arrays from lenient model providers", () => {
+    expect(
+      sendButtonsInputSchema.parse({
+        platform: "telegram",
+        conversationId: "telegram:123",
+        text: "请选择",
+        buttons: JSON.stringify([
+          {
+            label: "今日新闻摘要",
+            action: "agent.message",
+            payload: { text: "帮我总结今天的重要新闻" }
+          },
+          {
+            label: "查天气",
+            action: "agent.message",
+            payload: { text: "查一下今天的天气" }
+          }
+        ])
+      })
+    ).toMatchObject({
+      buttons: [
+        {
+          label: "今日新闻摘要",
+          payload: { text: "帮我总结今天的重要新闻" }
+        },
+        {
+          label: "查天气"
+        }
+      ]
+    });
+  });
 });
