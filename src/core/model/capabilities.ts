@@ -17,8 +17,20 @@ export type ActiveModelCapabilities = {
 export async function resolveActiveModelCapabilities(
   env: Env,
   agentId: string,
-  conversationId?: string
+  conversationId?: string,
+  options: {
+    providerId?: string;
+    modelId?: string;
+  } = {}
 ): Promise<ActiveModelCapabilities> {
+  if (options.providerId && options.modelId) {
+    return resolveCatalogCapabilities(env, {
+      providerId: options.providerId,
+      modelId: options.modelId,
+      source: "agent"
+    });
+  }
+
   const conversation = conversationId
     ? await getConversationSettings(env.AGENT_DB, agentId, conversationId)
     : undefined;

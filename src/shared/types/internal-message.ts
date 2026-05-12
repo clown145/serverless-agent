@@ -33,5 +33,7 @@ export type InternalMessage = {
   attachments: MessageAttachment[];
   rawRef?: string;
   scheduleId?: string;
+  modelProviderId?: string;
+  modelId?: string;
   receivedAt: string;
 };

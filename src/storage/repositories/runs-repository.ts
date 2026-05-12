@@ -68,3 +68,15 @@ export async function completeRun(
     .bind(status, nowIso(), runId)
     .run();
 }
+
+export async function getRunStatus(
+  db: D1Database,
+  runId: string
+): Promise<RunStatus | undefined> {
+  const row = await db
+    .prepare("SELECT status FROM runs WHERE id = ?")
+    .bind(runId)
+    .first<{ status: RunStatus }>();
+
+  return row?.status;
+}

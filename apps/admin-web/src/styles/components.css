@@ -115,6 +115,7 @@
 }
 
 .status-pending,
+.status-paused,
 .status-warn,
 .status-external_write,
 .status-workspace_write,

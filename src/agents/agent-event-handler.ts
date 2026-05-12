@@ -1,6 +1,11 @@
 import { runAgentForMessage } from "../core/agent-runner";
 import { createScheduleMessage } from "../scheduler/schedule-message";
 import { upsertHeartbeat } from "../storage/repositories/heartbeats-repository";
+import {
+  markScheduleRunStarted,
+  recordScheduleRunResult
+} from "../storage/repositories/schedules-repository";
+import { getRunStatus } from "../storage/repositories/runs-repository";
 import type { Env } from "../shared/types/env";
 import type { QueueMessageBody } from "../shared/types/queue";
 import { nowIso } from "../shared/time";
@@ -25,6 +30,16 @@ export async function handleAgentEvent(
 
   if (event.type === "schedule.fire") {
     const runId = await runAgentForMessage(env, createScheduleMessage(event));
+    await markScheduleRunStarted(env.AGENT_DB, event.scheduleId, {
+      runId,
+      startedAt: event.receivedAt
+    });
+    const runStatus = await getRunStatus(env.AGENT_DB, runId);
+    await recordScheduleRunResult(env.AGENT_DB, event.scheduleId, {
+      runId,
+      status: runStatus === "completed" ? "completed" : "failed",
+      completedAt: nowIso()
+    });
     await upsertHeartbeat(env.AGENT_DB, {
       agentId: event.agentId,
       source: "schedule-fire",

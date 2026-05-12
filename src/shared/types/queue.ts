@@ -1,4 +1,4 @@
-import type { InternalMessage } from "./internal-message";
+import type { InternalMessage, Platform, SenderRole } from "./internal-message";
 
 export type InboundMessageJob = {
   type: "inbound.message";
@@ -21,8 +21,14 @@ export type ScheduleFireJob = {
   eventId: string;
   agentId: string;
   scheduleId: string;
+  title?: string;
   text: string;
+  platform?: Platform;
   conversationId?: string;
+  actorId?: string;
+  actorRole?: SenderRole;
+  modelProviderId?: string;
+  modelId?: string;
   scheduledTime: string;
   receivedAt: string;
 };

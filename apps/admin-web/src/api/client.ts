@@ -262,7 +262,21 @@ export function createAdminClient(getToken: () => string) {
       });
     },
     listSchedules: () => request<ApiResult<{ schedules: Schedule[] }>>("/admin/schedules"),
-    createSchedule: (body: { text: string; delaySeconds: number; intervalSeconds?: number }) => {
+    createSchedule: (body: {
+      title?: string;
+      text: string;
+      platform?: Schedule["platform"];
+      conversationId?: string;
+      actorId?: string;
+      actorRole?: Schedule["actorRole"];
+      modelProviderId?: string;
+      modelId?: string;
+      dueAt?: string;
+      delaySeconds?: number;
+      intervalSeconds?: number;
+      maxAttempts?: number;
+      retryDelaySeconds?: number;
+    }) => {
       return request<ApiResult<{ schedule: Schedule }>>("/admin/schedules", {
         method: "POST",
         body: JSON.stringify(body)
@@ -272,6 +286,22 @@ export function createAdminClient(getToken: () => string) {
       return request<ApiResult<{ cancelled: boolean }>>(`/admin/schedules/${id}`, {
         method: "DELETE"
       });
+    },
+    pauseSchedule: (id: string) => {
+      return request<ApiResult<{ schedule: Schedule }>>(`/admin/schedules/${id}/pause`, {
+        method: "POST"
+      });
+    },
+    resumeSchedule: (id: string) => {
+      return request<ApiResult<{ schedule: Schedule }>>(`/admin/schedules/${id}/resume`, {
+        method: "POST"
+      });
+    },
+    runScheduleNow: (id: string) => {
+      return request<ApiResult<{ schedule: Schedule; eventId: string }>>(
+        `/admin/schedules/${id}/run`,
+        { method: "POST" }
+      );
     },
     listPendingActions: () => {
       return request<ApiResult<{ actions: PendingAction[] }>>("/admin/pending-actions");

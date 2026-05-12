@@ -3,6 +3,7 @@ import { contextCommand } from "./system/context-command";
 import { helpCommand } from "./system/help-command";
 import { modelCommand } from "./system/model-command";
 import { newConversationCommand } from "./system/new-conversation-command";
+import { taskCommand } from "./system/task-command";
 import { switchConversationCommand } from "./system/switch-conversation-command";
 import type { CommandDefinition } from "./types";
 
@@ -11,7 +12,8 @@ const COMMANDS: CommandDefinition[] = [
   newConversationCommand,
   switchConversationCommand,
   contextCommand,
-  modelCommand
+  modelCommand,
+  taskCommand
 ];
 
 export function listCommands(platform: Platform): CommandDefinition[] {

@@ -1,13 +1,11 @@
-import { createId } from "../shared/ids";
 import { nowIso } from "../shared/time";
 import type { Env } from "../shared/types/env";
-import type { QueueMessageBody } from "../shared/types/queue";
 import { upsertHeartbeat } from "../storage/repositories/heartbeats-repository";
 import {
   listDueSchedules,
   markScheduleDispatched
 } from "../storage/repositories/schedules-repository";
-import { parseSchedulePayload } from "./schedule-payload";
+import { enqueueScheduleFire } from "./schedule-dispatch";
 import { computeNextDueAt } from "./schedule-time";
 
 export type SweepResult = {
@@ -24,19 +22,7 @@ export async function sweepDueSchedules(
   let dispatched = 0;
 
   for (const schedule of due) {
-    const payload = parseSchedulePayload(schedule.payloadJson);
-    const job: QueueMessageBody = {
-      type: "schedule.fire",
-      eventId: createId("evt"),
-      agentId: schedule.agentId,
-      scheduleId: schedule.id,
-      text: payload.text,
-      conversationId: payload.conversationId,
-      scheduledTime,
-      receivedAt: scannedAt
-    };
-
-    await env.AGENT_QUEUE.send(job);
+    await enqueueScheduleFire(env, schedule, { scheduledTime, receivedAt: scannedAt });
     const nextDueAt = schedule.intervalSeconds
       ? computeNextDueAt(new Date(scannedAt), schedule.intervalSeconds)
       : undefined;

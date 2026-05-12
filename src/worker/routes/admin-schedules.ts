@@ -12,14 +12,25 @@ import { resolveDueAt } from "../../scheduler/schedule-time";
 const createScheduleSchema = z
   .object({
     agentId: z.string().min(1).optional(),
+    title: z.string().min(1).optional(),
     text: z.string().min(1),
+    platform: z.enum(["telegram", "qq", "webhook", "admin", "webui"]).optional(),
     conversationId: z.string().min(1).optional(),
+    actorId: z.string().min(1).optional(),
+    actorRole: z.enum(["owner", "admin", "member", "unknown"]).optional(),
+    modelProviderId: z.string().min(1).optional(),
+    modelId: z.string().min(1).optional(),
     dueAt: z.string().datetime().optional(),
     delaySeconds: z.number().int().min(0).optional(),
-    intervalSeconds: z.number().int().min(1).optional()
+    intervalSeconds: z.number().int().min(1).optional(),
+    maxAttempts: z.number().int().min(1).max(10).optional(),
+    retryDelaySeconds: z.number().int().min(1).max(86400).optional()
   })
   .refine((value) => value.dueAt || value.delaySeconds !== undefined, {
     message: "Either dueAt or delaySeconds is required"
+  })
+  .refine((value) => Boolean(value.modelProviderId) === Boolean(value.modelId), {
+    message: "modelProviderId and modelId must be provided together"
   });
 
 export async function handleAdminSchedules(
@@ -66,11 +77,26 @@ async function handleCreateSchedule(
   });
   const schedule = await createSchedule(env.AGENT_DB, {
     agentId: parsed.data.agentId ?? env.DEFAULT_AGENT_ID ?? "default",
+    title: parsed.data.title,
     dueAt,
     intervalSeconds: parsed.data.intervalSeconds,
+    platform: parsed.data.platform,
+    conversationId: parsed.data.conversationId,
+    actorId: parsed.data.actorId ?? "admin",
+    actorRole: parsed.data.actorRole ?? "owner",
+    modelProviderId: parsed.data.modelProviderId,
+    modelId: parsed.data.modelId,
+    maxAttempts: parsed.data.maxAttempts,
+    retryDelaySeconds: parsed.data.retryDelaySeconds,
     payloadJson: stringifySchedulePayload({
+      title: parsed.data.title,
       text: parsed.data.text,
-      conversationId: parsed.data.conversationId
+      platform: parsed.data.platform,
+      conversationId: parsed.data.conversationId,
+      actorId: parsed.data.actorId ?? "admin",
+      actorRole: parsed.data.actorRole ?? "owner",
+      modelProviderId: parsed.data.modelProviderId,
+      modelId: parsed.data.modelId
     })
   });
 

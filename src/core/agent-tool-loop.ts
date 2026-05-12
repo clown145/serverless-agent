@@ -37,7 +37,9 @@ export async function executeAgentToolLoop(
 ): Promise<void> {
   const registry = await createRuntimeToolRegistry(env);
   const provider = await createModelProvider(env, message.agentId, {
-    conversationId: message.conversationId
+    conversationId: message.conversationId,
+    providerId: message.modelProviderId,
+    modelId: message.modelId
   });
   const selectedSkill = await selectSkillForMessage(env, message);
   const context = await loadAgentContext(env, message);

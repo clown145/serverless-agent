@@ -49,7 +49,11 @@ export async function runAgentForMessage(
     const capabilities = await resolveActiveModelCapabilities(
       env,
       message.agentId,
-      message.conversationId
+      message.conversationId,
+      {
+        providerId: message.modelProviderId,
+        modelId: message.modelId
+      }
     );
     if (message.attachments.some((attachment) => attachment.type === "image") &&
       !supportsVision(capabilities.capabilities)

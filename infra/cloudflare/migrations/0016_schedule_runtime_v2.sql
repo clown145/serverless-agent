@@ -1,0 +1,12 @@
+ALTER TABLE schedules ADD COLUMN title TEXT;
+ALTER TABLE schedules ADD COLUMN platform TEXT;
+ALTER TABLE schedules ADD COLUMN conversation_id TEXT;
+ALTER TABLE schedules ADD COLUMN actor_id TEXT;
+ALTER TABLE schedules ADD COLUMN actor_role TEXT;
+ALTER TABLE schedules ADD COLUMN model_provider_id TEXT;
+ALTER TABLE schedules ADD COLUMN model_id TEXT;
+ALTER TABLE schedules ADD COLUMN max_attempts INTEGER;
+ALTER TABLE schedules ADD COLUMN attempt_count INTEGER;
+ALTER TABLE schedules ADD COLUMN retry_delay_seconds INTEGER;
+ALTER TABLE schedules ADD COLUMN last_error TEXT;
+ALTER TABLE schedules ADD COLUMN last_run_id TEXT;
