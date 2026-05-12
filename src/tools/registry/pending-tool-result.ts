@@ -1,4 +1,5 @@
 import { createToolPendingAction } from "../../permissions/pending-action-service";
+import { notifyPendingAction } from "../../permissions/pending-action-notifier";
 import { createId } from "../../shared/ids";
 import { nowIso } from "../../shared/time";
 import type { Env } from "../../shared/types/env";
@@ -52,6 +53,8 @@ export async function createPendingToolResult(
     summary: `${reason}; pendingActionId=${pending.id}`,
     createdAt: input.startedAt
   });
+
+  await notifyPendingAction(env, pending).catch(() => false);
 
   return {
     status: "needs_confirmation",

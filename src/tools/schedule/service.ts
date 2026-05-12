@@ -1,4 +1,8 @@
 import { enqueueScheduleFire } from "../../scheduler/schedule-dispatch";
+import {
+  createScheduleExecutionProfile,
+  stringifyScheduleExecutionProfile
+} from "../../scheduler/execution-profile";
 import { stringifySchedulePayload } from "../../scheduler/schedule-payload";
 import { resolveDueAt } from "../../scheduler/schedule-time";
 import { nowIso } from "../../shared/time";
@@ -42,6 +46,17 @@ export async function createScheduleFromTool(
     modelId: input.modelId,
     maxAttempts: input.maxAttempts,
     retryDelaySeconds: input.retryDelaySeconds,
+    executionProfileJson: stringifyScheduleExecutionProfile(
+      createScheduleExecutionProfile({
+        createdByActorId: context.actorId,
+        createdByActorRole: actorRole,
+        createdFromPlatform: platform,
+        createdFromConversationId: conversationId,
+        createdFromRunId: context.runId,
+        modelProviderId: input.modelProviderId,
+        modelId: input.modelId
+      })
+    ),
     payloadJson: stringifySchedulePayload({
       title,
       text: input.text,

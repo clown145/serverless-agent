@@ -28,8 +28,8 @@ export async function createSchedule(
         id, agent_id, status, title, due_at, interval_seconds,
         platform, conversation_id, actor_id, actor_role,
         model_provider_id, model_id, max_attempts, attempt_count,
-        retry_delay_seconds, payload_json, created_at, updated_at
-      ) VALUES (?, ?, 'active', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?)`
+        retry_delay_seconds, payload_json, execution_profile_json, created_at, updated_at
+      ) VALUES (?, ?, 'active', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?)`
     )
     .bind(
       id,
@@ -46,6 +46,7 @@ export async function createSchedule(
       input.maxAttempts ?? 1,
       input.retryDelaySeconds ?? 300,
       input.payloadJson,
+      input.executionProfileJson ?? null,
       now,
       now
     )
@@ -68,6 +69,7 @@ export async function createSchedule(
     attemptCount: 0,
     retryDelaySeconds: input.retryDelaySeconds ?? 300,
     payloadJson: input.payloadJson,
+    executionProfileJson: input.executionProfileJson,
     createdAt: now,
     updatedAt: now
   };

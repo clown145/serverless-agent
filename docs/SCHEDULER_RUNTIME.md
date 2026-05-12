@@ -93,6 +93,18 @@ scheduleId: {schedule_id}
 
 The normal agent runtime then handles the task. Runs triggered by schedules store `schedule_id` in the `runs` table.
 
+## Execution Profile
+
+Each new schedule records an execution profile in `execution_profile_json`:
+
+- `runAs`: defaults to `creator`.
+- `contextMode`: defaults to `latest_conversation`.
+- `modelMode`: `fixed` when a model is explicitly selected, otherwise `follow_conversation`.
+- `permissionMode`: defaults to `creator_current`.
+- `createdByActorId`, `createdByActorRole`, source platform, source conversation, and source run.
+
+Current execution still uses the concrete schedule columns (`actor_id`, `actor_role`, `conversation_id`, `model_provider_id`, `model_id`). The profile makes those choices explicit so later runtime changes can add isolated context, model-following, or permission snapshots without guessing from legacy rows.
+
 ## Heartbeats
 
 Heartbeat sources:

@@ -87,6 +87,8 @@ curl -sS -X POST http://localhost:8787/admin/pending-actions/act_.../confirm
 - `permission.confirmationRequired === true`
 - `sideEffect === "dangerous"`
 
+普通工具不会自动弹确认按钮。只有进入 `needs_confirmation` 的调用才会创建 pending action；如果触发来源平台支持交互按钮，运行时会尝试发送“确认 / 拒绝”按钮。按钮由运行时发送，不要求模型额外拥有 `message:send_buttons`。
+
 运行时会创建一条 `pending_actions` 记录，工具调用结果返回：
 
 ```json

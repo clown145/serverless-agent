@@ -1,4 +1,8 @@
 import { createSchedule } from "../../storage/repositories/schedules-repository";
+import {
+  createScheduleExecutionProfile,
+  stringifyScheduleExecutionProfile
+} from "../../scheduler/execution-profile";
 import { stringifySchedulePayload } from "../../scheduler/schedule-payload";
 import { computeNextDueAt } from "../../scheduler/schedule-time";
 import type { CommandDefinition } from "../types";
@@ -9,7 +13,7 @@ export const taskCommand: CommandDefinition = {
   aliases: ["todo"],
   title: "Task",
   description: "Create a delayed or recurring task.",
-  async execute({ env, message, command }) {
+  async execute({ env, runId, message, command }) {
     const parsed = parseTaskArgs(command.args);
     if (!parsed) {
       return {
@@ -30,6 +34,15 @@ export const taskCommand: CommandDefinition = {
       actorRole: message.sender.role,
       maxAttempts: 2,
       retryDelaySeconds: 300,
+      executionProfileJson: stringifyScheduleExecutionProfile(
+        createScheduleExecutionProfile({
+          createdByActorId: message.sender.platformUserId,
+          createdByActorRole: message.sender.role,
+          createdFromPlatform: message.platform,
+          createdFromConversationId: message.conversationId,
+          createdFromRunId: runId
+        })
+      ),
       payloadJson: stringifySchedulePayload({
         title: parsed.text.slice(0, 80),
         text: parsed.text,

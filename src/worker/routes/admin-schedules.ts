@@ -8,6 +8,10 @@ import {
 import { requireAdmin } from "../admin-auth";
 import { stringifySchedulePayload } from "../../scheduler/schedule-payload";
 import { resolveDueAt } from "../../scheduler/schedule-time";
+import {
+  createScheduleExecutionProfile,
+  stringifyScheduleExecutionProfile
+} from "../../scheduler/execution-profile";
 
 const createScheduleSchema = z
   .object({
@@ -88,6 +92,16 @@ async function handleCreateSchedule(
     modelId: parsed.data.modelId,
     maxAttempts: parsed.data.maxAttempts,
     retryDelaySeconds: parsed.data.retryDelaySeconds,
+    executionProfileJson: stringifyScheduleExecutionProfile(
+      createScheduleExecutionProfile({
+        createdByActorId: parsed.data.actorId ?? "admin",
+        createdByActorRole: parsed.data.actorRole ?? "owner",
+        createdFromPlatform: parsed.data.platform ?? "admin",
+        createdFromConversationId: parsed.data.conversationId,
+        modelProviderId: parsed.data.modelProviderId,
+        modelId: parsed.data.modelId
+      })
+    ),
     payloadJson: stringifySchedulePayload({
       title: parsed.data.title,
       text: parsed.data.text,

@@ -1,5 +1,9 @@
 import type { SchedulePayload } from "../../scheduler/schedule-payload";
 import { parseSchedulePayload } from "../../scheduler/schedule-payload";
+import {
+  parseScheduleExecutionProfile,
+  type ScheduleExecutionProfile
+} from "../../scheduler/execution-profile";
 import type { ScheduleRecord } from "../../storage/repositories/schedules-repository";
 
 export type ScheduleToolSummary = {
@@ -21,6 +25,7 @@ export type ScheduleToolSummary = {
   createdAt: string;
   updatedAt: string;
   text?: string;
+  executionProfile?: ScheduleExecutionProfile;
 };
 
 export function toScheduleToolSummary(
@@ -48,7 +53,8 @@ export function toScheduleToolSummary(
     lastError: schedule.lastError,
     createdAt: schedule.createdAt,
     updatedAt: schedule.updatedAt,
-    text: includeText ? payload?.text : undefined
+    text: includeText ? payload?.text : undefined,
+    executionProfile: parseScheduleExecutionProfile(schedule.executionProfileJson)
   };
 }
 
