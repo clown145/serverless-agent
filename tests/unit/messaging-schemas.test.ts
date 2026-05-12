@@ -65,4 +65,46 @@ describe("messaging schemas", () => {
       ]
     });
   });
+
+  it("accepts optional button layout columns", () => {
+    expect(
+      sendButtonsInputSchema.parse({
+        platform: "telegram",
+        conversationId: "telegram:123",
+        text: "请选择",
+        buttons: [
+          {
+            label: "A",
+            action: "agent.message"
+          },
+          {
+            label: "B",
+            action: "agent.message"
+          }
+        ],
+        layout: { columns: 2 }
+      })
+    ).toMatchObject({
+      layout: { columns: 2 }
+    });
+  });
+
+  it("defaults empty button layout to one column", () => {
+    expect(
+      sendButtonsInputSchema.parse({
+        platform: "telegram",
+        conversationId: "telegram:123",
+        text: "请选择",
+        buttons: [
+          {
+            label: "继续",
+            action: "agent.message"
+          }
+        ],
+        layout: {}
+      })
+    ).toMatchObject({
+      layout: { columns: 1 }
+    });
+  });
 });

@@ -73,8 +73,14 @@ const TOOL_EXAMPLES: Record<string, Record<string, unknown>> = {
         label: "继续",
         action: "agent.message",
         payload: { text: "继续" }
+      },
+      {
+        label: "稍后提醒",
+        action: "agent.message",
+        payload: { text: "稍后提醒" }
       }
-    ]
+    ],
+    layout: { columns: 2 }
   },
   "schedule.create": {
     title: "Follow up",

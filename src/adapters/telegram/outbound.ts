@@ -1,5 +1,6 @@
 import { physicalConversationForPlatform } from "../../conversations/ids";
 import type {
+  ButtonLayout,
   OutboundButton,
   OutboundFile,
   PlatformOutboundAdapter,
@@ -31,6 +32,7 @@ export function createTelegramOutboundAdapter(env: Env): PlatformOutboundAdapter
     sendButtons: (input) =>
       sendTelegramButtons(env, input.agentId, input.conversationId, input.text, {
         buttons: input.buttons,
+        layout: input.layout,
         expiresInSeconds: input.expiresInSeconds
       })
   };
@@ -146,6 +148,7 @@ export async function sendTelegramButtons(
   text: string,
   input: {
     buttons: OutboundButton[];
+    layout?: ButtonLayout;
     expiresInSeconds?: number;
   }
 ): Promise<PlatformSendResult> {
@@ -183,7 +186,7 @@ export async function sendTelegramButtons(
     text,
     disable_web_page_preview: true,
     reply_markup: {
-      inline_keyboard: buttons.map((button) => [button])
+      inline_keyboard: chunkButtons(buttons, input.layout?.columns ?? 1)
     }
   };
   const parseMode = normalizeTelegramParseMode(bot.integration?.config.parseMode);
@@ -207,6 +210,15 @@ export async function sendTelegramButtons(
       parse_mode: undefined
     }).then(messageResult, sendError);
   });
+}
+
+function chunkButtons<T>(buttons: T[], columns: number): T[][] {
+  const size = Math.min(Math.max(Math.floor(columns), 1), 4);
+  const rows: T[][] = [];
+  for (let index = 0; index < buttons.length; index += size) {
+    rows.push(buttons.slice(index, index + size));
+  }
+  return rows;
 }
 
 export async function answerTelegramCallbackQuery(

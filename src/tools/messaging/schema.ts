@@ -49,6 +49,10 @@ export const buttonActionSchema = z.enum([
   "pending.reject"
 ]);
 
+export const buttonLayoutSchema = z.object({
+  columns: z.number().int().min(1).max(4).default(1)
+});
+
 export const sendButtonsInputSchema = z.object({
   platform: messagingPlatformSchema,
   conversationId: z.string().min(1),
@@ -63,6 +67,7 @@ export const sendButtonsInputSchema = z.object({
     )
     .min(1)
     .max(12),
+  layout: buttonLayoutSchema.optional(),
   expiresInSeconds: z.number().int().min(60).max(86_400).optional()
 });
 
@@ -205,6 +210,18 @@ export const sendButtonsInputJsonSchema = {
         required: ["label", "action"],
         additionalProperties: false
       }
+    },
+    layout: {
+      type: "object",
+      properties: {
+        columns: {
+          type: "integer",
+          minimum: 1,
+          maximum: 4,
+          description: "Number of buttons per row."
+        }
+      },
+      additionalProperties: false
     },
     expiresInSeconds: {
       type: "integer",

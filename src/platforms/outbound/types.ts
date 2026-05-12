@@ -12,6 +12,10 @@ export type OutboundButton = {
   payload?: Record<string, unknown>;
 };
 
+export type ButtonLayout = {
+  columns?: number;
+};
+
 export type PlatformSendResult = {
   ok: boolean;
   providerMessageId?: string;
@@ -43,6 +47,7 @@ export type SendButtonsInput = {
   conversationId: string;
   text: string;
   buttons: OutboundButton[];
+  layout?: ButtonLayout;
   expiresInSeconds?: number;
 };
 
