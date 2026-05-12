@@ -165,7 +165,10 @@ export async function sendTelegramButtons(
         platform: "telegram",
         conversationId,
         action: button.action,
-        payloadJson: JSON.stringify(button.payload ?? {}),
+        payloadJson: JSON.stringify({
+          ...button.payload,
+          buttonLabel: button.label
+        }),
         expiresAt
       });
       return {

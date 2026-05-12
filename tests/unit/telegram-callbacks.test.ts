@@ -39,6 +39,37 @@ describe("telegram callbacks", () => {
     );
     expect(db.used).toEqual(["cb_agent"]);
   });
+
+  it("uses the clicked button label when payload text is omitted", async () => {
+    const queue = { send: vi.fn(async () => undefined) };
+    const db = createCallbackDb([
+      callbackRow({
+        id: "cb_label",
+        action: "agent.message",
+        payload_json: JSON.stringify({})
+      })
+    ]);
+
+    await handleTelegramCallbackQuery(
+      {
+        AGENT_DB: db as unknown as D1Database,
+        AGENT_QUEUE: queue
+      } as unknown as Env,
+      {
+        agentId: "default",
+        query: query("cb_label", "继续搜索")
+      },
+      undefined
+    );
+
+    expect(queue.send).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: expect.objectContaining({
+          text: "继续搜索"
+        })
+      })
+    );
+  });
 });
 
 function createCallbackDb(rows: PlatformCallbackRow[]) {
@@ -93,7 +124,7 @@ function callbackRow(overrides: Partial<PlatformCallbackRow> = {}): PlatformCall
   };
 }
 
-function query(data: string): TelegramCallbackQuery {
+function query(data: string, label?: string): TelegramCallbackQuery {
   return {
     id: "query_1",
     from: {
@@ -106,7 +137,19 @@ function query(data: string): TelegramCallbackQuery {
         id: 123,
         type: "private"
       },
-      date: 1760000000
+      date: 1760000000,
+      reply_markup: label
+        ? {
+            inline_keyboard: [
+              [
+                {
+                  text: label,
+                  callback_data: data
+                }
+              ]
+            ]
+          }
+        : undefined
     },
     data
   };

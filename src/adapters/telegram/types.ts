@@ -36,6 +36,16 @@ export type TelegramMessage = {
   caption?: string;
   photo?: TelegramPhotoSize[];
   document?: TelegramDocument;
+  reply_markup?: TelegramInlineKeyboardMarkup;
+};
+
+export type TelegramInlineKeyboardMarkup = {
+  inline_keyboard?: TelegramInlineKeyboardButton[][];
+};
+
+export type TelegramInlineKeyboardButton = {
+  text: string;
+  callback_data?: string;
 };
 
 export type TelegramCallbackQuery = {

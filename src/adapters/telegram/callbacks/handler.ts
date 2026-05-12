@@ -76,7 +76,11 @@ export async function handleTelegramCallbackQuery(
 
   if (callback.action === "agent.message") {
     await markPlatformCallbackUsed(env.AGENT_DB, callback.id);
-    const text = stringPayload(payload, "text") ?? stringPayload(payload, "message");
+    const text =
+      stringPayload(payload, "text") ??
+      stringPayload(payload, "message") ??
+      stringPayload(payload, "buttonLabel") ??
+      findButtonLabel(context, callback.id);
     if (!text) {
       await answerCallback(token, context.query.id, "缺少消息文本");
       return { handled: true };
@@ -145,4 +149,20 @@ function parsePayload(value: string): Record<string, unknown> {
 function stringPayload(payload: Record<string, unknown>, key: string): string | undefined {
   const value = payload[key];
   return typeof value === "string" && value ? value : undefined;
+}
+
+function findButtonLabel(
+  context: TelegramCallbackContext,
+  callbackId: string
+): string | undefined {
+  const rows = context.query.message?.reply_markup?.inline_keyboard ?? [];
+  for (const row of rows) {
+    for (const button of row) {
+      if (button.callback_data === callbackId && button.text) {
+        return button.text;
+      }
+    }
+  }
+
+  return undefined;
 }
