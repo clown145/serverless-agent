@@ -85,6 +85,81 @@ describe("model request bodies", () => {
     ]);
   });
 
+  it("retries OpenAI-compatible tool results as text for strict proxies", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        jsonResponse({ error: { message: "Param Incorrect" } }, { status: 400 })
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({ choices: [{ message: { content: "done" } }] })
+      );
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+
+    const provider = new OpenAiCompatibleProvider({
+      apiKey: "test",
+      model: "gpt-test"
+    });
+    await expect(
+      provider.complete({
+        messages: [
+          { role: "user", content: "list files" },
+          {
+            role: "assistant",
+            toolCalls: [
+              {
+                id: "call_1",
+                name: "vfs.list_dir",
+                arguments: { path: "/" }
+              }
+            ]
+          },
+          {
+            role: "tool",
+            toolCallId: "call_1",
+            toolName: "vfs.list_dir",
+            content: "[{\"path\":\"/workspace\"}]"
+          }
+        ],
+        tools: [
+          {
+            name: "vfs.list_dir",
+            description: "List files",
+            parameters: {
+              type: "object",
+              properties: {
+                path: { type: "string" }
+              }
+            }
+          }
+        ]
+      })
+    ).resolves.toMatchObject({ content: "done" });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchBodyAt(fetchMock, 0).messages).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          role: "tool",
+          tool_call_id: "call_1"
+        })
+      ])
+    );
+    const retryMessages = fetchBodyAt(fetchMock, 1).messages as Array<
+      Record<string, unknown>
+    >;
+    expect(retryMessages.some((message) => message.role === "tool")).toBe(false);
+    expect(retryMessages.some((message) => "tool_calls" in message)).toBe(false);
+    expect(retryMessages).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          role: "user",
+          content: expect.stringContaining("Tool result for vfs_list_dir")
+        })
+      ])
+    );
+  });
+
   it("sends Gemini inline image parts", async () => {
     const fetchMock = vi.fn(async () => {
       return jsonResponse({ candidates: [{ content: { parts: [{ text: "seen" }] } }] });
@@ -122,12 +197,20 @@ describe("model request bodies", () => {
 });
 
 function fetchBody(fetchMock: ReturnType<typeof vi.fn>): Record<string, unknown> {
-  const init = fetchMock.mock.calls[0]?.[1] as RequestInit | undefined;
+  return fetchBodyAt(fetchMock, 0);
+}
+
+function fetchBodyAt(
+  fetchMock: ReturnType<typeof vi.fn>,
+  index: number
+): Record<string, unknown> {
+  const init = fetchMock.mock.calls[index]?.[1] as RequestInit | undefined;
   return JSON.parse(String(init?.body ?? "{}")) as Record<string, unknown>;
 }
 
-function jsonResponse(body: unknown): Response {
+function jsonResponse(body: unknown, init?: ResponseInit): Response {
   return new Response(JSON.stringify(body), {
-    headers: { "content-type": "application/json" }
+    headers: { "content-type": "application/json" },
+    ...init
   });
 }

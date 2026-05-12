@@ -75,36 +75,21 @@ export class OpenAiCompatibleProvider implements ModelProvider {
         authType: "bearer"
       }
     );
-    const body: Record<string, unknown> = {
-      model: this.options.model,
-      messages: request.messages.map((message) =>
-        toOpenAiMessage(message, mapper.toWireName)
-      )
-    };
-
-    if (wireTools.length) {
-      body.tools = wireTools.map(toOpenAiTool);
-      body.tool_choice = "auto";
-    }
-
-    const response = await fetch(endpoint, {
-      method: "POST",
+    const payload = await postChatCompletion(
+      endpoint,
       headers,
-      body: JSON.stringify(body)
+      createOpenAiBody(this.options.model, request, wireTools, mapper.toWireName, "native")
+    ).catch(async (error) => {
+      if (!shouldRetryToolResultsAsText(error, request.messages)) {
+        throw error;
+      }
+
+      return postChatCompletion(
+        endpoint,
+        headers,
+        createOpenAiBody(this.options.model, request, wireTools, mapper.toWireName, "text")
+      );
     });
-
-    const payload = (await response.json().catch(() => undefined)) as
-      | OpenAiResponse
-      | { error?: { message?: string } }
-      | undefined;
-
-    if (!response.ok) {
-      const message =
-        payload && "error" in payload
-          ? payload.error?.message
-          : `OpenAI-compatible API error ${response.status}`;
-      throw new Error(message ?? `OpenAI-compatible API error ${response.status}`);
-    }
 
     const message = (payload as OpenAiResponse | undefined)?.choices?.[0]?.message;
     const toolCalls = mapper.mapToolCalls(
@@ -123,11 +108,54 @@ export class OpenAiCompatibleProvider implements ModelProvider {
   }
 }
 
+type ToolResultMode = "native" | "text";
+
+function createOpenAiBody(
+  model: string,
+  request: ModelRequest,
+  wireTools: ModelTool[],
+  toWireName: (name: string) => string,
+  toolResultMode: ToolResultMode
+): Record<string, unknown> {
+  const body: Record<string, unknown> = {
+    model,
+    messages: toOpenAiMessages(request.messages, toWireName, toolResultMode)
+  };
+
+  if (wireTools.length) {
+    body.tools = wireTools.map(toOpenAiTool);
+    body.tool_choice = "auto";
+  }
+
+  return body;
+}
+
+function toOpenAiMessages(
+  messages: ModelMessage[],
+  toWireName: (name: string) => string,
+  toolResultMode: ToolResultMode
+): OpenAiMessage[] {
+  return messages.map((message) =>
+    toOpenAiMessage(message, toWireName, toolResultMode)
+  );
+}
+
 function toOpenAiMessage(
   message: ModelMessage,
-  toWireName: (name: string) => string
+  toWireName: (name: string) => string,
+  toolResultMode: ToolResultMode
 ): OpenAiMessage {
   if (message.role === "tool") {
+    if (toolResultMode === "text") {
+      return {
+        role: "user",
+        content: [
+          `Tool result for ${toWireName(message.toolName)} (${message.toolCallId}):`,
+          message.content
+        ].join("\n")
+      };
+    }
+
     return {
       role: "tool",
       tool_call_id: message.toolCallId,
@@ -136,6 +164,19 @@ function toOpenAiMessage(
   }
 
   if (message.role === "assistant") {
+    if (toolResultMode === "text" && message.toolCalls?.length) {
+      return {
+        role: "assistant",
+        content: [
+          message.content,
+          "Requested tools:",
+          ...message.toolCalls.map((toolCall) =>
+            `${toWireName(toolCall.name)} ${JSON.stringify(toolCall.arguments)}`
+          )
+        ].filter(Boolean).join("\n")
+      };
+    }
+
     return {
       role: "assistant",
       content: message.content ?? null,
@@ -165,6 +206,45 @@ function toOpenAiMessage(
         )
       : message.content
   };
+}
+
+async function postChatCompletion(
+  endpoint: string,
+  headers: Headers,
+  body: Record<string, unknown>
+): Promise<OpenAiResponse> {
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: new Headers(headers),
+    body: JSON.stringify(body)
+  });
+
+  const payload = (await response.json().catch(() => undefined)) as
+    | OpenAiResponse
+    | { error?: { message?: string } }
+    | undefined;
+
+  if (!response.ok) {
+    const message =
+      payload && "error" in payload
+        ? payload.error?.message
+        : `OpenAI-compatible API error ${response.status}`;
+    throw new Error(message ?? `OpenAI-compatible API error ${response.status}`);
+  }
+
+  return payload as OpenAiResponse;
+}
+
+function shouldRetryToolResultsAsText(
+  error: unknown,
+  messages: ModelMessage[]
+): boolean {
+  if (!messages.some((message) => message.role === "tool")) {
+    return false;
+  }
+
+  const message = error instanceof Error ? error.message : String(error);
+  return /tool|function|param|parameter|incorrect|invalid/i.test(message);
 }
 
 function toOpenAiTool(tool: ModelTool): Record<string, unknown> {
