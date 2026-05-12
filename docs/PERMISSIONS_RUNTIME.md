@@ -20,8 +20,8 @@
 
 | Actor | Max level | Scopes |
 | --- | ---: | --- |
-| `scheduler` | 3 | `workspace:read`, `workspace:write`, `message:send` |
-| role `owner` / `admin` | 4 | `workspace:read`, `workspace:write`, `message:send` |
+| `scheduler` | 3 | `workspace:read`, `workspace:write`, `message:send`, `web:search`, `schedule:read`, `schedule:write` |
+| role `owner` / `admin` | 4 | `workspace:read`, `workspace:write`, `message:send`, `web:search`, `schedule:read`, `schedule:write` |
 | role `member` | 2 | `workspace:read`, `workspace:write` |
 | unknown | 1 | `workspace:read` |
 

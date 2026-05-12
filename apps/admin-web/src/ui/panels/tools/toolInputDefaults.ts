@@ -45,6 +45,28 @@ const TOOL_EXAMPLES: Record<string, Record<string, unknown>> = {
     platform: "webui",
     conversationId: "tool-debug",
     text: "test"
+  },
+  "schedule.create": {
+    title: "Follow up",
+    text: "总结当前状态并提醒我下一步",
+    delaySeconds: 3600
+  },
+  "schedule.list": {
+    statuses: ["active"],
+    limit: 10,
+    includeText: true
+  },
+  "schedule.pause": {
+    scheduleId: "sch_..."
+  },
+  "schedule.resume": {
+    scheduleId: "sch_..."
+  },
+  "schedule.cancel": {
+    scheduleId: "sch_..."
+  },
+  "schedule.run_now": {
+    scheduleId: "sch_..."
   }
 };
 

@@ -19,5 +19,7 @@ describe("tool catalog", () => {
     expect(catalog.map((tool) => tool.name)).toContain("vfs.command");
     expect(catalog.map((tool) => tool.name)).toContain("vfs.search");
     expect(catalog.map((tool) => tool.name)).toContain("web.fetch_page");
+    expect(catalog.map((tool) => tool.name)).toContain("schedule.create");
+    expect(catalog.map((tool) => tool.name)).toContain("schedule.list");
   });
 });

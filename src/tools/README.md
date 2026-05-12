@@ -23,7 +23,7 @@ agent 可调用工具都放这里。工具层按来源拆分，registry 只负�
 
 ## Sources
 
-- `builtin`: 预置内置工具，例如 VFS、消息发送。
+- `builtin`: 预置内置工具，例如 VFS、消息发送、未来任务。
 - `mcp`: 外部 MCP 工具适配层，内部工具名使用 `mcp.<serverId>.<toolName>`。
 
 ## Rules

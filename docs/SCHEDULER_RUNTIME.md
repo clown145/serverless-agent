@@ -57,6 +57,17 @@ Cancel a schedule:
 curl -sS -X DELETE http://localhost:8787/admin/schedules/sch_...
 ```
 
+## Model Tools
+
+The agent can create and manage schedules through built-in tools:
+
+- `schedule.create`: create one-time or recurring tasks.
+- `schedule.list`: inspect schedules for the current agent.
+- `schedule.pause`, `schedule.resume`, `schedule.cancel`: lifecycle controls.
+- `schedule.run_now`: enqueue an existing schedule immediately.
+
+These tools use the current actor and conversation by default, so a task created from Telegram will normally fire back into the same Telegram conversation. Read access requires `schedule:read`; mutations require `schedule:write` and level 3.
+
 ## Cron Sweep
 
 Cloudflare Cron calls the scheduled handler. The handler:

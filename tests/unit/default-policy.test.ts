@@ -14,13 +14,15 @@ const base = {
 describe("default policy", () => {
   it("gives scheduler level 3", () => {
     expect(resolveDefaultPolicy({ ...base, actorId: "scheduler" })).toMatchObject({
-      maxLevel: 3
+      maxLevel: 3,
+      scopes: expect.arrayContaining(["schedule:read", "schedule:write"])
     });
   });
 
   it("gives owner level 4", () => {
     expect(resolveDefaultPolicy({ ...base, actorRole: "owner" })).toMatchObject({
-      maxLevel: 4
+      maxLevel: 4,
+      scopes: expect.arrayContaining(["schedule:read", "schedule:write"])
     });
   });
 

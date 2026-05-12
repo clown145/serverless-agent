@@ -1,7 +1,14 @@
 import type { PermissionLevel, ToolExecutionContext } from "../tools/types";
 import type { ResolvedPolicy } from "./policy-types";
 
-const OWNER_SCOPES = ["workspace:read", "workspace:write", "message:send", "web:search"];
+const OWNER_SCOPES = [
+  "workspace:read",
+  "workspace:write",
+  "message:send",
+  "web:search",
+  "schedule:read",
+  "schedule:write"
+];
 const MEMBER_SCOPES = ["workspace:read", "workspace:write"];
 const UNKNOWN_SCOPES = ["workspace:read"];
 
