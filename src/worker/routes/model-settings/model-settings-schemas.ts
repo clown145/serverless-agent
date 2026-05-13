@@ -30,9 +30,13 @@ export const testModelSchema = z.object({
   prompt: z.string().min(1).max(800).optional()
 });
 
-export const updateModelCapabilitiesSchema = z.object({
-  capabilities: z.array(z.enum(["tools", "vision", "long_context"])).default([])
-});
+export const updateModelCatalogSchema = z.object({
+  capabilities: z.array(z.enum(["tools", "vision", "long_context"])).optional(),
+  status: z.enum(["available", "enabled", "disabled"]).optional()
+}).refine(
+  (value) => value.capabilities !== undefined || value.status !== undefined,
+  "Either capabilities or status must be provided"
+);
 
 export function zodMessage(error: z.ZodError): string {
   return error.issues[0]?.message ?? error.message;

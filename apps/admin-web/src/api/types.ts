@@ -212,10 +212,12 @@ export type ModelCatalogItem = {
   modelId: string;
   displayName?: string;
   capabilities: ModelCapability[];
-  status: string;
+  status: ModelCatalogStatus;
   createdAt: string;
   updatedAt: string;
 };
+
+export type ModelCatalogStatus = "available" | "enabled" | "disabled" | "unavailable";
 
 export type ModelCapability = "tools" | "vision" | "long_context";
 

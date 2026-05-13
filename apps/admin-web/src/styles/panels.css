@@ -864,6 +864,24 @@
   gap: 12px;
 }
 
+.model-default-picker {
+  display: grid;
+  grid-template-columns: minmax(240px, 480px) minmax(180px, 1fr);
+  gap: 10px;
+  align-items: end;
+  margin-bottom: 14px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  padding: 12px;
+}
+
+.model-default-picker span {
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
 .model-provider-row {
   border: 1px solid var(--border);
   border-radius: 7px;
@@ -891,13 +909,13 @@
 
 .model-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 8px;
 }
 
 .model-choice {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
   align-items: center;
   min-height: 38px;
   border: 1px solid var(--border);
@@ -906,6 +924,30 @@
   color: var(--text);
   padding: 2px;
   text-align: left;
+}
+
+.model-choice.muted {
+  background: var(--surface-muted);
+}
+
+.model-section-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--text-muted);
+  font-size: 12px;
+  margin: 6px 0 8px;
+}
+
+.model-hidden-section {
+  margin-top: 10px;
+}
+
+.model-hidden-section summary {
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 13px;
+  margin-bottom: 8px;
 }
 
 .model-capability-list {
@@ -946,6 +988,11 @@
 .model-activate span {
   min-width: 0;
   overflow-wrap: anywhere;
+}
+
+.model-activate:disabled {
+  cursor: not-allowed;
+  color: var(--text-muted);
 }
 
 .editor-pane {
@@ -1073,6 +1120,7 @@
   .chat-session-bar,
   .telegram-form,
   .search-provider-form,
+  .model-default-picker,
   .conversations-layout,
   .conversation-form-grid,
   .telegram-row,

@@ -8,7 +8,8 @@ import {
 import {
   mapModelCatalogRow,
   type ModelCatalogRecord,
-  type ModelCatalogRow
+  type ModelCatalogRow,
+  type ModelCatalogStatus
 } from "./model-settings-types";
 
 export async function upsertModelCatalog(
@@ -19,18 +20,32 @@ export async function upsertModelCatalog(
   }
 ): Promise<ModelCatalogRecord[]> {
   const now = nowIso();
+  const existingModels = await listModelCatalog(db, input.providerId);
+  const existingStatusByModelId = new Map(
+    existingModels.map((model) => [model.modelId, model.status])
+  );
+
+  await db
+    .prepare(
+      `UPDATE model_catalog
+       SET status = 'unavailable', updated_at = ?
+       WHERE provider_id = ?`
+    )
+    .bind(now, input.providerId)
+    .run();
 
   for (const model of input.models) {
     const id = createId("model");
+    const status = refreshedModelStatus(existingStatusByModelId.get(model.modelId));
     await db
       .prepare(
         `INSERT INTO model_catalog (
           id, provider_id, model_id, display_name, capabilities_json,
           status, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, 'available', ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(provider_id, model_id) DO UPDATE SET
           display_name = excluded.display_name,
-          status = 'available',
+          status = excluded.status,
           updated_at = excluded.updated_at`
       )
       .bind(
@@ -39,6 +54,7 @@ export async function upsertModelCatalog(
         model.modelId,
         model.displayName ?? null,
         JSON.stringify(inferModelCapabilities(model.modelId)),
+        status,
         now,
         now
       )
@@ -46,6 +62,14 @@ export async function upsertModelCatalog(
   }
 
   return listModelCatalog(db, input.providerId);
+}
+
+function refreshedModelStatus(status?: ModelCatalogStatus): ModelCatalogStatus {
+  if (status === "enabled" || status === "disabled") {
+    return status;
+  }
+
+  return "available";
 }
 
 export async function listModelCatalog(
@@ -57,6 +81,28 @@ export async function listModelCatalog(
         .prepare("SELECT * FROM model_catalog WHERE provider_id = ? ORDER BY model_id ASC")
         .bind(providerId)
     : db.prepare("SELECT * FROM model_catalog ORDER BY provider_id ASC, model_id ASC");
+  const result = await query.all<ModelCatalogRow>();
+
+  return (result.results ?? []).map(mapModelCatalogRow);
+}
+
+export async function listEnabledModelCatalog(
+  db: D1Database,
+  providerId?: string
+): Promise<ModelCatalogRecord[]> {
+  const query = providerId
+    ? db
+        .prepare(
+          `SELECT * FROM model_catalog
+           WHERE provider_id = ? AND status = 'enabled'
+           ORDER BY model_id ASC`
+        )
+        .bind(providerId)
+    : db.prepare(
+        `SELECT * FROM model_catalog
+         WHERE status = 'enabled'
+         ORDER BY provider_id ASC, model_id ASC`
+      );
   const result = await query.all<ModelCatalogRow>();
 
   return (result.results ?? []).map(mapModelCatalogRow);
@@ -74,6 +120,23 @@ export async function updateModelCatalogCapabilities(
        WHERE id = ?`
     )
     .bind(JSON.stringify(uniqueCapabilities(capabilities)), nowIso(), id)
+    .run();
+
+  return getModelCatalogRecord(db, id);
+}
+
+export async function updateModelCatalogStatus(
+  db: D1Database,
+  id: string,
+  status: Exclude<ModelCatalogStatus, "unavailable">
+): Promise<ModelCatalogRecord | undefined> {
+  await db
+    .prepare(
+      `UPDATE model_catalog
+       SET status = ?, updated_at = ?
+       WHERE id = ? AND status != 'unavailable'`
+    )
+    .bind(status, nowIso(), id)
     .run();
 
   return getModelCatalogRecord(db, id);

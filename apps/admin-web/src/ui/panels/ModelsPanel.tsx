@@ -8,6 +8,7 @@ import type {
 } from "../../api/types";
 import { useI18n } from "../i18n/I18nProvider";
 import { ToolbarButton } from "../ToolbarButton";
+import { DefaultModelPicker } from "./models/DefaultModelPicker";
 import { ModelProviderForm } from "./models/ModelProviderForm";
 import { ModelProviderList } from "./models/ModelProviderList";
 import { providerDraftDefaults, type ModelProviderDraft } from "./models/modelDefaults";
@@ -29,6 +30,18 @@ export function ModelsPanel({ client, notify }: PanelProps) {
       return grouped;
     }, {});
   }, [models]);
+
+  const enabledModels = useMemo(
+    () => models.filter((model) => model.status === "enabled"),
+    [models]
+  );
+
+  const enabledModelsByProvider = useMemo(() => {
+    return enabledModels.reduce<Record<string, ModelCatalogItem[]>>((grouped, model) => {
+      grouped[model.providerId] = [...(grouped[model.providerId] ?? []), model];
+      return grouped;
+    }, {});
+  }, [enabledModels]);
 
   async function load() {
     try {
@@ -109,6 +122,18 @@ export function ModelsPanel({ client, notify }: PanelProps) {
     }
   }
 
+  async function updateStatus(modelCatalogId: string, status: ModelCatalogItem["status"]) {
+    try {
+      const result = await client.updateModelStatus(modelCatalogId, status);
+      setModels((current) =>
+        current.map((model) => model.id === result.model.id ? result.model : model)
+      );
+      notify(status === "enabled" ? t("models.modelEnabled") : t("models.modelDisabled"), "ok");
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "Failed to update model status", "error");
+    }
+  }
+
   async function removeProvider(providerId: string) {
     try {
       await client.deleteModelProvider(providerId);
@@ -128,7 +153,12 @@ export function ModelsPanel({ client, notify }: PanelProps) {
       <header className="panel-header">
         <div>
           <h1>{t("models.title")}</h1>
-          <p>{activeModelId ? `${activeProviderId} / ${activeModelId}` : t("models.mockFallback")}</p>
+          <p>
+            {activeModelId
+              ? `${activeProviderId} / ${activeModelId}`
+              : t("models.mockFallback")}
+          </p>
+          <span>{t("models.enabledCount", { count: enabledModels.length })}</span>
         </div>
         <ToolbarButton label={t("common.refresh")} icon={RefreshCw} onClick={() => void load()} />
       </header>
@@ -138,6 +168,14 @@ export function ModelsPanel({ client, notify }: PanelProps) {
         onDraftChange={setDraft}
         onProviderTypeChange={(providerType) => setDraft(providerDraftDefaults(providerType))}
         onSubmit={() => void createProvider()}
+      />
+
+      <DefaultModelPicker
+        activeProviderId={activeProviderId}
+        activeModelId={activeModelId}
+        models={enabledModels}
+        providers={providers}
+        onActivate={(providerId, modelId) => void activate(providerId, modelId)}
       />
 
       {testResult && (
@@ -152,6 +190,7 @@ export function ModelsPanel({ client, notify }: PanelProps) {
 
       <ModelProviderList
         providers={providers}
+        enabledModelsByProvider={enabledModelsByProvider}
         modelsByProvider={modelsByProvider}
         activeProviderId={activeProviderId}
         activeModelId={activeModelId}
@@ -161,6 +200,7 @@ export function ModelsPanel({ client, notify }: PanelProps) {
         onCapabilitiesChange={(modelId, capabilities) =>
           void updateCapabilities(modelId, capabilities)
         }
+        onStatusChange={(modelId, status) => void updateStatus(modelId, status)}
         onDelete={(providerId) => void removeProvider(providerId)}
         testingKey={testingKey}
       />

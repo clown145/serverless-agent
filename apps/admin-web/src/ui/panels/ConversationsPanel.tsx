@@ -13,7 +13,7 @@ import {
   type ConversationDraft
 } from "./conversations/ConversationEditor";
 import { ConversationList } from "./conversations/ConversationList";
-import { parseModelKey } from "./conversations/conversationModelOptions";
+import { parseModelKey } from "./models/modelSelection";
 import type { PanelProps } from "./types";
 
 type ConversationsPanelProps = PanelProps & {

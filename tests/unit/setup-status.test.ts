@@ -40,6 +40,25 @@ describe("setup status", () => {
     expect(status.activeModel).toBe("Gemini Flash");
   });
 
+  it("requires an enabled model for model setup and default model readiness", () => {
+    const provider = providerRecord();
+    const model = { ...modelRecord(provider.id), status: "disabled" as const };
+    const status = buildSetupStatus({
+      providers: [provider],
+      models: [model],
+      settings: {
+        agentId: "default",
+        providerId: provider.id,
+        modelId: model.modelId,
+        updatedAt: "2026-01-01T00:00:00.000Z"
+      }
+    });
+
+    expect(status.ready).toBe(false);
+    expect(status.steps.find((step) => step.id === "models")?.status).toBe("pending");
+    expect(status.steps.find((step) => step.id === "active_model")?.status).toBe("pending");
+  });
+
   it("includes workspace setup when bootstrap status is provided", () => {
     const status = buildSetupStatus({
       providers: [],
@@ -84,7 +103,7 @@ function modelRecord(providerId: string): ModelCatalogRecord {
     modelId: "gemini-2.5-flash",
     displayName: "Gemini Flash",
     capabilities: ["tools", "vision", "long_context"],
-    status: "active",
+    status: "enabled",
     createdAt: "2026-01-01T00:00:00.000Z",
     updatedAt: "2026-01-01T00:00:00.000Z"
   };

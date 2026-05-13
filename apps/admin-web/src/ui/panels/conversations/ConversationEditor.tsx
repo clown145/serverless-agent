@@ -4,7 +4,7 @@ import type {
   ModelProvider
 } from "../../../api/types";
 import { useI18n } from "../../i18n/I18nProvider";
-import { modelKey, modelLabel } from "./conversationModelOptions";
+import { enabledModelOptions, modelKey, modelLabel } from "../models/modelSelection";
 
 export type ConversationDraft = {
   title: string;
@@ -83,7 +83,7 @@ export function ConversationEditor({
             onChange={(event) => onDraftChange({ ...draft, modelKey: event.target.value })}
           >
             <option value="">{t("conversations.defaultModel")}</option>
-            {models.map((model) => (
+            {enabledModelOptions(models).map((model) => (
               <option key={model.id} value={modelKey(model.providerId, model.modelId)}>
                 {modelLabel(model, providers)}
               </option>
@@ -99,7 +99,7 @@ export function ConversationEditor({
             }
           >
             <option value="">{t("conversations.defaultModel")}</option>
-            {models.map((model) => (
+            {enabledModelOptions(models).map((model) => (
               <option key={model.id} value={modelKey(model.providerId, model.modelId)}>
                 {modelLabel(model, providers)}
               </option>

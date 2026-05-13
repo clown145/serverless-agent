@@ -15,6 +15,7 @@ export async function checkModelConfig(
     listModelCatalog(env.AGENT_DB),
     getModelSettings(env.AGENT_DB, agentId)
   ]);
+  const enabledModels = models.filter((model) => model.status === "enabled");
   const activeProviders = providers.filter((provider) => provider.status === "active");
   const configuredProviders = activeProviders.filter(
     (provider) => provider.authType === "none" || providerCredentialAvailable(env, provider)
@@ -36,12 +37,13 @@ export async function checkModelConfig(
   return [
     modelProvidersCheck(activeProviders.length, envModelProvider),
     modelCredentialsCheck(configuredProviders.length, envModelProvider),
-    modelCatalogCheck(models.length),
+    modelCatalogCheck(models.length, enabledModels.length),
     activeModelCheck({
       envModelProvider,
       providerName: activeProvider?.name,
       modelName: activeModel?.displayName ?? activeModel?.modelId,
-      configuredModelId: settings?.modelId
+      configuredModelId: settings?.modelId,
+      isModelEnabled: Boolean(activeModel && activeModel.status === "enabled")
     })
   ];
 }
@@ -115,9 +117,24 @@ function modelCredentialsCheck(count: number, envModelProvider: boolean): Diagno
       );
 }
 
-function modelCatalogCheck(count: number): DiagnosticCheck {
+function modelCatalogCheck(count: number, enabledCount: number): DiagnosticCheck {
+  if (enabledCount) {
+    return diagnosticOk(
+      "model",
+      "model_catalog",
+      "Model catalog",
+      `${enabledCount}/${count} model(s) enabled`
+    );
+  }
+
   return count
-    ? diagnosticOk("model", "model_catalog", "Model catalog", `${count} model(s) cached`)
+    ? diagnosticWarn(
+        "model",
+        "model_catalog",
+        "Model catalog",
+        `${count} model(s) cached but none enabled`,
+        "Enable at least one model after refreshing"
+      )
     : diagnosticWarn(
         "model",
         "model_catalog",
@@ -132,8 +149,9 @@ function activeModelCheck(input: {
   providerName?: string;
   modelName?: string;
   configuredModelId?: string;
+  isModelEnabled?: boolean;
 }): DiagnosticCheck {
-  if (input.providerName && input.modelName) {
+  if (input.providerName && input.modelName && input.isModelEnabled) {
     return diagnosticOk(
       "model",
       "active_model",
@@ -142,13 +160,13 @@ function activeModelCheck(input: {
     );
   }
 
-  if (input.providerName && input.configuredModelId) {
+  if (input.providerName && input.configuredModelId && !input.isModelEnabled) {
     return diagnosticWarn(
       "model",
       "active_model",
       "Active model",
-      `${input.providerName} / ${input.configuredModelId} is selected but missing from cached catalog`,
-      "Refresh models for the active provider"
+      `${input.providerName} / ${input.configuredModelId} is selected but disabled`,
+      "Enable the selected model"
     );
   }
 

@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import type { Schedule } from "../../../api/types";
 import { useI18n } from "../../i18n/I18nProvider";
+import { enabledModelOptions } from "../models/modelSelection";
 import type { ScheduleFormState, ScheduleModelOptions } from "./types";
 
 type ScheduleEditorProps = {
@@ -18,7 +19,10 @@ export function ScheduleEditor({
 }: ScheduleEditorProps) {
   const { t } = useI18n();
   const providerModels = useMemo(
-    () => modelOptions.models.filter((model) => model.providerId === form.modelProviderId),
+    () =>
+      enabledModelOptions(
+        modelOptions.models.filter((model) => model.providerId === form.modelProviderId)
+      ),
     [form.modelProviderId, modelOptions.models]
   );
 

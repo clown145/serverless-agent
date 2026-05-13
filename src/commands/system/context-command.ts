@@ -4,7 +4,7 @@ import {
   getConversationSettings,
   updateConversationSettings
 } from "../../storage/repositories/conversation-settings-repository";
-import { listModelCatalog } from "../../storage/repositories/model-catalog-repository";
+import { listEnabledModelCatalog } from "../../storage/repositories/model-catalog-repository";
 import { listModelProviders } from "../../storage/repositories/model-providers-repository";
 import type { CommandDefinition } from "../types";
 import { bold, code } from "./format";
@@ -76,7 +76,7 @@ export const contextCommand: CommandDefinition = {
       if (!match) {
         return {
           handled: true,
-          responseText: `没有找到摘要模型：${code(modelName, message.platform)}`
+          responseText: `没有找到已启用摘要模型：${code(modelName, message.platform)}`
         };
       }
 
@@ -132,11 +132,14 @@ async function findModel(
   modelName: string
 ): Promise<{ providerId: string; providerName: string; modelId: string } | undefined> {
   const [models, providers] = await Promise.all([
-    listModelCatalog(db),
+    listEnabledModelCatalog(db),
     listModelProviders(db)
   ]);
   const model = models.find(
-    (item) => item.modelId === modelName || item.displayName === modelName
+    (item) =>
+      item.modelId === modelName ||
+      item.displayName === modelName ||
+      modelKey(item.providerId, item.modelId) === modelName
   );
   if (!model) {
     return undefined;
@@ -147,4 +150,8 @@ async function findModel(
     providerName: provider?.name ?? model.providerId,
     modelId: model.modelId
   };
+}
+
+function modelKey(providerId: string, modelId: string): string {
+  return `${providerId}::${modelId}`;
 }

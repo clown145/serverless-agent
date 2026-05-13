@@ -1,4 +1,4 @@
-import { CheckCircle2, RefreshCw, TestTube2, Trash2 } from "lucide-react";
+import { CheckCircle2, Power, PowerOff, RefreshCw, TestTube2, Trash2 } from "lucide-react";
 import type {
   ModelCapability,
   ModelCatalogItem,
@@ -11,6 +11,7 @@ import { ToolbarButton } from "../../ToolbarButton";
 
 type ModelProviderListProps = {
   providers: ModelProvider[];
+  enabledModelsByProvider: Record<string, ModelCatalogItem[]>;
   modelsByProvider: Record<string, ModelCatalogItem[]>;
   activeProviderId: string;
   activeModelId: string;
@@ -18,12 +19,14 @@ type ModelProviderListProps = {
   onTest: (providerId: string, modelId?: string) => void;
   onActivate: (providerId: string, modelId: string) => void;
   onCapabilitiesChange: (modelId: string, capabilities: ModelCapability[]) => void;
+  onStatusChange: (modelId: string, status: ModelCatalogItem["status"]) => void;
   onDelete: (providerId: string) => void;
   testingKey?: string;
 };
 
 export function ModelProviderList({
   providers,
+  enabledModelsByProvider,
   modelsByProvider,
   activeProviderId,
   activeModelId,
@@ -31,6 +34,7 @@ export function ModelProviderList({
   onTest,
   onActivate,
   onCapabilitiesChange,
+  onStatusChange,
   onDelete,
   testingKey
 }: ModelProviderListProps) {
@@ -40,6 +44,8 @@ export function ModelProviderList({
     <div className="model-provider-list">
       {providers.map((provider) => {
         const providerModels = modelsByProvider[provider.id] ?? [];
+        const enabledModels = enabledModelsByProvider[provider.id] ?? [];
+        const hiddenModels = providerModels.filter((model) => model.status !== "enabled");
         return (
           <div className="model-provider-row" key={provider.id}>
             <div className="model-provider-head">
@@ -69,54 +75,49 @@ export function ModelProviderList({
                 onClick={() => onDelete(provider.id)}
               />
             </div>
-            <div className="model-list">
-              {providerModels.map((model) => {
-                const active = activeProviderId === provider.id && activeModelId === model.modelId;
-                return (
-                  <div
-                    key={model.id}
-                    className={`model-choice ${active ? "selected" : ""}`}
-                  >
-                    <button
-                      className="model-activate"
-                      type="button"
-                      onClick={() => onActivate(provider.id, model.modelId)}
-                    >
-                      <span>{model.displayName ?? model.modelId}</span>
-                      {active && <CheckCircle2 size={16} />}
-                    </button>
-                    <ToolbarButton
-                      label={t("models.testModel")}
-                      icon={TestTube2}
-                      disabled={testingKey === testKey(provider.id, model.modelId)}
-                      onClick={() => onTest(provider.id, model.modelId)}
-                    />
-                    <div className="model-capability-list">
-                      {MODEL_CAPABILITIES.map((capability) => (
-                        <label key={capability}>
-                          <input
-                            checked={model.capabilities.includes(capability)}
-                            type="checkbox"
-                            onChange={(event) =>
-                              onCapabilitiesChange(
-                                model.id,
-                                toggleCapability(
-                                  model.capabilities,
-                                  capability,
-                                  event.target.checked
-                                )
-                              )
-                            }
-                          />
-                          {t(`models.capability.${capability}`)}
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-              {providerModels.length === 0 && <EmptyState label={t("models.refreshToLoad")} />}
+            <div className="model-section-title">
+              <span>{t("models.enabledModels")}</span>
+              <span>{enabledModels.length}</span>
             </div>
+            <div className="model-list">
+              {enabledModels.map((model) =>
+                renderModelChoice({
+                  active: activeProviderId === provider.id && activeModelId === model.modelId,
+                  model,
+                  onActivate: () => onActivate(provider.id, model.modelId),
+                  onCapabilitiesChange,
+                  onStatusChange,
+                  onTest: () => onTest(provider.id, model.modelId),
+                  platformTestingKey: testKey(provider.id, model.modelId),
+                  testingKey,
+                  t
+                })
+              )}
+              {providerModels.length === 0 && <EmptyState label={t("models.refreshToLoad")} />}
+              {providerModels.length > 0 && enabledModels.length === 0 && (
+                <EmptyState label={t("models.noEnabledModels")} />
+              )}
+            </div>
+            {hiddenModels.length > 0 && (
+              <details className="model-hidden-section">
+                <summary>{t("models.otherModels", { count: hiddenModels.length })}</summary>
+                <div className="model-list">
+                  {hiddenModels.map((model) =>
+                    renderModelChoice({
+                      active: activeProviderId === provider.id && activeModelId === model.modelId,
+                      model,
+                      onActivate: () => onActivate(provider.id, model.modelId),
+                      onCapabilitiesChange,
+                      onStatusChange,
+                      onTest: () => onTest(provider.id, model.modelId),
+                      platformTestingKey: testKey(provider.id, model.modelId),
+                      testingKey,
+                      t
+                    })
+                  )}
+                </div>
+              </details>
+            )}
           </div>
         );
       })}
@@ -126,6 +127,82 @@ export function ModelProviderList({
 }
 
 const MODEL_CAPABILITIES: ModelCapability[] = ["tools", "vision", "long_context"];
+
+type RenderModelChoiceInput = {
+  active: boolean;
+  model: ModelCatalogItem;
+  onActivate: () => void;
+  onCapabilitiesChange: (modelId: string, capabilities: ModelCapability[]) => void;
+  onStatusChange: (modelId: string, status: ModelCatalogItem["status"]) => void;
+  onTest: () => void;
+  platformTestingKey: string;
+  testingKey?: string;
+  t: (key: string, vars?: Record<string, string | number>) => string;
+};
+
+function renderModelChoice({
+  active,
+  model,
+  onActivate,
+  onCapabilitiesChange,
+  onStatusChange,
+  onTest,
+  platformTestingKey,
+  testingKey,
+  t
+}: RenderModelChoiceInput) {
+  const enabled = model.status === "enabled";
+  return (
+    <div
+      key={model.id}
+      className={`model-choice ${active ? "selected" : ""} ${enabled ? "" : "muted"}`}
+    >
+      <button
+        className="model-activate"
+        disabled={!enabled}
+        type="button"
+        onClick={onActivate}
+      >
+        <span>{model.displayName ?? model.modelId}</span>
+        {active && <CheckCircle2 size={16} />}
+      </button>
+      <StatusBadge value={model.status} />
+      <ToolbarButton
+        label={enabled ? t("models.disableModel") : t("models.enableModel")}
+        icon={enabled ? PowerOff : Power}
+        disabled={model.status === "unavailable"}
+        onClick={() => onStatusChange(model.id, enabled ? "disabled" : "enabled")}
+      />
+      <ToolbarButton
+        label={t("models.testModel")}
+        icon={TestTube2}
+        disabled={testingKey === platformTestingKey}
+        onClick={onTest}
+      />
+      <div className="model-capability-list">
+        {MODEL_CAPABILITIES.map((capability) => (
+          <label key={capability}>
+            <input
+              checked={model.capabilities.includes(capability)}
+              type="checkbox"
+              onChange={(event) =>
+                onCapabilitiesChange(
+                  model.id,
+                  toggleCapability(
+                    model.capabilities,
+                    capability,
+                    event.target.checked
+                  )
+                )
+              }
+            />
+            {t(`models.capability.${capability}`)}
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function toggleCapability(
   capabilities: ModelCapability[],

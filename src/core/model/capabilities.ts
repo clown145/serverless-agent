@@ -1,7 +1,7 @@
 import type { Env } from "../../shared/types/env";
 import { getModelSettings } from "../../storage/repositories/agent-model-settings-repository";
 import { getConversationSettings } from "../../storage/repositories/conversation-settings-repository";
-import { listModelCatalog } from "../../storage/repositories/model-catalog-repository";
+import { listEnabledModelCatalog } from "../../storage/repositories/model-catalog-repository";
 import {
   inferModelCapabilities,
   type ModelCapability
@@ -24,31 +24,40 @@ export async function resolveActiveModelCapabilities(
   } = {}
 ): Promise<ActiveModelCapabilities> {
   if (options.providerId && options.modelId) {
-    return resolveCatalogCapabilities(env, {
+    const capabilities = await resolveCatalogCapabilities(env, {
       providerId: options.providerId,
       modelId: options.modelId,
       source: "agent"
     });
+    if (capabilities) {
+      return capabilities;
+    }
   }
 
   const conversation = conversationId
     ? await getConversationSettings(env.AGENT_DB, agentId, conversationId)
     : undefined;
   if (conversation?.modelProviderId && conversation.modelId) {
-    return resolveCatalogCapabilities(env, {
+    const capabilities = await resolveCatalogCapabilities(env, {
       providerId: conversation.modelProviderId,
       modelId: conversation.modelId,
       source: "conversation"
     });
+    if (capabilities) {
+      return capabilities;
+    }
   }
 
   const settings = await getModelSettings(env.AGENT_DB, agentId);
   if (settings?.providerId && settings.modelId) {
-    return resolveCatalogCapabilities(env, {
+    const capabilities = await resolveCatalogCapabilities(env, {
       providerId: settings.providerId,
       modelId: settings.modelId,
       source: "agent"
     });
+    if (capabilities) {
+      return capabilities;
+    }
   }
 
   const modelId =
@@ -79,14 +88,17 @@ async function resolveCatalogCapabilities(
     modelId: string;
     source: "conversation" | "agent";
   }
-): Promise<ActiveModelCapabilities> {
-  const catalog = await listModelCatalog(env.AGENT_DB, input.providerId);
+): Promise<ActiveModelCapabilities | undefined> {
+  const catalog = await listEnabledModelCatalog(env.AGENT_DB, input.providerId);
   const model = catalog.find((item) => item.modelId === input.modelId);
+  if (!model) {
+    throw new Error(`Selected model is not enabled: ${input.providerId} / ${input.modelId}`);
+  }
 
   return {
     providerId: input.providerId,
     modelId: input.modelId,
-    capabilities: model?.capabilities ?? inferModelCapabilities(input.modelId),
+    capabilities: model.capabilities,
     source: input.source
   };
 }

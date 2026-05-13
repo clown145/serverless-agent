@@ -13,8 +13,10 @@ import {
 } from "../../storage/repositories/agent-model-settings-repository";
 import { createModelCredentialRecord } from "../../storage/repositories/model-credentials-repository";
 import {
+  listEnabledModelCatalog,
   listModelCatalog,
   updateModelCatalogCapabilities,
+  updateModelCatalogStatus,
   upsertModelCatalog
 } from "../../storage/repositories/model-catalog-repository";
 import {
@@ -29,7 +31,7 @@ import {
   createProviderSchema,
   setActiveModelSchema,
   testModelSchema,
-  updateModelCapabilitiesSchema,
+  updateModelCatalogSchema,
   zodMessage
 } from "./model-settings/model-settings-schemas";
 import { toProviderDto } from "./model-settings/model-provider-dto";
@@ -117,6 +119,21 @@ export async function handleAdminModelSettings(
     const parsed = setActiveModelSchema.safeParse(await request.json());
     if (!parsed.success) {
       return errorResponse(400, "invalid_payload", zodMessage(parsed.error));
+    }
+
+    const enabledModels = await listEnabledModelCatalog(
+      env.AGENT_DB,
+      parsed.data.providerId
+    );
+    const enabledModel = enabledModels.find(
+      (model) => model.modelId === parsed.data.modelId
+    );
+    if (!enabledModel) {
+      return errorResponse(
+        400,
+        "model_not_enabled",
+        "Enable the model before selecting it as the default"
+      );
     }
 
     const settings = await setModelSettings(env.AGENT_DB, {
@@ -242,18 +259,29 @@ export async function handleAdminModelCatalogDetail(
     return errorResponse(405, "method_not_allowed", "Method not allowed");
   }
 
-  const parsed = updateModelCapabilitiesSchema.safeParse(
+  const parsed = updateModelCatalogSchema.safeParse(
     await request.json().catch(() => ({}))
   );
   if (!parsed.success) {
     return errorResponse(400, "invalid_payload", zodMessage(parsed.error));
   }
 
-  const model = await updateModelCatalogCapabilities(
-    env.AGENT_DB,
-    modelCatalogId,
-    parsed.data.capabilities
-  );
+  let model = parsed.data.capabilities
+    ? await updateModelCatalogCapabilities(
+        env.AGENT_DB,
+        modelCatalogId,
+        parsed.data.capabilities
+      )
+    : undefined;
+
+  if (parsed.data.status) {
+    model = await updateModelCatalogStatus(
+      env.AGENT_DB,
+      modelCatalogId,
+      parsed.data.status
+    );
+  }
+
   if (!model) {
     return errorResponse(404, "model_not_found", "Model not found");
   }

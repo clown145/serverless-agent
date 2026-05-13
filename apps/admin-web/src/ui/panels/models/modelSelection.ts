@@ -17,3 +17,7 @@ export function modelLabel(
   const provider = providers.find((item) => item.id === model.providerId);
   return `${provider?.name ?? model.providerId} / ${model.displayName ?? model.modelId}`;
 }
+
+export function enabledModelOptions(models: ModelCatalogItem[]): ModelCatalogItem[] {
+  return models.filter((model) => model.status === "enabled");
+}

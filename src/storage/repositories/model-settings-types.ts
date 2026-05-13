@@ -18,6 +18,12 @@ export type ChatProtocol =
   | "openai-chat-completions"
   | "gemini-generate-content";
 
+export type ModelCatalogStatus =
+  | "available"
+  | "enabled"
+  | "disabled"
+  | "unavailable";
+
 export type ModelProviderRecord = {
   id: string;
   name: string;
@@ -52,7 +58,7 @@ export type ModelCatalogRecord = {
   modelId: string;
   displayName?: string;
   capabilities: ModelCapability[];
-  status: string;
+  status: ModelCatalogStatus;
   createdAt: string;
   updatedAt: string;
 };
@@ -149,10 +155,21 @@ export function mapModelCatalogRow(row: ModelCatalogRow): ModelCatalogRecord {
     modelId: row.model_id,
     displayName: row.display_name ?? undefined,
     capabilities: normalizeModelCapabilities(row.capabilities_json, row.model_id),
-    status: row.status,
+    status: normalizeModelCatalogStatus(row.status),
     createdAt: row.created_at,
     updatedAt: row.updated_at
   };
+}
+
+function normalizeModelCatalogStatus(value: string): ModelCatalogStatus {
+  switch (value) {
+    case "enabled":
+    case "disabled":
+    case "unavailable":
+      return value;
+    default:
+      return "available";
+  }
 }
 
 export function mapModelSettingsRow(row: ModelSettingsRow): ModelSettingsRecord {

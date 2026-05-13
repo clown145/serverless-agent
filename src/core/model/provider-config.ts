@@ -1,6 +1,7 @@
 import type { Env } from "../../shared/types/env";
 import { getModelSettings } from "../../storage/repositories/agent-model-settings-repository";
 import { getConversationSettings } from "../../storage/repositories/conversation-settings-repository";
+import { listEnabledModelCatalog } from "../../storage/repositories/model-catalog-repository";
 import { getModelProviderRecord } from "../../storage/repositories/model-providers-repository";
 import type {
   ChatProtocol,
@@ -31,9 +32,13 @@ export async function resolveModelConfig(
   } = {}
 ): Promise<ResolvedModelConfig> {
   if (options.providerId && options.modelId) {
-    const provider = await getModelProviderRecord(env.AGENT_DB, options.providerId);
-    if (provider && provider.status === "active") {
-      return resolveModelConfigFromProvider(env, provider, options.modelId);
+    const config = await resolveEnabledModelConfig(
+      env,
+      options.providerId,
+      options.modelId
+    );
+    if (config) {
+      return config;
     }
   }
 
@@ -44,22 +49,47 @@ export async function resolveModelConfig(
       options.conversationId
     );
     if (conversation?.modelProviderId && conversation.modelId) {
-      const provider = await getModelProviderRecord(env.AGENT_DB, conversation.modelProviderId);
-      if (provider && provider.status === "active") {
-        return resolveModelConfigFromProvider(env, provider, conversation.modelId);
+      const config = await resolveEnabledModelConfig(
+        env,
+        conversation.modelProviderId,
+        conversation.modelId
+      );
+      if (config) {
+        return config;
       }
     }
   }
 
   const settings = await getModelSettings(env.AGENT_DB, agentId);
   if (settings?.providerId && settings.modelId) {
-    const provider = await getModelProviderRecord(env.AGENT_DB, settings.providerId);
-    if (provider && provider.status === "active") {
-      return resolveModelConfigFromProvider(env, provider, settings.modelId);
+    const config = await resolveEnabledModelConfig(env, settings.providerId, settings.modelId);
+    if (config) {
+      return config;
     }
   }
 
   return resolveEnvConfig(env);
+}
+
+async function resolveEnabledModelConfig(
+  env: Env,
+  providerId: string,
+  modelId: string
+): Promise<ResolvedModelConfig | undefined> {
+  const [provider, models] = await Promise.all([
+    getModelProviderRecord(env.AGENT_DB, providerId),
+    listEnabledModelCatalog(env.AGENT_DB, providerId)
+  ]);
+  const model = models.find((item) => item.modelId === modelId);
+  if (!provider || provider.status !== "active") {
+    return undefined;
+  }
+
+  if (!model) {
+    throw new Error(`Selected model is not enabled: ${provider.name} / ${modelId}`);
+  }
+
+  return resolveModelConfigFromProvider(env, provider, model.modelId);
 }
 
 export async function resolveModelConfigFromProvider(

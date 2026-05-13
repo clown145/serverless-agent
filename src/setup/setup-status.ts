@@ -38,8 +38,10 @@ export function buildSetupStatus(input: {
   const activeModel = input.models.find(
     (model) =>
       model.providerId === input.settings?.providerId &&
-      model.modelId === input.settings?.modelId
+      model.modelId === input.settings?.modelId &&
+      model.status === "enabled"
   );
+  const enabledModels = input.models.filter((model) => model.status === "enabled");
   const keyedProviders = input.providers.filter(
     (provider) => provider.credentialId || provider.apiKeySecret
   );
@@ -63,9 +65,9 @@ export function buildSetupStatus(input: {
     {
       id: "models",
       label: "Models",
-      status: input.models.length ? "done" : "pending",
-      detail: input.models.length
-        ? `${input.models.length} models available`
+      status: enabledModels.length ? "done" : "pending",
+      detail: enabledModels.length
+        ? `${enabledModels.length} models enabled`
         : "Refresh models from a provider"
     },
     {

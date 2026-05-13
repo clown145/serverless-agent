@@ -1,6 +1,6 @@
 import { getConversationSettings, updateConversationSettings } from "../../storage/repositories/conversation-settings-repository";
 import { getModelSettings } from "../../storage/repositories/agent-model-settings-repository";
-import { listModelCatalog } from "../../storage/repositories/model-catalog-repository";
+import { listEnabledModelCatalog } from "../../storage/repositories/model-catalog-repository";
 import { listModelProviders } from "../../storage/repositories/model-providers-repository";
 import type { CommandDefinition } from "../types";
 import { bold, code } from "./format";
@@ -39,7 +39,7 @@ export const modelCommand: CommandDefinition = {
       if (!match) {
         return {
           handled: true,
-          responseText: `没有找到模型：${code(modelName, message.platform)}。先在 WebUI 模型页刷新模型。`
+          responseText: `没有找到已启用模型：${code(modelName, message.platform)}。先在 WebUI 模型页刷新并启用模型。`
         };
       }
 
@@ -58,10 +58,19 @@ export const modelCommand: CommandDefinition = {
     }
 
     if (action === "list") {
-      const models = await listModelCatalog(env.AGENT_DB);
+      const models = await listEnabledModelCatalog(env.AGENT_DB);
+      if (!models.length) {
+        return {
+          handled: true,
+          responseText: "暂无已启用模型。请先在 WebUI 模型页刷新模型，并启用需要使用的模型。"
+        };
+      }
+
       const lines = [
         bold("可用模型", message.platform),
-        ...models.slice(0, 20).map((model) => code(model.modelId, message.platform))
+        ...models.slice(0, 20).map((model) =>
+          `${code(modelKey(model.providerId, model.modelId), message.platform)} ${model.displayName ? `- ${model.displayName}` : ""}`.trim()
+        )
       ];
       return { handled: true, responseText: lines.join("\n") };
     }
@@ -99,11 +108,14 @@ async function findModel(
   modelName: string
 ): Promise<{ providerId: string; providerName: string; modelId: string } | undefined> {
   const [models, providers] = await Promise.all([
-    listModelCatalog(db),
+    listEnabledModelCatalog(db),
     listModelProviders(db)
   ]);
   const matches = models.filter(
-    (model) => model.modelId === modelName || model.displayName === modelName
+    (model) =>
+      model.modelId === modelName ||
+      model.displayName === modelName ||
+      modelKey(model.providerId, model.modelId) === modelName
   );
   const model = matches[0];
   if (!model) {
@@ -115,4 +127,8 @@ async function findModel(
     providerName: provider?.name ?? model.providerId,
     modelId: model.modelId
   };
+}
+
+function modelKey(providerId: string, modelId: string): string {
+  return `${providerId}::${modelId}`;
 }

@@ -569,6 +569,15 @@ export function createAdminClient(getToken: () => string) {
         }
       );
     },
+    updateModelStatus: (modelCatalogId: string, status: ModelCatalogItem["status"]) => {
+      return request<ApiResult<{ model: ModelCatalogItem }>>(
+        `/admin/model-catalog/${encodeURIComponent(modelCatalogId)}`,
+        {
+          method: "PUT",
+          body: JSON.stringify({ status })
+        }
+      );
+    },
     deleteModelProvider: (id: string) => {
       return request<ApiResult<{ deleted: boolean }>>(`/admin/model-providers/${id}`, {
         method: "DELETE"
