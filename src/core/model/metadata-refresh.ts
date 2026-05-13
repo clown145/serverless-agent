@@ -1,8 +1,8 @@
 import type { ModelProviderRecord } from "../../storage/repositories/model-settings-types";
-import { fetchOpenRouterModelMetadata } from "./openrouter-metadata-source";
+import { fetchModelsDevModelMetadata } from "./models-dev-metadata-source";
 import type { ModelMetadataResolution } from "./model-metadata";
 
-export type ModelMetadataSourceName = "openrouter";
+export type ModelMetadataSourceName = "models.dev";
 
 export async function fetchModelMetadata(
   source: ModelMetadataSourceName,
@@ -11,8 +11,8 @@ export async function fetchModelMetadata(
     modelIds: string[];
   }
 ): Promise<Map<string, ModelMetadataResolution>> {
-  if (source === "openrouter") {
-    return fetchOpenRouterModelMetadata(input.provider, input.modelIds);
+  if (source === "models.dev") {
+    return fetchModelsDevModelMetadata(input.provider, input.modelIds);
   }
 
   return new Map();

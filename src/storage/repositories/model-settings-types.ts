@@ -27,11 +27,13 @@ export type ModelCatalogStatus =
 export type ModelCapabilitiesSource =
   | "manual"
   | "provider"
+  | "models.dev"
   | "openrouter"
   | "inferred";
 
 export type ModelMetadataSource =
   | "provider"
+  | "models.dev"
   | "openrouter"
   | "inferred";
 
@@ -216,6 +218,7 @@ function normalizeCapabilitiesSource(
   if (
     value === "manual" ||
     value === "provider" ||
+    value === "models.dev" ||
     value === "openrouter" ||
     value === "inferred"
   ) {
@@ -228,7 +231,12 @@ function normalizeCapabilitiesSource(
 function normalizeMetadataSource(
   value: string | null | undefined
 ): ModelMetadataSource | undefined {
-  if (value === "provider" || value === "openrouter" || value === "inferred") {
+  if (
+    value === "provider" ||
+    value === "models.dev" ||
+    value === "openrouter" ||
+    value === "inferred"
+  ) {
     return value;
   }
 

@@ -31,7 +31,7 @@ export const testModelSchema = z.object({
 });
 
 export const refreshModelMetadataSchema = z.object({
-  source: z.enum(["openrouter"]).default("openrouter")
+  source: z.enum(["models.dev"]).default("models.dev")
 });
 
 export const updateModelCatalogSchema = z.object({

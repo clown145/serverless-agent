@@ -545,7 +545,7 @@ export function createAdminClient(getToken: () => string) {
         { method: "POST" }
       );
     },
-    refreshProviderModelMetadata: (providerId: string, source = "openrouter") => {
+    refreshProviderModelMetadata: (providerId: string, source = "models.dev") => {
       return request<
         ApiResult<{
           models: ModelCatalogItem[];

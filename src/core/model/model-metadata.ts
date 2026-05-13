@@ -18,7 +18,7 @@ export type ModelMetadataMatchConfidence =
   | "unknown";
 
 export type ModelMetadataResolution = ModelMetadata & {
-  source: "provider" | "openrouter" | "inferred";
+  source: "provider" | "models.dev" | "openrouter" | "inferred";
   confidence: ModelMetadataMatchConfidence;
   matchedModelId?: string;
 };
@@ -52,7 +52,10 @@ export function modelCapabilitiesFromMetadata(input: {
   modelId: string;
   inputModalities?: string[];
   outputModalities?: string[];
+  modality?: string;
   supportedParameters?: string[];
+  supportsTools?: boolean;
+  supportsStructuredOutput?: boolean;
   contextWindow?: number;
 }): ModelCapability[] {
   const capabilities: ModelCapability[] = [];
@@ -60,24 +63,43 @@ export function modelCapabilitiesFromMetadata(input: {
     (input.supportedParameters ?? []).map((parameter) => parameter.toLowerCase())
   );
   const inputModalities = new Set(
-    (input.inputModalities ?? []).map((modality) => modality.toLowerCase())
+    [
+      ...(input.inputModalities ?? []),
+      ...inputModalitiesFromSummary(input.modality)
+    ].map((modality) => modality.toLowerCase())
   );
 
   if (inputModalities.has("image")) {
     capabilities.push("vision");
   }
 
-  if (supported.has("tools") || supported.has("tool_choice")) {
+  if (input.supportsTools || supported.has("tools") || supported.has("tool_choice")) {
     capabilities.push("tools");
   }
 
-  if (supported.has("structured_outputs") || supported.has("response_format")) {
+  if (
+    input.supportsStructuredOutput ||
+    supported.has("structured_outputs") ||
+    supported.has("response_format")
+  ) {
     capabilities.push("structured_output");
   }
 
-  if (typeof input.contextWindow === "number" && input.contextWindow >= 100_000) {
+  if (typeof input.contextWindow === "number" && input.contextWindow >= 1_000_000) {
     capabilities.push("long_context");
   }
 
   return uniqueCapabilities(capabilities);
+}
+
+function inputModalitiesFromSummary(value: string | undefined): string[] {
+  if (!value) {
+    return [];
+  }
+
+  const inputSide = value.split("->")[0] ?? "";
+  return inputSide
+    .split("+")
+    .map((item) => item.trim())
+    .filter(Boolean);
 }

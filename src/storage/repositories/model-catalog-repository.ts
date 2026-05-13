@@ -6,7 +6,6 @@ import {
   type ModelCapability
 } from "../../core/model/capability-defaults";
 import {
-  inferredModelMetadata,
   mergeModelMetadata,
   type ModelMetadataResolution
 } from "../../core/model/model-metadata";
@@ -147,9 +146,14 @@ export async function updateModelCatalogMetadata(
   const models = await listModelCatalog(db, input.providerId);
 
   for (const model of models) {
+    const matchedMetadata = input.metadataByModelId.get(model.modelId);
+    if (!matchedMetadata) {
+      continue;
+    }
+
     const metadata = mergeModelMetadata(
       model.modelId,
-      input.metadataByModelId.get(model.modelId) ?? inferredModelMetadata(model.modelId)
+      matchedMetadata
     );
     const capabilities =
       model.capabilitiesSource === "manual" ? model.capabilities : metadata.capabilities;

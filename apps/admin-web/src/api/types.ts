@@ -228,9 +228,14 @@ export type ModelCatalogStatus = "available" | "enabled" | "disabled" | "unavail
 
 export type ModelCapability = "tools" | "vision" | "long_context" | "structured_output";
 
-export type ModelCapabilitiesSource = "manual" | "provider" | "openrouter" | "inferred";
+export type ModelCapabilitiesSource =
+  | "manual"
+  | "provider"
+  | "models.dev"
+  | "openrouter"
+  | "inferred";
 
-export type ModelMetadataSource = "provider" | "openrouter" | "inferred";
+export type ModelMetadataSource = "provider" | "models.dev" | "openrouter" | "inferred";
 
 export type ModelMetadataConfidence = "exact" | "alias" | "inferred" | "unknown";
 
