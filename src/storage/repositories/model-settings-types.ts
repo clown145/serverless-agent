@@ -24,6 +24,23 @@ export type ModelCatalogStatus =
   | "disabled"
   | "unavailable";
 
+export type ModelCapabilitiesSource =
+  | "manual"
+  | "provider"
+  | "openrouter"
+  | "inferred";
+
+export type ModelMetadataSource =
+  | "provider"
+  | "openrouter"
+  | "inferred";
+
+export type ModelMetadataConfidence =
+  | "exact"
+  | "alias"
+  | "inferred"
+  | "unknown";
+
 export type ModelProviderRecord = {
   id: string;
   name: string;
@@ -58,6 +75,13 @@ export type ModelCatalogRecord = {
   modelId: string;
   displayName?: string;
   capabilities: ModelCapability[];
+  capabilitiesSource: ModelCapabilitiesSource;
+  contextWindow?: number;
+  maxOutputTokens?: number;
+  metadata?: Record<string, unknown>;
+  metadataSource?: ModelMetadataSource;
+  metadataConfidence?: ModelMetadataConfidence;
+  metadataFetchedAt?: string;
   status: ModelCatalogStatus;
   createdAt: string;
   updatedAt: string;
@@ -104,6 +128,13 @@ export type ModelCatalogRow = {
   model_id: string;
   display_name?: string;
   capabilities_json?: string | null;
+  capabilities_source?: string | null;
+  context_window?: number | null;
+  max_output_tokens?: number | null;
+  metadata_json?: string | null;
+  metadata_source?: string | null;
+  metadata_confidence?: string | null;
+  metadata_fetched_at?: string | null;
   status: string;
   created_at: string;
   updated_at: string;
@@ -155,6 +186,13 @@ export function mapModelCatalogRow(row: ModelCatalogRow): ModelCatalogRecord {
     modelId: row.model_id,
     displayName: row.display_name ?? undefined,
     capabilities: normalizeModelCapabilities(row.capabilities_json, row.model_id),
+    capabilitiesSource: normalizeCapabilitiesSource(row.capabilities_source),
+    contextWindow: normalizePositiveInteger(row.context_window),
+    maxOutputTokens: normalizePositiveInteger(row.max_output_tokens),
+    metadata: parseMetadataJson(row.metadata_json),
+    metadataSource: normalizeMetadataSource(row.metadata_source),
+    metadataConfidence: normalizeMetadataConfidence(row.metadata_confidence),
+    metadataFetchedAt: row.metadata_fetched_at ?? undefined,
     status: normalizeModelCatalogStatus(row.status),
     createdAt: row.created_at,
     updatedAt: row.updated_at
@@ -170,6 +208,71 @@ function normalizeModelCatalogStatus(value: string): ModelCatalogStatus {
     default:
       return "available";
   }
+}
+
+function normalizeCapabilitiesSource(
+  value: string | null | undefined
+): ModelCapabilitiesSource {
+  if (
+    value === "manual" ||
+    value === "provider" ||
+    value === "openrouter" ||
+    value === "inferred"
+  ) {
+    return value;
+  }
+
+  return "inferred";
+}
+
+function normalizeMetadataSource(
+  value: string | null | undefined
+): ModelMetadataSource | undefined {
+  if (value === "provider" || value === "openrouter" || value === "inferred") {
+    return value;
+  }
+
+  return undefined;
+}
+
+function normalizeMetadataConfidence(
+  value: string | null | undefined
+): ModelMetadataConfidence | undefined {
+  if (
+    value === "exact" ||
+    value === "alias" ||
+    value === "inferred" ||
+    value === "unknown"
+  ) {
+    return value;
+  }
+
+  return undefined;
+}
+
+function normalizePositiveInteger(value: number | null | undefined): number | undefined {
+  if (typeof value === "number" && Number.isFinite(value) && value > 0) {
+    return Math.floor(value);
+  }
+
+  return undefined;
+}
+
+function parseMetadataJson(value: string | null | undefined): Record<string, unknown> | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  try {
+    const parsed = JSON.parse(value) as unknown;
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      return parsed as Record<string, unknown>;
+    }
+  } catch {
+    return undefined;
+  }
+
+  return undefined;
 }
 
 export function mapModelSettingsRow(row: ModelSettingsRow): ModelSettingsRecord {

@@ -6,6 +6,11 @@ import {
   type ModelCapability
 } from "../../core/model/capability-defaults";
 import {
+  inferredModelMetadata,
+  mergeModelMetadata,
+  type ModelMetadataResolution
+} from "../../core/model/model-metadata";
+import {
   mapModelCatalogRow,
   type ModelCatalogRecord,
   type ModelCatalogRow,
@@ -24,6 +29,9 @@ export async function upsertModelCatalog(
   const existingStatusByModelId = new Map(
     existingModels.map((model) => [model.modelId, model.status])
   );
+  const existingCapabilitiesSourceByModelId = new Map(
+    existingModels.map((model) => [model.modelId, model.capabilitiesSource])
+  );
 
   await db
     .prepare(
@@ -37,12 +45,14 @@ export async function upsertModelCatalog(
   for (const model of input.models) {
     const id = createId("model");
     const status = refreshedModelStatus(existingStatusByModelId.get(model.modelId));
+    const capabilitiesSource =
+      existingCapabilitiesSourceByModelId.get(model.modelId) ?? "inferred";
     await db
       .prepare(
         `INSERT INTO model_catalog (
-          id, provider_id, model_id, display_name, capabilities_json,
+          id, provider_id, model_id, display_name, capabilities_json, capabilities_source,
           status, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(provider_id, model_id) DO UPDATE SET
           display_name = excluded.display_name,
           status = excluded.status,
@@ -54,6 +64,7 @@ export async function upsertModelCatalog(
         model.modelId,
         model.displayName ?? null,
         JSON.stringify(inferModelCapabilities(model.modelId)),
+        capabilitiesSource,
         status,
         now,
         now
@@ -116,13 +127,66 @@ export async function updateModelCatalogCapabilities(
   await db
     .prepare(
       `UPDATE model_catalog
-       SET capabilities_json = ?, updated_at = ?
+       SET capabilities_json = ?, capabilities_source = 'manual', updated_at = ?
        WHERE id = ?`
     )
     .bind(JSON.stringify(uniqueCapabilities(capabilities)), nowIso(), id)
     .run();
 
   return getModelCatalogRecord(db, id);
+}
+
+export async function updateModelCatalogMetadata(
+  db: D1Database,
+  input: {
+    providerId: string;
+    metadataByModelId: Map<string, ModelMetadataResolution>;
+  }
+): Promise<ModelCatalogRecord[]> {
+  const now = nowIso();
+  const models = await listModelCatalog(db, input.providerId);
+
+  for (const model of models) {
+    const metadata = mergeModelMetadata(
+      model.modelId,
+      input.metadataByModelId.get(model.modelId) ?? inferredModelMetadata(model.modelId)
+    );
+    const capabilities =
+      model.capabilitiesSource === "manual" ? model.capabilities : metadata.capabilities;
+    const capabilitiesSource =
+      model.capabilitiesSource === "manual" ? "manual" : metadata.source;
+
+    await db
+      .prepare(
+        `UPDATE model_catalog
+         SET
+           capabilities_json = ?,
+           capabilities_source = ?,
+           context_window = ?,
+           max_output_tokens = ?,
+           metadata_json = ?,
+           metadata_source = ?,
+           metadata_confidence = ?,
+           metadata_fetched_at = ?,
+           updated_at = ?
+         WHERE id = ?`
+      )
+      .bind(
+        JSON.stringify(uniqueCapabilities(capabilities)),
+        capabilitiesSource,
+        metadata.contextWindow ?? null,
+        metadata.maxOutputTokens ?? null,
+        metadata.raw ? JSON.stringify(metadata.raw) : null,
+        metadata.source,
+        metadata.confidence,
+        now,
+        now,
+        model.id
+      )
+      .run();
+  }
+
+  return listModelCatalog(db, input.providerId);
 }
 
 export async function updateModelCatalogStatus(

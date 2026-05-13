@@ -30,8 +30,17 @@ export const testModelSchema = z.object({
   prompt: z.string().min(1).max(800).optional()
 });
 
+export const refreshModelMetadataSchema = z.object({
+  source: z.enum(["openrouter"]).default("openrouter")
+});
+
 export const updateModelCatalogSchema = z.object({
-  capabilities: z.array(z.enum(["tools", "vision", "long_context"])).optional(),
+  capabilities: z.array(z.enum([
+    "tools",
+    "vision",
+    "long_context",
+    "structured_output"
+  ])).optional(),
   status: z.enum(["available", "enabled", "disabled"]).optional()
 }).refine(
   (value) => value.capabilities !== undefined || value.status !== undefined,

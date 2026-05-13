@@ -86,6 +86,16 @@ export function ModelsPanel({ client, notify }: PanelProps) {
     }
   }
 
+  async function refreshMetadata(providerId: string) {
+    try {
+      const result = await client.refreshProviderModelMetadata(providerId);
+      notify(t("models.metadataRefreshed", { count: result.matched }), "ok");
+      await load();
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "Failed to refresh metadata", "error");
+    }
+  }
+
   async function test(providerId: string, modelId?: string) {
     const key = `${providerId}:${modelId ?? ""}`;
     setTestingKey(key);
@@ -195,6 +205,7 @@ export function ModelsPanel({ client, notify }: PanelProps) {
         activeProviderId={activeProviderId}
         activeModelId={activeModelId}
         onRefresh={(providerId) => void refresh(providerId)}
+        onRefreshMetadata={(providerId) => void refreshMetadata(providerId)}
         onTest={(providerId, modelId) => void test(providerId, modelId)}
         onActivate={(providerId, modelId) => void activate(providerId, modelId)}
         onCapabilitiesChange={(modelId, capabilities) =>

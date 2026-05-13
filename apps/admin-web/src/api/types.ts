@@ -212,6 +212,13 @@ export type ModelCatalogItem = {
   modelId: string;
   displayName?: string;
   capabilities: ModelCapability[];
+  capabilitiesSource: ModelCapabilitiesSource;
+  contextWindow?: number;
+  maxOutputTokens?: number;
+  metadata?: Record<string, unknown>;
+  metadataSource?: ModelMetadataSource;
+  metadataConfidence?: ModelMetadataConfidence;
+  metadataFetchedAt?: string;
   status: ModelCatalogStatus;
   createdAt: string;
   updatedAt: string;
@@ -219,7 +226,13 @@ export type ModelCatalogItem = {
 
 export type ModelCatalogStatus = "available" | "enabled" | "disabled" | "unavailable";
 
-export type ModelCapability = "tools" | "vision" | "long_context";
+export type ModelCapability = "tools" | "vision" | "long_context" | "structured_output";
+
+export type ModelCapabilitiesSource = "manual" | "provider" | "openrouter" | "inferred";
+
+export type ModelMetadataSource = "provider" | "openrouter" | "inferred";
+
+export type ModelMetadataConfidence = "exact" | "alias" | "inferred" | "unknown";
 
 export type ModelSettings = {
   agentId: string;

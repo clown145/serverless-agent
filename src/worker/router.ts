@@ -253,6 +253,7 @@ export async function routeRequest(
         "/admin/model-settings",
         "/admin/model-catalog/:modelCatalogId",
         "/admin/model-providers/:providerId/refresh",
+        "/admin/model-providers/:providerId/metadata",
         "/admin/model-providers/:providerId/test",
         "/admin/search-providers",
         "/admin/search-providers/:providerId/test",

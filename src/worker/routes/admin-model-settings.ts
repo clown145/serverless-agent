@@ -4,6 +4,7 @@ import {
 } from "../../core/model/provider-credential";
 import { modelProviderDefaults } from "../../core/model/provider-defaults";
 import { testModelProvider } from "../../core/model/model-test";
+import { fetchModelMetadata } from "../../core/model/metadata-refresh";
 import { errorResponse, jsonResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
 import { fetchProviderModels } from "../../core/model/model-list";
@@ -16,6 +17,7 @@ import {
   listEnabledModelCatalog,
   listModelCatalog,
   updateModelCatalogCapabilities,
+  updateModelCatalogMetadata,
   updateModelCatalogStatus,
   upsertModelCatalog
 } from "../../storage/repositories/model-catalog-repository";
@@ -29,6 +31,7 @@ import {
 import { requireAdmin } from "../admin-auth";
 import {
   createProviderSchema,
+  refreshModelMetadataSchema,
   setActiveModelSchema,
   testModelSchema,
   updateModelCatalogSchema,
@@ -238,6 +241,45 @@ export async function handleAdminModelProviderDetail(
         502,
         "model_refresh_failed",
         error instanceof Error ? error.message : "Failed to refresh models"
+      );
+    }
+  }
+
+  if (request.method === "POST" && pathname.endsWith("/metadata")) {
+    const provider = await getModelProviderRecord(env.AGENT_DB, providerId);
+    if (!provider) {
+      return errorResponse(404, "provider_not_found", "Model provider not found");
+    }
+
+    const parsed = refreshModelMetadataSchema.safeParse(
+      await request.json().catch(() => ({}))
+    );
+    if (!parsed.success) {
+      return errorResponse(400, "invalid_payload", zodMessage(parsed.error));
+    }
+
+    try {
+      const currentModels = await listModelCatalog(env.AGENT_DB, providerId);
+      const metadataByModelId = await fetchModelMetadata(parsed.data.source, {
+        provider,
+        modelIds: currentModels.map((model) => model.modelId)
+      });
+      const models = await updateModelCatalogMetadata(env.AGENT_DB, {
+        providerId,
+        metadataByModelId
+      });
+
+      return jsonResponse({
+        ok: true,
+        models,
+        matched: metadataByModelId.size,
+        source: parsed.data.source
+      });
+    } catch (error) {
+      return errorResponse(
+        502,
+        "model_metadata_refresh_failed",
+        error instanceof Error ? error.message : "Failed to refresh model metadata"
       );
     }
   }

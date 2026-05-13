@@ -103,6 +103,7 @@ function modelRecord(providerId: string): ModelCatalogRecord {
     modelId: "gemini-2.5-flash",
     displayName: "Gemini Flash",
     capabilities: ["tools", "vision", "long_context"],
+    capabilitiesSource: "inferred",
     status: "enabled",
     createdAt: "2026-01-01T00:00:00.000Z",
     updatedAt: "2026-01-01T00:00:00.000Z"

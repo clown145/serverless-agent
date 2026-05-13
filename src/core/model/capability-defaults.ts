@@ -1,9 +1,14 @@
-export type ModelCapability = "tools" | "vision" | "long_context";
+export type ModelCapability =
+  | "tools"
+  | "vision"
+  | "long_context"
+  | "structured_output";
 
 export const MODEL_CAPABILITIES: ModelCapability[] = [
   "tools",
   "vision",
-  "long_context"
+  "long_context",
+  "structured_output"
 ];
 
 export function normalizeModelCapabilities(
@@ -61,7 +66,8 @@ export function isModelCapability(value: unknown): value is ModelCapability {
   return (
     value === "tools" ||
     value === "vision" ||
-    value === "long_context"
+    value === "long_context" ||
+    value === "structured_output"
   );
 }
 

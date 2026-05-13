@@ -545,6 +545,18 @@ export function createAdminClient(getToken: () => string) {
         { method: "POST" }
       );
     },
+    refreshProviderModelMetadata: (providerId: string, source = "openrouter") => {
+      return request<
+        ApiResult<{
+          models: ModelCatalogItem[];
+          matched: number;
+          source: string;
+        }>
+      >(`/admin/model-providers/${providerId}/metadata`, {
+        method: "POST",
+        body: JSON.stringify({ source })
+      });
+    },
     testProviderModel: (providerId: string, body: { modelId?: string; prompt?: string } = {}) => {
       return request<ApiResult<{ result: ModelTestResult }>>(
         `/admin/model-providers/${providerId}/test`,

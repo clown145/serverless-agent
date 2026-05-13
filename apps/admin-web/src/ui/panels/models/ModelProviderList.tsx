@@ -1,4 +1,12 @@
-import { CheckCircle2, Power, PowerOff, RefreshCw, TestTube2, Trash2 } from "lucide-react";
+import {
+  CheckCircle2,
+  DatabaseZap,
+  Power,
+  PowerOff,
+  RefreshCw,
+  TestTube2,
+  Trash2
+} from "lucide-react";
 import type {
   ModelCapability,
   ModelCatalogItem,
@@ -16,6 +24,7 @@ type ModelProviderListProps = {
   activeProviderId: string;
   activeModelId: string;
   onRefresh: (providerId: string) => void;
+  onRefreshMetadata: (providerId: string) => void;
   onTest: (providerId: string, modelId?: string) => void;
   onActivate: (providerId: string, modelId: string) => void;
   onCapabilitiesChange: (modelId: string, capabilities: ModelCapability[]) => void;
@@ -31,6 +40,7 @@ export function ModelProviderList({
   activeProviderId,
   activeModelId,
   onRefresh,
+  onRefreshMetadata,
   onTest,
   onActivate,
   onCapabilitiesChange,
@@ -67,6 +77,11 @@ export function ModelProviderList({
                 label={t("models.refreshModels")}
                 icon={RefreshCw}
                 onClick={() => onRefresh(provider.id)}
+              />
+              <ToolbarButton
+                label={t("models.refreshMetadata")}
+                icon={DatabaseZap}
+                onClick={() => onRefreshMetadata(provider.id)}
               />
               <ToolbarButton
                 label={t("models.deleteProvider")}
@@ -126,7 +141,12 @@ export function ModelProviderList({
   );
 }
 
-const MODEL_CAPABILITIES: ModelCapability[] = ["tools", "vision", "long_context"];
+const MODEL_CAPABILITIES: ModelCapability[] = [
+  "tools",
+  "vision",
+  "long_context",
+  "structured_output"
+];
 
 type RenderModelChoiceInput = {
   active: boolean;
@@ -179,6 +199,25 @@ function renderModelChoice({
         disabled={testingKey === platformTestingKey}
         onClick={onTest}
       />
+      <div className="model-metadata-line">
+        <span>{t(`models.capabilitiesSource.${model.capabilitiesSource}`)}</span>
+        {model.contextWindow && (
+          <span>{t("models.contextWindow", { count: formatNumber(model.contextWindow) })}</span>
+        )}
+        {model.maxOutputTokens && (
+          <span>
+            {t("models.maxOutputTokens", { count: formatNumber(model.maxOutputTokens) })}
+          </span>
+        )}
+        {model.metadataSource && (
+          <span>
+            {t("models.metadataSource", {
+              source: model.metadataSource,
+              confidence: model.metadataConfidence ?? "unknown"
+            })}
+          </span>
+        )}
+      </div>
       <div className="model-capability-list">
         {MODEL_CAPABILITIES.map((capability) => (
           <label key={capability}>
@@ -216,6 +255,10 @@ function toggleCapability(
   }
 
   return capabilities.filter((item) => item !== capability);
+}
+
+function formatNumber(value: number): string {
+  return new Intl.NumberFormat().format(value);
 }
 
 function testKey(providerId: string, modelId = ""): string {
