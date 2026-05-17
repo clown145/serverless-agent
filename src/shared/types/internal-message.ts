@@ -18,6 +18,10 @@ export type MessageAttachment = {
   size?: number;
   r2Key?: string;
   sourceUrl?: string;
+  captionText?: string;
+  captionModelProviderId?: string;
+  captionModelId?: string;
+  captionUpdatedAt?: string;
   dataBase64?: string;
 };
 

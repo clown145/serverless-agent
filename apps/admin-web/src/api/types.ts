@@ -263,6 +263,10 @@ export type ModelRoleSettingsUpdate = Partial<Record<ModelRole, {
   modelId: string;
 } | null>>;
 
+export type AgentModelConfig = {
+  imageCaptionEnabled: boolean;
+};
+
 export type SetupStep = {
   id: "provider" | "credential" | "models" | "active_model" | "workspace";
   label: string;

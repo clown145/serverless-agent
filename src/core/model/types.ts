@@ -1,3 +1,5 @@
+import type { MessageAttachment } from "../../shared/types/internal-message";
+
 export type JsonSchema = Record<string, unknown>;
 
 export type ModelProviderName = "openai" | "gemini" | "mock";
@@ -23,6 +25,7 @@ export type ModelContentPart =
       type: "image";
       mimeType: string;
       dataBase64: string;
+      sourceAttachment?: MessageAttachment;
     };
 
 export type ModelContent = string | ModelContentPart[];

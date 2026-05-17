@@ -1,4 +1,5 @@
 import type { ModelRole, ModelRoleSettingRecord } from "../../../storage/repositories/model-settings-types";
+import type { AgentModelConfigRecord } from "../../../storage/repositories/agent-model-config-repository";
 
 export type ModelRoleSettingsDto = Partial<Record<ModelRole, {
   providerId?: string;
@@ -13,4 +14,12 @@ export function toModelRoleSettingsDto(settings: ModelRoleSettingRecord[]): Mode
     };
     return roles;
   }, {});
+}
+
+export function toAgentModelConfigDto(config: AgentModelConfigRecord): {
+  imageCaptionEnabled: boolean;
+} {
+  return {
+    imageCaptionEnabled: config.imageCaptionEnabled
+  };
 }

@@ -1,5 +1,9 @@
 import { getModelSettings, setModelSettings } from "../../storage/repositories/agent-model-settings-repository";
 import {
+  getAgentModelConfig,
+  setAgentModelConfig
+} from "../../storage/repositories/agent-model-config-repository";
+import {
   clearModelRoleSetting,
   listModelRoleSettings,
   setModelRoleSetting
@@ -11,7 +15,10 @@ import { errorResponse, jsonResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
 import { requireAdmin } from "../admin-auth";
 import { toProviderDto } from "./model-settings/model-provider-dto";
-import { toModelRoleSettingsDto } from "./model-settings/model-role-settings-dto";
+import {
+  toAgentModelConfigDto,
+  toModelRoleSettingsDto
+} from "./model-settings/model-role-settings-dto";
 import {
   updateModelRoleSettingsSchema,
   zodMessage
@@ -31,11 +38,12 @@ export async function handleAdminModelRoleSettings(
   const agentId = new URL(request.url).searchParams.get("agentId") ?? env.DEFAULT_AGENT_ID ?? "default";
 
   if (request.method === "GET") {
-    const [providers, models, defaultSettings, roleSettings] = await Promise.all([
+    const [providers, models, defaultSettings, roleSettings, config] = await Promise.all([
       listModelProviders(env.AGENT_DB),
       listModelCatalog(env.AGENT_DB),
       getModelSettings(env.AGENT_DB, agentId),
-      listModelRoleSettings(env.AGENT_DB, agentId)
+      listModelRoleSettings(env.AGENT_DB, agentId),
+      getAgentModelConfig(env.AGENT_DB, agentId)
     ]);
 
     return jsonResponse({
@@ -43,7 +51,8 @@ export async function handleAdminModelRoleSettings(
       providers: providers.map(toProviderDto),
       models,
       settings: defaultSettings,
-      roles: toModelRoleSettingsDto(roleSettings)
+      roles: toModelRoleSettingsDto(roleSettings),
+      config: toAgentModelConfigDto(config)
     });
   }
 
@@ -100,11 +109,19 @@ export async function handleAdminModelRoleSettings(
       }
     }
 
-    const [providers, nextModels, defaultSettings, roleSettings] = await Promise.all([
+    if (parsed.data.config?.imageCaptionEnabled !== undefined) {
+      await setAgentModelConfig(env.AGENT_DB, {
+        agentId,
+        imageCaptionEnabled: parsed.data.config.imageCaptionEnabled
+      });
+    }
+
+    const [providers, nextModels, defaultSettings, roleSettings, config] = await Promise.all([
       listModelProviders(env.AGENT_DB),
       listModelCatalog(env.AGENT_DB),
       getModelSettings(env.AGENT_DB, agentId),
-      listModelRoleSettings(env.AGENT_DB, agentId)
+      listModelRoleSettings(env.AGENT_DB, agentId),
+      getAgentModelConfig(env.AGENT_DB, agentId)
     ]);
 
     return jsonResponse({
@@ -112,7 +129,8 @@ export async function handleAdminModelRoleSettings(
       providers: providers.map(toProviderDto),
       models: nextModels,
       settings: defaultSettings,
-      roles: toModelRoleSettingsDto(roleSettings)
+      roles: toModelRoleSettingsDto(roleSettings),
+      config: toAgentModelConfigDto(config)
     });
   }
 

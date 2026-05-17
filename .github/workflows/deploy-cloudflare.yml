@@ -19,6 +19,7 @@ jobs:
       KV_NAMESPACE_TITLE: ${{ vars.KV_NAMESPACE_TITLE || vars.WORKER_NAME || 'serverless-agent' }}
       KV_NAMESPACE_ID: ${{ secrets.KV_NAMESPACE_ID || vars.KV_NAMESPACE_ID }}
       R2_BUCKET_NAME: ${{ vars.R2_BUCKET_NAME || vars.WORKER_NAME || 'serverless-agent' }}
+      R2_ATTACHMENT_RETENTION_DAYS: ${{ vars.R2_ATTACHMENT_RETENTION_DAYS || '30' }}
       QUEUE_NAME: ${{ vars.QUEUE_NAME || 'serverless-agent-events' }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -106,6 +107,27 @@ jobs:
           fi
 
           npx wrangler r2 bucket create "$R2_BUCKET_NAME" || true
+
+          if ! [[ "$R2_ATTACHMENT_RETENTION_DAYS" =~ ^[0-9]+$ ]]; then
+            echo "R2_ATTACHMENT_RETENTION_DAYS must be a non-negative integer."
+            exit 1
+          fi
+
+          if [ "$R2_ATTACHMENT_RETENTION_DAYS" = "0" ]; then
+            npx wrangler r2 bucket lifecycle remove "$R2_BUCKET_NAME" \
+              --name expire-agent-attachments \
+              --force || true
+          else
+            npx wrangler r2 bucket lifecycle remove "$R2_BUCKET_NAME" \
+              --name expire-agent-attachments \
+              --force || true
+            npx wrangler r2 bucket lifecycle add "$R2_BUCKET_NAME" \
+              expire-agent-attachments \
+              attachments/ \
+              --expire-days "$R2_ATTACHMENT_RETENTION_DAYS" \
+              --force
+          fi
+
           npx wrangler queues create "$QUEUE_NAME" || true
 
           echo "D1_DATABASE_ID=$D1_DATABASE_ID" >> "$GITHUB_ENV"

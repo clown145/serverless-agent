@@ -46,7 +46,10 @@ export const updateModelRoleSettingsSchema = z.object({
     default: modelRoleSelectionSchema.nullable().optional(),
     summary: modelRoleSelectionSchema.nullable().optional(),
     vision: modelRoleSelectionSchema.nullable().optional()
-  })
+  }),
+  config: z.object({
+    imageCaptionEnabled: z.boolean().optional()
+  }).optional()
 });
 
 export const updateModelCatalogSchema = z.object({

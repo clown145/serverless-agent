@@ -6,13 +6,15 @@ import type {
   ModelRole,
   ModelRoleSettings,
   ModelRoleSettingsUpdate,
-  ModelSettings
+  ModelSettings,
+  AgentModelConfig
 } from "../../api/types";
 import { ToolbarButton } from "../ToolbarButton";
 import { useI18n } from "../i18n/I18nProvider";
 import { modelKey, parseModelKey } from "./models/modelSelection";
 import type { PanelProps } from "./types";
 import { ModelRolePicker } from "./model-config/ModelRolePicker";
+import { ModelBehaviorSettings } from "./model-config/ModelBehaviorSettings";
 import { MODEL_ROLE_DEFINITIONS } from "./model-config/modelRoleDefinitions";
 
 export function ModelConfigPanel({ client, notify }: PanelProps) {
@@ -21,6 +23,7 @@ export function ModelConfigPanel({ client, notify }: PanelProps) {
   const [models, setModels] = useState<ModelCatalogItem[]>([]);
   const [settings, setSettings] = useState<ModelSettings>();
   const [roles, setRoles] = useState<ModelRoleSettings>({});
+  const [config, setConfig] = useState<AgentModelConfig>({ imageCaptionEnabled: false });
   const [draft, setDraft] = useState<Record<ModelRole, string>>({
     default: "",
     summary: "",
@@ -39,6 +42,7 @@ export function ModelConfigPanel({ client, notify }: PanelProps) {
       setModels(result.models);
       setSettings(result.settings);
       setRoles(result.roles);
+      setConfig(result.config);
       setDraft(toDraft(result.settings, result.roles));
     } catch (error) {
       notify(error instanceof Error ? error.message : "Failed to load model config", "error");
@@ -47,11 +51,12 @@ export function ModelConfigPanel({ client, notify }: PanelProps) {
 
   async function save() {
     try {
-      const result = await client.updateModelRoleSettings(toPayload(draft));
+      const result = await client.updateModelRoleSettings(toPayload(draft), config);
       setProviders(result.providers);
       setModels(result.models);
       setSettings(result.settings);
       setRoles(result.roles);
+      setConfig(result.config);
       setDraft(toDraft(result.settings, result.roles));
       notify(t("modelConfig.saved"), "ok");
     } catch (error) {
@@ -88,6 +93,7 @@ export function ModelConfigPanel({ client, notify }: PanelProps) {
             onChange={updateRole}
           />
         ))}
+        <ModelBehaviorSettings config={config} onChange={setConfig} />
       </div>
 
       <div className="button-row">

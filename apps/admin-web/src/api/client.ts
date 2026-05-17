@@ -1,5 +1,6 @@
 import type {
   ApiResult,
+  AgentModelConfig,
   ChatMessage,
   ConversationSettings,
   DebugMessageItem,
@@ -603,17 +604,19 @@ export function createAdminClient(getToken: () => string) {
         models: ModelCatalogItem[];
         settings?: ModelSettings;
         roles: ModelRoleSettings;
+        config: AgentModelConfig;
       }>>("/admin/model-role-settings");
     },
-    updateModelRoleSettings: (roles: ModelRoleSettingsUpdate) => {
+    updateModelRoleSettings: (roles: ModelRoleSettingsUpdate, config?: Partial<AgentModelConfig>) => {
       return request<ApiResult<{
         providers: ModelProvider[];
         models: ModelCatalogItem[];
         settings?: ModelSettings;
         roles: ModelRoleSettings;
+        config: AgentModelConfig;
       }>>("/admin/model-role-settings", {
         method: "PUT",
-        body: JSON.stringify({ roles })
+        body: JSON.stringify({ roles, config })
       });
     },
     updateModelCapabilities: (modelCatalogId: string, capabilities: ModelCapability[]) => {

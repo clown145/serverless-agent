@@ -186,6 +186,9 @@ export const translations: Record<Locale, Record<string, string>> = {
     "modelConfig.role.summaryHint": "用于自动压缩上下文。留空时使用默认对话模型。",
     "modelConfig.role.vision": "图片理解模型",
     "modelConfig.role.visionHint": "为后续图片转述流程预留。建议选择支持图片能力的模型。",
+    "modelConfig.imageCaptioning": "图片转述",
+    "modelConfig.imageCaptioningHint": "开启后，图片会先由图片理解模型转成文本，主模型只看到转述文本；关闭时，图片会直接进入主模型上下文。",
+    "modelConfig.imageCaptioningEnabled": "启用图片转述",
 
     "debug.title": "调试中心",
     "debug.allPlatforms": "全部平台",
@@ -563,6 +566,9 @@ export const translations: Record<Locale, Record<string, string>> = {
     "modelConfig.role.summaryHint": "Used for context compaction. Leave empty to use the default chat model.",
     "modelConfig.role.vision": "Vision model",
     "modelConfig.role.visionHint": "Reserved for image-caption fallback. Prefer a model with vision capability.",
+    "modelConfig.imageCaptioning": "Image captioning",
+    "modelConfig.imageCaptioningHint": "When enabled, images are first converted to text by the vision model and the main model only sees captions. When disabled, images are sent directly to the main model context.",
+    "modelConfig.imageCaptioningEnabled": "Enable image captioning",
 
     "debug.title": "Debug Center",
     "debug.allPlatforms": "All platforms",

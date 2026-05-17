@@ -15,6 +15,8 @@ import {
 import type { ToolResult } from "../tools/types";
 import { normalizeTelegramParseMode } from "../adapters/telegram/formatting";
 import { loadAgentContext } from "../context/context-loader";
+import { replaceImagesWithCaptions } from "../context/image-captioning";
+import { getAgentModelConfig } from "../storage/repositories/agent-model-config-repository";
 import { createInitialModelMessages, createModelTools } from "./agent-context";
 import { sendFinalMessage } from "./agent-final-message";
 import { stringifyToolResult } from "./model/json";
@@ -43,13 +45,17 @@ export async function executeAgentToolLoop(
   });
   const selectedSkill = await selectSkillForMessage(env, message);
   const context = await loadAgentContext(env, message);
+  const modelConfig = await getAgentModelConfig(env.AGENT_DB, message.agentId);
+  const history = modelConfig.imageCaptionEnabled
+    ? await replaceImagesWithCaptions(env, message.agentId, context.history)
+    : context.history;
   await recordContextStep(env, runId, message.agentId, selectedSkill);
 
   const registryTools = filterToolsForSkill(registry.list(), selectedSkill);
   const allowedToolNames = new Set(
     registryTools.map((tool) => tool.definition.name)
   );
-  const messages = createInitialModelMessages(message, selectedSkill, context.history, {
+  const messages = createInitialModelMessages(message, selectedSkill, history, {
     timeZone: env.AGENT_TIMEZONE,
     telegramParseMode: await resolveTelegramParseMode(env, message),
     conversationSummary: context.summary

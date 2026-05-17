@@ -1,7 +1,6 @@
 import type { ConversationContextMessage } from "../core/agent-context";
 import { createModelProvider } from "../core/model/provider-factory";
 import type { ModelContentPart } from "../core/model/types";
-import { bytesToBase64 } from "../security/base64";
 import type { Env } from "../shared/types/env";
 import type { InternalMessage } from "../shared/types/internal-message";
 import type { ConversationMessage } from "../storage/repositories/message-types";
@@ -12,10 +11,10 @@ import {
 } from "../storage/repositories/conversation-settings-repository";
 import type { ConversationSettingsRecord } from "../storage/repositories/conversation-settings-types";
 import { rootConversationId } from "../conversations/ids";
+import { imagePartFromAttachment } from "./image-captioning";
 
 const CONTEXT_SCAN_LIMIT = 100;
-const MAX_INLINE_IMAGES = 4;
-const MAX_INLINE_IMAGE_BYTES = 4 * 1024 * 1024;
+const MAX_INLINE_IMAGE_BYTES = 20 * 1024 * 1024;
 
 export type LoadedAgentContext = {
   settings: ConversationSettingsRecord;
@@ -176,13 +175,12 @@ async function hydrateHistoryAttachments(
   env: Env,
   messages: ConversationMessage[]
 ): Promise<ConversationContextMessage[]> {
-  let imageCount = 0;
   const history: ConversationContextMessage[] = [];
 
   for (const message of messages) {
     const attachments: ModelContentPart[] = [];
     for (const attachment of message.attachments) {
-      if (imageCount >= MAX_INLINE_IMAGES || attachment.type !== "image" || !attachment.r2Key) {
+      if (attachment.type !== "image" || !attachment.r2Key) {
         continue;
       }
 
@@ -191,12 +189,7 @@ async function hydrateHistoryAttachments(
         continue;
       }
 
-      attachments.push({
-        type: "image",
-        mimeType: attachment.mimeType ?? object.httpMetadata?.contentType ?? "image/jpeg",
-        dataBase64: bytesToBase64(new Uint8Array(await object.arrayBuffer()))
-      });
-      imageCount += 1;
+      attachments.push(await imagePartFromAttachment(attachment, object));
     }
 
     history.push({

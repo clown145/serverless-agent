@@ -1,4 +1,5 @@
 import type { Env } from "../../shared/types/env";
+import { getModelRoleSetting } from "../../storage/repositories/agent-model-role-settings-repository";
 import { getModelSettings } from "../../storage/repositories/agent-model-settings-repository";
 import { getConversationSettings } from "../../storage/repositories/conversation-settings-repository";
 import { listEnabledModelCatalog } from "../../storage/repositories/model-catalog-repository";
@@ -12,6 +13,10 @@ export type ActiveModelCapabilities = {
   modelId: string;
   capabilities: ModelCapability[];
   source: "conversation" | "agent" | "env" | "mock";
+};
+
+export type RoleModelCapabilities = Omit<ActiveModelCapabilities, "source"> & {
+  source: "role";
 };
 
 export async function resolveActiveModelCapabilities(
@@ -79,6 +84,27 @@ function hasCapability(capabilities: ModelCapability[], capability: ModelCapabil
 
 export function supportsVision(capabilities: ModelCapability[]): boolean {
   return hasCapability(capabilities, "vision");
+}
+
+export async function resolveRoleModelCapabilities(
+  env: Env,
+  agentId: string,
+  role: "summary" | "vision"
+): Promise<RoleModelCapabilities | undefined> {
+  const setting = await getModelRoleSetting(env.AGENT_DB, agentId, role);
+  if (!setting?.providerId || !setting.modelId) {
+    return undefined;
+  }
+
+  const capabilities = await resolveCatalogCapabilities(env, {
+    providerId: setting.providerId,
+    modelId: setting.modelId,
+    source: "agent"
+  });
+
+  return capabilities
+    ? { ...capabilities, source: "role" }
+    : undefined;
 }
 
 async function resolveCatalogCapabilities(

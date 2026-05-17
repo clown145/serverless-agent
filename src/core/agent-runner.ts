@@ -6,8 +6,13 @@ import { withPlatformActivity } from "./activity-indicator";
 import { executeAgentToolLoop } from "./agent-tool-loop";
 import { sendFinalMessage } from "./agent-final-message";
 import { handleCommandMessage } from "../commands/handler";
-import { resolveActiveModelCapabilities, supportsVision } from "./model/capabilities";
+import {
+  resolveActiveModelCapabilities,
+  resolveRoleModelCapabilities,
+  supportsVision
+} from "./model/capabilities";
 import { persistInboundAttachments } from "../media/persist-attachments";
+import { getAgentModelConfig } from "../storage/repositories/agent-model-config-repository";
 import { resolveInboundConversation } from "../conversations/resolve";
 import { insertMessage } from "../storage/repositories/messages-repository";
 import {
@@ -65,9 +70,25 @@ async function runAgentForMessageInternal(
         modelId: message.modelId
       }
     );
-    if (message.attachments.some((attachment) => attachment.type === "image") &&
-      !supportsVision(capabilities.capabilities)
-    ) {
+    const hasImages = message.attachments.some((attachment) => attachment.type === "image");
+    const modelConfig = hasImages
+      ? await getAgentModelConfig(env.AGENT_DB, message.agentId)
+      : undefined;
+    if (hasImages && modelConfig?.imageCaptionEnabled) {
+      const visionCapabilities = await resolveRoleModelCapabilities(env, message.agentId, "vision");
+      if (!visionCapabilities || !supportsVision(visionCapabilities.capabilities)) {
+        const text = [
+          "图片转述已开启，但图片理解模型未配置或未标记为支持图片输入。",
+          "请在 WebUI 的模型配置页选择支持 vision 的图片理解模型，或关闭图片转述。"
+        ].join("\n");
+        await recordRunFailedStep(env, runId, message.agentId, "Image caption model unavailable");
+        await sendFinalMessage(env, runId, message, text);
+        await completeRun(env.AGENT_DB, runId, "failed");
+        return runId;
+      }
+    }
+
+    if (hasImages && !modelConfig?.imageCaptionEnabled && !supportsVision(capabilities.capabilities)) {
       const text = [
         "当前模型未标记为支持图片输入。",
         `模型：${capabilities.modelId}`,

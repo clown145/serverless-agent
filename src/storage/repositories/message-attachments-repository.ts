@@ -19,6 +19,10 @@ type MessageAttachmentRow = {
   size?: number | null;
   r2_key?: string | null;
   source_url?: string | null;
+  caption_text?: string | null;
+  caption_model_provider_id?: string | null;
+  caption_model_id?: string | null;
+  caption_updated_at?: string | null;
   created_at: string;
 };
 
@@ -100,6 +104,36 @@ export async function getMessageAttachmentRecord(
   return row ? mapAttachmentRow(row) : undefined;
 }
 
+export async function updateMessageAttachmentCaption(
+  db: D1Database,
+  input: {
+    messageId: string;
+    attachmentId: string;
+    captionText: string;
+    captionModelProviderId?: string;
+    captionModelId: string;
+  }
+): Promise<void> {
+  await db
+    .prepare(
+      `UPDATE message_attachments
+       SET caption_text = ?,
+           caption_model_provider_id = ?,
+           caption_model_id = ?,
+           caption_updated_at = ?
+       WHERE message_id = ? AND id = ?`
+    )
+    .bind(
+      input.captionText,
+      input.captionModelProviderId ?? null,
+      input.captionModelId,
+      nowIso(),
+      input.messageId,
+      input.attachmentId
+    )
+    .run();
+}
+
 function mapAttachmentRow(row: MessageAttachmentRow): MessageAttachmentRecord {
   return {
     id: row.id,
@@ -112,6 +146,10 @@ function mapAttachmentRow(row: MessageAttachmentRow): MessageAttachmentRecord {
     size: row.size ?? undefined,
     r2Key: row.r2_key ?? undefined,
     sourceUrl: row.source_url ?? undefined,
+    captionText: row.caption_text ?? undefined,
+    captionModelProviderId: row.caption_model_provider_id ?? undefined,
+    captionModelId: row.caption_model_id ?? undefined,
+    captionUpdatedAt: row.caption_updated_at ?? undefined,
     createdAt: row.created_at
   };
 }

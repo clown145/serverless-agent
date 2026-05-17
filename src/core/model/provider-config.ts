@@ -14,6 +14,7 @@ import type { ModelProviderName } from "./types";
 
 export type ResolvedModelConfig = {
   provider: ModelProviderName;
+  providerId?: string;
   model?: string;
   baseUrl?: string;
   apiKey?: string;
@@ -130,6 +131,7 @@ export async function resolveModelConfigFromProvider(
 ): Promise<ResolvedModelConfig> {
   return {
     provider: providerNameFromRecord(provider),
+    providerId: provider.id,
     model,
     baseUrl: provider.baseUrl,
     apiKey: await resolveProviderApiKey(env, provider),
