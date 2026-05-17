@@ -251,6 +251,18 @@ export type ModelSettings = {
   updatedAt: string;
 };
 
+export type ModelRole = "default" | "summary" | "vision";
+
+export type ModelRoleSettings = Partial<Record<ModelRole, {
+  providerId?: string;
+  modelId?: string;
+}>>;
+
+export type ModelRoleSettingsUpdate = Partial<Record<ModelRole, {
+  providerId: string;
+  modelId: string;
+} | null>>;
+
 export type SetupStep = {
   id: "provider" | "credential" | "models" | "active_model" | "workspace";
   label: string;

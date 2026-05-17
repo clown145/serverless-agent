@@ -9,13 +9,15 @@ type ScheduleEditorProps = {
   modelOptions: ScheduleModelOptions;
   onChange: (patch: Partial<ScheduleFormState>) => void;
   onCreate: () => void;
+  onOpenModelConfig?: () => void;
 };
 
 export function ScheduleEditor({
   form,
   modelOptions,
   onChange,
-  onCreate
+  onCreate,
+  onOpenModelConfig
 }: ScheduleEditorProps) {
   const { t } = useI18n();
   const providerModels = useMemo(
@@ -92,6 +94,11 @@ export function ScheduleEditor({
           <option value="admin">Admin</option>
         </select>
       </label>
+      {onOpenModelConfig && (
+        <button className="secondary-button" type="button" onClick={onOpenModelConfig}>
+          {t("models.openModelConfig")}
+        </button>
+      )}
       <label>
         {t("schedules.conversation")}
         <input

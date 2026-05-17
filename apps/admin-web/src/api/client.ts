@@ -11,6 +11,8 @@ import type {
   McpServer,
   McpTool,
   ModelProvider,
+  ModelRoleSettings,
+  ModelRoleSettingsUpdate,
   ModelSettings,
   ModelTestResult,
   PendingAction,
@@ -593,6 +595,25 @@ export function createAdminClient(getToken: () => string) {
       return request<ApiResult<{ settings: ModelSettings }>>("/admin/model-settings", {
         method: "PUT",
         body: JSON.stringify(body)
+      });
+    },
+    getModelRoleSettings: () => {
+      return request<ApiResult<{
+        providers: ModelProvider[];
+        models: ModelCatalogItem[];
+        settings?: ModelSettings;
+        roles: ModelRoleSettings;
+      }>>("/admin/model-role-settings");
+    },
+    updateModelRoleSettings: (roles: ModelRoleSettingsUpdate) => {
+      return request<ApiResult<{
+        providers: ModelProvider[];
+        models: ModelCatalogItem[];
+        settings?: ModelSettings;
+        roles: ModelRoleSettings;
+      }>>("/admin/model-role-settings", {
+        method: "PUT",
+        body: JSON.stringify({ roles })
       });
     },
     updateModelCapabilities: (modelCatalogId: string, capabilities: ModelCapability[]) => {

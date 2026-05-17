@@ -43,6 +43,8 @@ export type ModelMetadataConfidence =
   | "inferred"
   | "unknown";
 
+export type ModelRole = "default" | "summary" | "vision";
+
 export type ModelProviderRecord = {
   id: string;
   name: string;
@@ -91,6 +93,14 @@ export type ModelCatalogRecord = {
 
 export type ModelSettingsRecord = {
   agentId: string;
+  providerId?: string;
+  modelId?: string;
+  updatedAt: string;
+};
+
+export type ModelRoleSettingRecord = {
+  agentId: string;
+  role: ModelRole;
   providerId?: string;
   modelId?: string;
   updatedAt: string;
@@ -146,6 +156,14 @@ export type ModelSettingsRow = {
   agent_id: string;
   provider_id?: string;
   model_id?: string;
+  updated_at: string;
+};
+
+export type ModelRoleSettingRow = {
+  agent_id: string;
+  role: string;
+  provider_id?: string | null;
+  model_id?: string | null;
   updated_at: string;
 };
 
@@ -290,6 +308,29 @@ export function mapModelSettingsRow(row: ModelSettingsRow): ModelSettingsRecord 
     modelId: row.model_id ?? undefined,
     updatedAt: row.updated_at
   };
+}
+
+export function mapModelRoleSettingRow(row: ModelRoleSettingRow): ModelRoleSettingRecord | undefined {
+  const role = normalizeModelRole(row.role);
+  if (!role) {
+    return undefined;
+  }
+
+  return {
+    agentId: row.agent_id,
+    role,
+    providerId: row.provider_id ?? undefined,
+    modelId: row.model_id ?? undefined,
+    updatedAt: row.updated_at
+  };
+}
+
+export function normalizeModelRole(value: string): ModelRole | undefined {
+  if (value === "default" || value === "summary" || value === "vision") {
+    return value;
+  }
+
+  return undefined;
 }
 
 function defaultAuthType(type: ModelProviderType): ModelAuthType {

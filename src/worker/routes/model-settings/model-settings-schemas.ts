@@ -6,6 +6,11 @@ const secretBindingSchema = z.string().trim().regex(
   "Secret binding must look like GEMINI_API_KEY, not the API key value"
 );
 
+const modelRoleSelectionSchema = z.object({
+  providerId: z.string().min(1),
+  modelId: z.string().min(1)
+});
+
 export const createProviderSchema = z.object({
   name: z.string().min(1),
   providerType: z.enum(["openai", "gemini", "mock", "custom"]),
@@ -34,6 +39,14 @@ export const testModelSchema = z.object({
 
 export const refreshModelMetadataSchema = z.object({
   source: z.enum(["models.dev"]).default("models.dev")
+});
+
+export const updateModelRoleSettingsSchema = z.object({
+  roles: z.object({
+    default: modelRoleSelectionSchema.nullable().optional(),
+    summary: modelRoleSelectionSchema.nullable().optional(),
+    vision: modelRoleSelectionSchema.nullable().optional()
+  })
 });
 
 export const updateModelCatalogSchema = z.object({

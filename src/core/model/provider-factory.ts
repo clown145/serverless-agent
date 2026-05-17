@@ -13,6 +13,7 @@ export async function createModelProvider(
     conversationId?: string;
     providerId?: string;
     modelId?: string;
+    role?: "default" | "summary" | "vision";
   } = {}
 ): Promise<ModelProvider> {
   const config = await resolveModelConfig(env, agentId, options);

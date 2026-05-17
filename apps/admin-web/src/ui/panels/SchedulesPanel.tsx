@@ -8,6 +8,7 @@ import { ScheduleEditor } from "./schedules/ScheduleEditor";
 import { ScheduleRow } from "./schedules/ScheduleRow";
 import type { ScheduleFormState } from "./schedules/types";
 import type { PanelProps } from "./types";
+import type { ViewId } from "../views";
 
 const DEFAULT_FORM: ScheduleFormState = {
   title: "",
@@ -25,7 +26,11 @@ const DEFAULT_FORM: ScheduleFormState = {
   retryDelaySeconds: 300
 };
 
-export function SchedulesPanel({ client, notify }: PanelProps) {
+type SchedulesPanelProps = PanelProps & {
+  onNavigate?: (view: ViewId) => void;
+};
+
+export function SchedulesPanel({ client, notify, onNavigate }: SchedulesPanelProps) {
   const { t } = useI18n();
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [providers, setProviders] = useState<ModelProvider[]>([]);
@@ -102,6 +107,7 @@ export function SchedulesPanel({ client, notify }: PanelProps) {
         modelOptions={{ providers, models }}
         onChange={(patch) => setForm((current) => ({ ...current, ...patch }))}
         onCreate={() => void create()}
+        onOpenModelConfig={() => onNavigate?.("model_config")}
       />
 
       <div className="schedule-list">

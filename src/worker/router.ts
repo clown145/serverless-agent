@@ -16,6 +16,7 @@ import {
   handleAdminModelProviderDetail,
   handleAdminModelSettings
 } from "./routes/admin-model-settings";
+import { handleAdminModelRoleSettings } from "./routes/admin-model-role-settings";
 import { handleAdminDebugMessages } from "./routes/admin-debug-messages";
 import { handleAdminPendingActionConfirm } from "./routes/admin-pending-action-confirm";
 import { handleAdminPendingActions } from "./routes/admin-pending-actions";
@@ -131,6 +132,10 @@ export async function routeRequest(
 
   if (url.pathname === "/admin/model-settings") {
     return handleAdminModelSettings(request, env);
+  }
+
+  if (url.pathname === "/admin/model-role-settings") {
+    return handleAdminModelRoleSettings(request, env);
   }
 
   if (url.pathname.startsWith("/admin/model-catalog/")) {
@@ -251,6 +256,7 @@ export async function routeRequest(
         "/admin/mcp/servers/:serverId/discover",
         "/admin/mcp/tools/:toolId",
         "/admin/model-settings",
+        "/admin/model-role-settings",
         "/admin/model-catalog/:modelCatalogId",
         "/admin/model-providers/:providerId/refresh",
         "/admin/model-providers/:providerId/metadata",

@@ -20,6 +20,7 @@ type ConversationEditorProps = {
   providers: ModelProvider[];
   models: ModelCatalogItem[];
   onDraftChange: (draft: ConversationDraft) => void;
+  onOpenModelConfig?: () => void;
   onSave: () => void;
   onCompact: () => void;
 };
@@ -40,6 +41,7 @@ export function ConversationEditor({
   providers,
   models,
   onDraftChange,
+  onOpenModelConfig,
   onSave,
   onCompact
 }: ConversationEditorProps) {
@@ -90,6 +92,11 @@ export function ConversationEditor({
             ))}
           </select>
         </label>
+        {onOpenModelConfig && (
+          <button className="secondary-button" type="button" onClick={onOpenModelConfig}>
+            {t("models.openModelConfig")}
+          </button>
+        )}
         <label>
           {t("conversations.summaryModel")}
           <select

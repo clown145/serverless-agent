@@ -132,7 +132,8 @@ async function summarizeAndStore(
   const provider = await createModelProvider(env, settings.agentId, {
     conversationId: settings.conversationId,
     providerId: settings.summaryProviderId,
-    modelId: settings.summaryModelId
+    modelId: settings.summaryModelId,
+    role: settings.summaryProviderId && settings.summaryModelId ? undefined : "summary"
   });
   const response = await provider.complete({
     tools: [],

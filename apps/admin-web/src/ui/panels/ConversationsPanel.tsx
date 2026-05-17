@@ -15,9 +15,11 @@ import {
 import { ConversationList } from "./conversations/ConversationList";
 import { parseModelKey } from "./models/modelSelection";
 import type { PanelProps } from "./types";
+import type { ViewId } from "../views";
 
 type ConversationsPanelProps = PanelProps & {
   onOpenConversation: (conversationId: string) => void;
+  onNavigate?: (view: ViewId) => void;
 };
 
 const emptyDraft: ConversationDraft = {
@@ -31,7 +33,8 @@ const emptyDraft: ConversationDraft = {
 export function ConversationsPanel({
   client,
   notify,
-  onOpenConversation
+  onOpenConversation,
+  onNavigate
 }: ConversationsPanelProps) {
   const { t } = useI18n();
   const [conversations, setConversations] = useState<ConversationSettings[]>([]);
@@ -162,6 +165,7 @@ export function ConversationsPanel({
           models={models}
           onCompact={() => void compact()}
           onDraftChange={setDraft}
+          onOpenModelConfig={() => onNavigate?.("model_config")}
           onSave={() => void save()}
           providers={providers}
         />

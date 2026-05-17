@@ -13,8 +13,13 @@ import { ModelProviderDialog } from "./models/ModelProviderDialog";
 import { ModelProviderList } from "./models/ModelProviderList";
 import type { ModelProviderPayload } from "./models/modelProviderDraft";
 import type { PanelProps } from "./types";
+import type { ViewId } from "../views";
 
-export function ModelsPanel({ client, notify }: PanelProps) {
+type ModelsPanelProps = PanelProps & {
+  onNavigate?: (view: ViewId) => void;
+};
+
+export function ModelsPanel({ client, notify, onNavigate }: ModelsPanelProps) {
   const { t } = useI18n();
   const [providers, setProviders] = useState<ModelProvider[]>([]);
   const [models, setModels] = useState<ModelCatalogItem[]>([]);
@@ -219,11 +224,8 @@ export function ModelsPanel({ client, notify }: PanelProps) {
       />
 
       <DefaultModelPicker
-        activeProviderId={activeProviderId}
-        activeModelId={activeModelId}
         models={enabledModels}
-        providers={providers}
-        onActivate={(providerId, modelId) => void activate(providerId, modelId)}
+        onNavigate={() => onNavigate?.("model_config")}
       />
 
       {testResult && (

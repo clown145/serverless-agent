@@ -37,6 +37,43 @@
   width: fit-content;
 }
 
+.model-role-list {
+  display: grid;
+  gap: 12px;
+}
+
+.model-role-card {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.9fr) minmax(280px, 1.1fr);
+  gap: 12px;
+  align-items: start;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  padding: 14px;
+}
+
+.model-role-card strong,
+.model-role-card span {
+  display: block;
+}
+
+.model-role-card span,
+.model-role-warning {
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.model-role-card label {
+  margin: 0;
+}
+
+.model-role-warning {
+  grid-column: 2;
+  color: var(--danger);
+}
+
 .panel-header-actions {
   display: flex;
   align-items: center;
@@ -1189,6 +1226,7 @@
   .telegram-form,
   .search-provider-form,
   .model-default-picker,
+  .model-role-card,
   .conversations-layout,
   .conversation-form-grid,
   .telegram-row,

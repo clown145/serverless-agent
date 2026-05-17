@@ -4,6 +4,7 @@ import { ChatPanel } from "./panels/ChatPanel";
 import { ConversationsPanel } from "./panels/ConversationsPanel";
 import { DebugPanel } from "./panels/DebugPanel";
 import { DiagnosticsPanel } from "./panels/DiagnosticsPanel";
+import { ModelConfigPanel } from "./panels/ModelConfigPanel";
 import { ModelsPanel } from "./panels/ModelsPanel";
 import { PlatformsPanel } from "./panels/PlatformsPanel";
 import { PendingPanel } from "./panels/PendingPanel";
@@ -90,10 +91,14 @@ export function App() {
             <ConversationsPanel
               client={client}
               notify={notify}
+              onNavigate={setActive}
               onOpenConversation={openConversation}
             />
           )}
-          {active === "models" && <ModelsPanel client={client} notify={notify} />}
+          {active === "model_config" && <ModelConfigPanel client={client} notify={notify} />}
+          {active === "models" && (
+            <ModelsPanel client={client} notify={notify} onNavigate={setActive} />
+          )}
           {active === "platforms" && <PlatformsPanel client={client} notify={notify} />}
           {active === "diagnostics" && <DiagnosticsPanel client={client} notify={notify} />}
           {active === "debug" && <DebugPanel client={client} notify={notify} onRun={openRun} />}
@@ -103,7 +108,9 @@ export function App() {
             <RunsPanel client={client} notify={notify} selectedRunId={selectedRunId} />
           )}
           {active === "vfs" && <VfsPanel client={client} notify={notify} />}
-          {active === "schedules" && <SchedulesPanel client={client} notify={notify} />}
+          {active === "schedules" && (
+            <SchedulesPanel client={client} notify={notify} onNavigate={setActive} />
+          )}
           {active === "pending" && <PendingPanel client={client} notify={notify} />}
           {active === "permissions" && <PermissionsPanel client={client} notify={notify} />}
           {active === "system" && <SystemPanel token={token} onTokenChange={updateToken} />}

@@ -1,4 +1,5 @@
 import type { Env } from "../../shared/types/env";
+import { getModelRoleSetting } from "../../storage/repositories/agent-model-role-settings-repository";
 import { getModelSettings } from "../../storage/repositories/agent-model-settings-repository";
 import { getConversationSettings } from "../../storage/repositories/conversation-settings-repository";
 import { listEnabledModelCatalog } from "../../storage/repositories/model-catalog-repository";
@@ -29,6 +30,7 @@ export async function resolveModelConfig(
     conversationId?: string;
     providerId?: string;
     modelId?: string;
+    role?: "default" | "summary" | "vision";
   } = {}
 ): Promise<ResolvedModelConfig> {
   if (options.providerId && options.modelId) {
@@ -60,15 +62,44 @@ export async function resolveModelConfig(
     }
   }
 
-  const settings = await getModelSettings(env.AGENT_DB, agentId);
-  if (settings?.providerId && settings.modelId) {
-    const config = await resolveEnabledModelConfig(env, settings.providerId, settings.modelId);
-    if (config) {
-      return config;
+  if (options.role && options.role !== "default") {
+    const roleConfig = await resolveRoleModelConfig(env, agentId, options.role);
+    if (roleConfig) {
+      return roleConfig;
     }
   }
 
+  const defaultConfig = await resolveDefaultModelConfig(env, agentId);
+  if (defaultConfig) {
+    return defaultConfig;
+  }
+
   return resolveEnvConfig(env);
+}
+
+export async function resolveDefaultModelConfig(
+  env: Env,
+  agentId: string
+): Promise<ResolvedModelConfig | undefined> {
+  const settings = await getModelSettings(env.AGENT_DB, agentId);
+  if (!settings?.providerId || !settings.modelId) {
+    return undefined;
+  }
+
+  return resolveEnabledModelConfig(env, settings.providerId, settings.modelId);
+}
+
+export async function resolveRoleModelConfig(
+  env: Env,
+  agentId: string,
+  role: "summary" | "vision"
+): Promise<ResolvedModelConfig | undefined> {
+  const setting = await getModelRoleSetting(env.AGENT_DB, agentId, role);
+  if (!setting?.providerId || !setting.modelId) {
+    return undefined;
+  }
+
+  return resolveEnabledModelConfig(env, setting.providerId, setting.modelId);
 }
 
 async function resolveEnabledModelConfig(
