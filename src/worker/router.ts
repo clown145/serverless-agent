@@ -30,6 +30,8 @@ import { handleAdminSearchProviderDetail } from "./routes/admin-search-provider-
 import { handleAdminSearchProviders } from "./routes/admin-search-providers";
 import { handleAdminSkillDetail } from "./routes/admin-skill-detail";
 import { handleAdminSetupStatus } from "./routes/admin-setup-status";
+import { handleAdminQqIntegrationDetail } from "./routes/admin-qq-integration-detail";
+import { handleAdminQqIntegrations } from "./routes/admin-qq-integrations";
 import { handleAdminTelegramIntegrationDetail } from "./routes/admin-telegram-integration-detail";
 import { handleAdminTelegramIntegrations } from "./routes/admin-telegram-integrations";
 import { handleAdminToolCall } from "./routes/admin-tool-call";
@@ -38,6 +40,7 @@ import { handleAdminTools } from "./routes/admin-tools";
 import { handleAdminUi } from "./routes/admin-ui";
 import { handleAdminVfs } from "./routes/admin-vfs";
 import { handleHealth } from "./routes/health";
+import { handleQqWebhook } from "./routes/qq-webhook";
 import { handleTelegramWebhook } from "./routes/telegram-webhook";
 
 export async function routeRequest(
@@ -53,6 +56,10 @@ export async function routeRequest(
 
   if (request.method === "POST" && url.pathname === "/webhooks/telegram") {
     return handleTelegramWebhook(request, env, ctx);
+  }
+
+  if (request.method === "POST" && url.pathname === "/webhooks/qq") {
+    return handleQqWebhook(request, env, ctx);
   }
 
   if (url.pathname === "/admin/messages") {
@@ -97,10 +104,20 @@ export async function routeRequest(
     return handleAdminTelegramIntegrations(request, env);
   }
 
+  if (url.pathname === "/admin/platforms/qq") {
+    return handleAdminQqIntegrations(request, env);
+  }
+
   if (url.pathname.startsWith("/admin/platforms/telegram/")) {
     const telegramPath = url.pathname.replace("/admin/platforms/telegram/", "");
     const integrationId = decodeURIComponent(telegramPath.split("/")[0] ?? "");
     return handleAdminTelegramIntegrationDetail(request, env, integrationId);
+  }
+
+  if (url.pathname.startsWith("/admin/platforms/qq/")) {
+    const qqPath = url.pathname.replace("/admin/platforms/qq/", "");
+    const integrationId = decodeURIComponent(qqPath.split("/")[0] ?? "");
+    return handleAdminQqIntegrationDetail(request, env, integrationId);
   }
 
   if (request.method === "GET" && url.pathname === "/admin/tools") {
@@ -237,6 +254,7 @@ export async function routeRequest(
       routes: [
         "/health",
         "/webhooks/telegram",
+        "/webhooks/qq",
         "/admin/messages",
         "/admin/messages/:messageId/attachments/:attachmentId",
         "/admin/conversations",
@@ -249,6 +267,8 @@ export async function routeRequest(
         "/admin/platforms/telegram/:integrationId/test",
         "/admin/platforms/telegram/:integrationId/commands",
         "/admin/platforms/telegram/:integrationId/webhook",
+        "/admin/platforms/qq",
+        "/admin/platforms/qq/:integrationId",
         "/admin/tools",
         "/admin/tools/call",
         "/admin/tools/calls",
