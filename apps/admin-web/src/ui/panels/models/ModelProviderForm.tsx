@@ -28,7 +28,7 @@ export function ModelProviderForm({
   }
 
   return (
-    <div className="form-grid model-form">
+    <div className="model-provider-form">
       <label>
         {t("models.format")}
         <select

@@ -28,8 +28,25 @@
   grid-template-columns: 160px minmax(160px, 1fr) 110px auto;
 }
 
-.form-grid.model-form {
-  grid-template-columns: 150px minmax(150px, 0.8fr) minmax(240px, 1.4fr) minmax(180px, 1fr) auto;
+.model-provider-form {
+  display: grid;
+  gap: 12px;
+}
+
+.model-provider-form button {
+  width: fit-content;
+}
+
+.panel-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panel-header-actions .primary-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
 }
 
 .mcp-form {
@@ -1167,7 +1184,6 @@
 @media (max-width: 980px) {
   .form-grid,
   .form-grid.policy-form,
-  .form-grid.model-form,
   .mcp-form,
   .chat-session-bar,
   .telegram-form,
@@ -1203,6 +1219,19 @@
   .secondary-button,
   .path-bar button {
     width: 100%;
+  }
+
+  .panel-header-actions {
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .panel-header-actions .icon-button {
+    flex: 0 0 38px;
+  }
+
+  .panel-header-actions .primary-button {
+    flex: 1 1 auto;
   }
 
   .code-editor {

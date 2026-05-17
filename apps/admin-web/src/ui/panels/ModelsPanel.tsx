@@ -1,4 +1,4 @@
-import { RefreshCw } from "lucide-react";
+import { Plus, RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type {
   ModelCapability,
@@ -9,9 +9,9 @@ import type {
 import { useI18n } from "../i18n/I18nProvider";
 import { ToolbarButton } from "../ToolbarButton";
 import { DefaultModelPicker } from "./models/DefaultModelPicker";
-import { ModelProviderForm } from "./models/ModelProviderForm";
+import { ModelProviderDialog } from "./models/ModelProviderDialog";
 import { ModelProviderList } from "./models/ModelProviderList";
-import { providerDraftDefaults, type ModelProviderDraft } from "./models/modelDefaults";
+import type { ModelProviderPayload } from "./models/modelProviderDraft";
 import type { PanelProps } from "./types";
 
 export function ModelsPanel({ client, notify }: PanelProps) {
@@ -24,8 +24,8 @@ export function ModelsPanel({ client, notify }: PanelProps) {
   const [testingKey, setTestingKey] = useState("");
   const [refreshingProviderId, setRefreshingProviderId] = useState("");
   const [refreshingMetadataProviderId, setRefreshingMetadataProviderId] = useState("");
-  const [editingProviderId, setEditingProviderId] = useState("");
-  const [draft, setDraft] = useState<ModelProviderDraft>(providerDraftDefaults("openai"));
+  const [providerDialogOpen, setProviderDialogOpen] = useState(false);
+  const [editingProvider, setEditingProvider] = useState<ModelProvider>();
 
   const modelsByProvider = useMemo(() => {
     return models.reduce<Record<string, ModelCatalogItem[]>>((grouped, model) => {
@@ -58,65 +58,35 @@ export function ModelsPanel({ client, notify }: PanelProps) {
     }
   }
 
-  async function createProvider() {
+  async function saveProvider(payload: ModelProviderPayload) {
     try {
-      await client.createModelProvider(providerPayload());
-      notify(t("models.providerCreated"), "ok");
-      setDraft({ ...draft, apiKey: "" });
-      await load();
-    } catch (error) {
-      notify(error instanceof Error ? error.message : "Failed to create provider", "error");
-    }
-  }
-
-  async function saveProvider() {
-    if (!editingProviderId) {
-      await createProvider();
-      return;
-    }
-
-    try {
-      await client.updateModelProvider(editingProviderId, providerPayload());
-      notify(t("models.providerSaved"), "ok");
-      cancelProviderEdit();
+      if (editingProvider) {
+        await client.updateModelProvider(editingProvider.id, payload);
+        notify(t("models.providerSaved"), "ok");
+      } else {
+        await client.createModelProvider(payload);
+        notify(t("models.providerCreated"), "ok");
+      }
+      closeProviderDialog();
       await load();
     } catch (error) {
       notify(error instanceof Error ? error.message : "Failed to save provider", "error");
     }
   }
 
-  function providerPayload() {
-    return {
-      name: draft.name,
-      providerType: draft.providerType,
-      baseUrl: draft.baseUrl || undefined,
-      apiKey: draft.apiKey || undefined,
-      authType: draft.authType,
-      authHeader: draft.authHeader || undefined,
-      authQueryParam: draft.authQueryParam || undefined,
-      modelListStrategy: draft.modelListStrategy,
-      chatProtocol: draft.chatProtocol
-    };
+  function openCreateProviderDialog() {
+    setEditingProvider(undefined);
+    setProviderDialogOpen(true);
   }
 
   function editProvider(provider: ModelProvider) {
-    setEditingProviderId(provider.id);
-    setDraft({
-      name: provider.name,
-      providerType: provider.providerType,
-      baseUrl: provider.baseUrl ?? "",
-      apiKey: "",
-      authType: provider.authType,
-      authHeader: provider.authHeader ?? "",
-      authQueryParam: provider.authQueryParam ?? "",
-      modelListStrategy: provider.modelListStrategy,
-      chatProtocol: provider.chatProtocol
-    });
+    setEditingProvider(provider);
+    setProviderDialogOpen(true);
   }
 
-  function cancelProviderEdit() {
-    setEditingProviderId("");
-    setDraft(providerDraftDefaults("openai"));
+  function closeProviderDialog() {
+    setProviderDialogOpen(false);
+    setEditingProvider(undefined);
   }
 
   async function refresh(providerId: string) {
@@ -226,16 +196,26 @@ export function ModelsPanel({ client, notify }: PanelProps) {
           </p>
           <span>{t("models.enabledCount", { count: enabledModels.length })}</span>
         </div>
-        <ToolbarButton label={t("common.refresh")} icon={RefreshCw} onClick={() => void load()} />
+        <div className="panel-header-actions">
+          <button className="primary-button" type="button" onClick={openCreateProviderDialog}>
+            <Plus size={16} />
+            {t("models.addProvider")}
+          </button>
+          <ToolbarButton label={t("common.refresh")} icon={RefreshCw} onClick={() => void load()} />
+        </div>
       </header>
 
-      <ModelProviderForm
-        draft={draft}
-        editing={Boolean(editingProviderId)}
-        onDraftChange={setDraft}
-        onCancel={cancelProviderEdit}
-        onProviderTypeChange={(providerType) => setDraft(providerDraftDefaults(providerType))}
-        onSubmit={() => void saveProvider()}
+      <ModelProviderDialog
+        open={providerDialogOpen}
+        provider={editingProvider}
+        onOpenChange={(open) => {
+          if (open) {
+            setProviderDialogOpen(true);
+          } else {
+            closeProviderDialog();
+          }
+        }}
+        onSubmit={(payload) => void saveProvider(payload)}
       />
 
       <DefaultModelPicker
