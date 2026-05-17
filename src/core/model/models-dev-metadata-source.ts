@@ -39,8 +39,14 @@ type ModelsDevModel = {
   cost?: Record<string, unknown>;
 };
 
+type ModelsDevEntry = {
+  providerKey: string;
+  modelKey: string;
+  model: ModelsDevModel;
+};
+
 export async function fetchModelsDevModelMetadata(
-  provider: ModelProviderRecord,
+  _provider: ModelProviderRecord,
   modelIds: string[]
 ): Promise<Map<string, ModelMetadataResolution>> {
   if (modelIds.length === 0) {
@@ -48,18 +54,15 @@ export async function fetchModelsDevModelMetadata(
   }
 
   const providers = await fetchModelsDevProviders();
-  const modelsProvider = resolveModelsDevProvider(providers, provider);
-  if (!modelsProvider?.models) {
-    return new Map();
-  }
+  const index = buildModelsDevIndex(providers);
 
   return new Map(
     modelIds
       .map((modelId) => {
-        const model = modelsProvider.models?.[modelId];
+        const entry = resolveModelsDevEntry(index, modelId);
         return [
           modelId,
-          model ? toModelMetadataResolution(modelId, model) : undefined
+          entry ? toModelMetadataResolution(modelId, entry) : undefined
         ] as const;
       })
       .filter((entry): entry is [string, ModelMetadataResolution] => Boolean(entry[1]))
@@ -81,78 +84,50 @@ async function fetchModelsDevProviders(): Promise<ModelsDevResponse> {
   return payload ?? {};
 }
 
-function resolveModelsDevProvider(
-  providers: ModelsDevResponse,
-  provider: ModelProviderRecord
-): ModelsDevProvider | undefined {
-  if (provider.providerType === "custom") {
-    return (
-      findProviderByBaseUrl(providers, provider.baseUrl) ??
-      findProviderByCandidateIds(providers, candidateProviderIds(provider))
-    );
-  }
+function buildModelsDevIndex(providers: ModelsDevResponse): Map<string, ModelsDevEntry[]> {
+  const index = new Map<string, ModelsDevEntry[]>();
 
-  return (
-    findProviderByCandidateIds(providers, candidateProviderIds(provider)) ??
-    findProviderByBaseUrl(providers, provider.baseUrl)
-  );
-}
-
-function findProviderByCandidateIds(
-  providers: ModelsDevResponse,
-  providerIds: string[]
-): ModelsDevProvider | undefined {
-  for (const providerId of providerIds) {
-    const match = providers[providerId];
-    if (match) {
-      return match;
+  for (const [providerKey, provider] of Object.entries(providers)) {
+    for (const [modelKey, model] of Object.entries(provider.models ?? {})) {
+      const entry = { providerKey, modelKey, model };
+      addExactModelId(index, modelKey, entry);
+      addExactModelId(index, model.id, entry);
     }
   }
 
-  return undefined;
+  return index;
 }
 
-function candidateProviderIds(provider: ModelProviderRecord): string[] {
-  const ids: string[] = [];
-
-  if (provider.providerType === "gemini") {
-    ids.push("google");
+function addExactModelId(
+  index: Map<string, ModelsDevEntry[]>,
+  modelId: string | undefined,
+  entry: ModelsDevEntry
+): void {
+  const key = modelId ? normalizeModelId(modelId) : "";
+  if (!key) {
+    return;
   }
 
-  if (provider.providerType === "openai") {
-    ids.push("openai");
+  const entries = index.get(key) ?? [];
+  if (entries.includes(entry)) {
+    return;
   }
 
-  const normalizedName = normalizeProviderName(provider.name, provider.providerType);
-  if (normalizedName) {
-    ids.push(normalizedName);
-  }
-
-  return [...new Set(ids)];
+  index.set(key, [...entries, entry]);
 }
 
-function findProviderByBaseUrl(
-  providers: ModelsDevResponse,
-  baseUrl: string | undefined
-): ModelsDevProvider | undefined {
-  if (!baseUrl) {
-    return undefined;
-  }
-
-  const normalizedBaseUrl = normalizeBaseUrl(baseUrl);
-  if (!normalizedBaseUrl) {
-    return undefined;
-  }
-
-  return Object.values(providers).find((provider) => {
-    return normalizeBaseUrl(provider.api) === normalizedBaseUrl;
-  });
+function resolveModelsDevEntry(
+  index: Map<string, ModelsDevEntry[]>,
+  modelId: string
+): ModelsDevEntry | undefined {
+  return index.get(normalizeModelId(modelId))?.[0];
 }
 
 function toModelMetadataResolution(
   requestedModelId: string,
-  model: ModelsDevModel
+  entry: ModelsDevEntry
 ): ModelMetadataResolution {
+  const model = entry.model;
   return {
     capabilities: modelCapabilitiesFromMetadata({
       modelId: requestedModelId,
@@ -160,20 +135,23 @@ function toModelMetadataResolution(
       outputModalities: model.modalities?.output,
       supportsTools: model.tool_call,
       supportsStructuredOutput: model.structured_output,
+      supportsReasoning: model.reasoning,
       contextWindow: model.limit?.context
     }),
     contextWindow: positiveInteger(model.limit?.context),
     maxOutputTokens: positiveInteger(model.limit?.output),
-    raw: compactModelsDevMetadata(model),
+    raw: compactModelsDevMetadata(entry),
     source: "models.dev",
     confidence: "exact",
-    matchedModelId: model.id
+    matchedModelId: `${entry.providerKey}/${entry.modelKey}`
   };
 }
 
-function compactModelsDevMetadata(model: ModelsDevModel): Record<string, unknown> {
+function compactModelsDevMetadata(entry: ModelsDevEntry): Record<string, unknown> {
+  const model = entry.model;
   return {
-    id: model.id,
+    provider: entry.providerKey,
+    id: model.id ?? entry.modelKey,
     name: model.name,
     family: model.family,
     attachment: model.attachment,
@@ -190,45 +168,8 @@ function compactModelsDevMetadata(model: ModelsDevModel): Record<string, unknown
   };
 }
 
-function normalizeProviderName(
-  name: string,
-  providerType: ModelProviderRecord["providerType"]
-): string | undefined {
-  const normalized = name.trim().toLowerCase();
-  if (!normalized) {
-    return undefined;
-  }
-
-  if (normalized === "gemini") {
-    return "google";
-  }
-
-  const providerId = normalized
-    .replace(/\(.+\)/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-
-  if (
-    providerType === "custom" &&
-    (providerId === "custom" || providerId === "openai" || providerId === "gemini")
-  ) {
-    return undefined;
-  }
-
-  return providerId || undefined;
-}
-
-function normalizeBaseUrl(value: string | undefined): string | undefined {
-  if (!value) {
-    return undefined;
-  }
-
-  try {
-    const url = new URL(value);
-    return `${url.origin}${url.pathname.replace(/\/+$/, "")}`;
-  } catch {
-    return value.trim().replace(/\/+$/, "") || undefined;
-  }
+function normalizeModelId(modelId: string): string {
+  return modelId.trim().toLowerCase();
 }
 
 function positiveInteger(value: unknown): number | undefined {

@@ -16,6 +16,7 @@ import { EmptyState } from "../../EmptyState";
 import { useI18n } from "../../i18n/I18nProvider";
 import { StatusBadge } from "../../StatusBadge";
 import { ToolbarButton } from "../../ToolbarButton";
+import { formatModelNumber } from "./modelSelection";
 
 type ModelProviderListProps = {
   providers: ModelProvider[];
@@ -145,7 +146,8 @@ const MODEL_CAPABILITIES: ModelCapability[] = [
   "tools",
   "vision",
   "long_context",
-  "structured_output"
+  "structured_output",
+  "reasoning"
 ];
 
 type RenderModelChoiceInput = {
@@ -183,7 +185,20 @@ function renderModelChoice({
         type="button"
         onClick={onActivate}
       >
-        <span>{model.displayName ?? model.modelId}</span>
+        <span className="model-name-block">
+          <span>{model.displayName ?? model.modelId}</span>
+          {(model.contextWindow || model.maxOutputTokens) && (
+            <small>
+              {model.contextWindow
+                ? t("models.contextWindow", { count: formatModelNumber(model.contextWindow) })
+                : ""}
+              {model.contextWindow && model.maxOutputTokens ? " / " : ""}
+              {model.maxOutputTokens
+                ? t("models.maxOutputTokens", { count: formatModelNumber(model.maxOutputTokens) })
+                : ""}
+            </small>
+          )}
+        </span>
         {active && <CheckCircle2 size={16} />}
       </button>
       <StatusBadge value={model.status} />
@@ -200,23 +215,16 @@ function renderModelChoice({
         onClick={onTest}
       />
       <div className="model-metadata-line">
-        <span>{t(`models.capabilitiesSource.${model.capabilitiesSource}`)}</span>
-        {model.contextWindow && (
-          <span>{t("models.contextWindow", { count: formatNumber(model.contextWindow) })}</span>
-        )}
-        {model.maxOutputTokens && (
-          <span>
-            {t("models.maxOutputTokens", { count: formatNumber(model.maxOutputTokens) })}
-          </span>
-        )}
-        {model.metadataSource && (
+        {model.metadataSource ? (
           <span>
             {t("models.metadataSource", {
               source: model.metadataSource,
               confidence: model.metadataConfidence ?? "unknown"
             })}
           </span>
-        )}
+        ) : model.capabilitiesSource !== "inferred" ? (
+          <span>{t(`models.capabilitiesSource.${model.capabilitiesSource}`)}</span>
+        ) : null}
       </div>
       <div className="model-capability-list">
         {MODEL_CAPABILITIES.map((capability) => (
@@ -255,10 +263,6 @@ function toggleCapability(
   }
 
   return capabilities.filter((item) => item !== capability);
-}
-
-function formatNumber(value: number): string {
-  return new Intl.NumberFormat().format(value);
 }
 
 function testKey(providerId: string, modelId = ""): string {

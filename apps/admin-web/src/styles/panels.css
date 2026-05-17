@@ -1004,6 +1004,18 @@
   overflow-wrap: anywhere;
 }
 
+.model-name-block {
+  display: grid;
+  gap: 3px;
+}
+
+.model-name-block small {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
 .model-activate:disabled {
   cursor: not-allowed;
   color: var(--text-muted);

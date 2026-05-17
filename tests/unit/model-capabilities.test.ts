@@ -24,7 +24,10 @@ describe("model capabilities", () => {
   });
 
   it("normalizes stored capabilities", () => {
-    expect(normalizeModelCapabilities("[\"vision\",\"bad\"]", "text")).toEqual(["vision"]);
+    expect(normalizeModelCapabilities("[\"vision\",\"reasoning\",\"bad\"]", "text")).toEqual([
+      "vision",
+      "reasoning"
+    ]);
   });
 
   it("maps catalog rows with inferred capability fallback", () => {
@@ -82,9 +85,10 @@ describe("model capabilities", () => {
         modelId: "unknown-text-model",
         inputModalities: ["text", "image"],
         supportedParameters: ["tools", "structured_outputs"],
+        supportsReasoning: true,
         contextWindow: 1000000
       })
-    ).toEqual(["tools", "vision", "long_context", "structured_output"]);
+    ).toEqual(["tools", "vision", "long_context", "structured_output", "reasoning"]);
   });
 
   it("requires at least one million context tokens for long-context metadata", () => {
@@ -109,6 +113,7 @@ describe("model capabilities", () => {
                 id: "gemini-2.5-flash",
                 name: "Gemini 2.5 Flash",
                 tool_call: true,
+                reasoning: true,
                 structured_output: true,
                 modalities: {
                   input: ["text", "image"],
@@ -146,19 +151,37 @@ describe("model capabilities", () => {
     expect(metadata.get("gemini-2.5-flash")).toMatchObject({
       source: "models.dev",
       confidence: "exact",
-      matchedModelId: "gemini-2.5-flash",
+      matchedModelId: "google/gemini-2.5-flash",
       contextWindow: 1048576,
       maxOutputTokens: 65536,
-      capabilities: ["tools", "vision", "long_context", "structured_output"]
+      capabilities: ["tools", "vision", "long_context", "structured_output", "reasoning"]
     });
   });
 
-  it("matches custom providers by exact models.dev provider base URL and model id", async () => {
+  it("uses the first models.dev provider when a model id appears multiple times", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => {
         return new Response(
           JSON.stringify({
+            openai: {
+              id: "openai",
+              name: "OpenAI",
+              models: {
+                "gpt-4.1-mini": {
+                  id: "gpt-4.1-mini",
+                  tool_call: false,
+                  modalities: {
+                    input: ["text"],
+                    output: ["text"]
+                  },
+                  limit: {
+                    context: 128000,
+                    output: 4096
+                  }
+                }
+              }
+            },
             "custom-host": {
               id: "custom-host",
               name: "Custom Host",
@@ -178,24 +201,6 @@ describe("model capabilities", () => {
                   }
                 }
               }
-            },
-            openai: {
-              id: "openai",
-              name: "OpenAI",
-              models: {
-                "gpt-4.1-mini": {
-                  id: "gpt-4.1-mini",
-                  tool_call: false,
-                  modalities: {
-                    input: ["text"],
-                    output: ["text"]
-                  },
-                  limit: {
-                    context: 128000,
-                    output: 4096
-                  }
-                }
-              }
             }
           }),
           { status: 200 }
@@ -211,14 +216,14 @@ describe("model capabilities", () => {
     expect(metadata.get("gpt-4.1-mini")).toMatchObject({
       source: "models.dev",
       confidence: "exact",
-      matchedModelId: "gpt-4.1-mini",
-      contextWindow: 1047576,
-      maxOutputTokens: 32768,
-      capabilities: ["tools", "vision", "long_context", "structured_output"]
+      matchedModelId: "openai/gpt-4.1-mini",
+      contextWindow: 128000,
+      maxOutputTokens: 4096,
+      capabilities: []
     });
   });
 
-  it("does not guess provider by model id prefix when provider is unknown", async () => {
+  it("falls back to global exact model id matching when provider is unknown", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => {
@@ -253,7 +258,97 @@ describe("model capabilities", () => {
       ["gpt-4.1-mini"]
     );
 
+    expect(metadata.get("gpt-4.1-mini")).toMatchObject({
+      source: "models.dev",
+      confidence: "exact",
+      matchedModelId: "openai/gpt-4.1-mini",
+      contextWindow: 1047576,
+      maxOutputTokens: 32768,
+      capabilities: ["tools", "vision", "long_context"]
+    });
+  });
+
+  it("does not guess models.dev entries by provider or model id prefix", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        return new Response(
+          JSON.stringify({
+            openrouter: {
+              id: "openrouter",
+              name: "OpenRouter",
+              models: {
+                "openai/gpt-4.1-mini": {
+                  id: "openai/gpt-4.1-mini",
+                  tool_call: true,
+                  modalities: {
+                    input: ["text", "image"],
+                    output: ["text"]
+                  },
+                  limit: {
+                    context: 1047576,
+                    output: 32768
+                  }
+                }
+              }
+            }
+          }),
+          { status: 200 }
+        );
+      })
+    );
+
+    const metadata = await fetchModelsDevModelMetadata(
+      customProviderRecord(),
+      ["gpt-4.1-mini"]
+    );
+
     expect(metadata.size).toBe(0);
+  });
+
+  it("indexes exact model object ids when they differ from the models.dev map key", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        return new Response(
+          JSON.stringify({
+            provider: {
+              id: "provider",
+              name: "Provider",
+              models: {
+                "catalog-key": {
+                  id: "canonical-model-id",
+                  tool_call: true,
+                  modalities: {
+                    input: ["text"],
+                    output: ["text"]
+                  },
+                  limit: {
+                    context: 32000,
+                    output: 2048
+                  }
+                }
+              }
+            }
+          }),
+          { status: 200 }
+        );
+      })
+    );
+
+    const metadata = await fetchModelsDevModelMetadata(
+      customProviderRecord(),
+      ["canonical-model-id"]
+    );
+
+    expect(metadata.get("canonical-model-id")).toMatchObject({
+      source: "models.dev",
+      confidence: "exact",
+      matchedModelId: "provider/catalog-key",
+      contextWindow: 32000,
+      maxOutputTokens: 2048,
+      capabilities: ["tools"]
+    });
   });
 });
 

@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import type { Schedule } from "../../../api/types";
 import { useI18n } from "../../i18n/I18nProvider";
-import { enabledModelOptions } from "../models/modelSelection";
+import { enabledModelOptions, modelDisplayLabel } from "../models/modelSelection";
 import type { ScheduleFormState, ScheduleModelOptions } from "./types";
 
 type ScheduleEditorProps = {
@@ -128,7 +128,7 @@ export function ScheduleEditor({
           <option value="">{t("conversations.defaultModel")}</option>
           {providerModels.map((model) => (
             <option value={model.modelId} key={model.id}>
-              {model.displayName ?? model.modelId}
+              {modelDisplayLabel(model)}
             </option>
           ))}
         </select>

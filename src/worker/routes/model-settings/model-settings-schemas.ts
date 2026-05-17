@@ -39,7 +39,8 @@ export const updateModelCatalogSchema = z.object({
     "tools",
     "vision",
     "long_context",
-    "structured_output"
+    "structured_output",
+    "reasoning"
   ])).optional(),
   status: z.enum(["available", "enabled", "disabled"]).optional()
 }).refine(

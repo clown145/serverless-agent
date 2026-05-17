@@ -226,7 +226,12 @@ export type ModelCatalogItem = {
 
 export type ModelCatalogStatus = "available" | "enabled" | "disabled" | "unavailable";
 
-export type ModelCapability = "tools" | "vision" | "long_context" | "structured_output";
+export type ModelCapability =
+  | "tools"
+  | "vision"
+  | "long_context"
+  | "structured_output"
+  | "reasoning";
 
 export type ModelCapabilitiesSource =
   | "manual"

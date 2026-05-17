@@ -56,6 +56,7 @@ export function modelCapabilitiesFromMetadata(input: {
   supportedParameters?: string[];
   supportsTools?: boolean;
   supportsStructuredOutput?: boolean;
+  supportsReasoning?: boolean;
   contextWindow?: number;
 }): ModelCapability[] {
   const capabilities: ModelCapability[] = [];
@@ -83,6 +84,10 @@ export function modelCapabilitiesFromMetadata(input: {
     supported.has("response_format")
   ) {
     capabilities.push("structured_output");
+  }
+
+  if (input.supportsReasoning || supported.has("reasoning")) {
+    capabilities.push("reasoning");
   }
 
   if (typeof input.contextWindow === "number" && input.contextWindow >= 1_000_000) {

@@ -2,13 +2,15 @@ export type ModelCapability =
   | "tools"
   | "vision"
   | "long_context"
-  | "structured_output";
+  | "structured_output"
+  | "reasoning";
 
 export const MODEL_CAPABILITIES: ModelCapability[] = [
   "tools",
   "vision",
   "long_context",
-  "structured_output"
+  "structured_output",
+  "reasoning"
 ];
 
 export function normalizeModelCapabilities(
@@ -67,7 +69,8 @@ export function isModelCapability(value: unknown): value is ModelCapability {
     value === "tools" ||
     value === "vision" ||
     value === "long_context" ||
-    value === "structured_output"
+    value === "structured_output" ||
+    value === "reasoning"
   );
 }
 
