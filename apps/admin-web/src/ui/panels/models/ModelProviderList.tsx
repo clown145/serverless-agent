@@ -31,6 +31,8 @@ type ModelProviderListProps = {
   onCapabilitiesChange: (modelId: string, capabilities: ModelCapability[]) => void;
   onStatusChange: (modelId: string, status: ModelCatalogItem["status"]) => void;
   onDelete: (providerId: string) => void;
+  refreshingProviderId?: string;
+  refreshingMetadataProviderId?: string;
   testingKey?: string;
 };
 
@@ -47,6 +49,8 @@ export function ModelProviderList({
   onCapabilitiesChange,
   onStatusChange,
   onDelete,
+  refreshingProviderId,
+  refreshingMetadataProviderId,
   testingKey
 }: ModelProviderListProps) {
   const { t } = useI18n();
@@ -57,6 +61,8 @@ export function ModelProviderList({
         const providerModels = modelsByProvider[provider.id] ?? [];
         const enabledModels = enabledModelsByProvider[provider.id] ?? [];
         const hiddenModels = providerModels.filter((model) => model.status !== "enabled");
+        const refreshing = refreshingProviderId === provider.id;
+        const refreshingMetadata = refreshingMetadataProviderId === provider.id;
         return (
           <div className="model-provider-row" key={provider.id}>
             <div className="model-provider-head">
@@ -77,11 +83,13 @@ export function ModelProviderList({
               <ToolbarButton
                 label={t("models.refreshModels")}
                 icon={RefreshCw}
+                disabled={refreshing || refreshingMetadata}
                 onClick={() => onRefresh(provider.id)}
               />
               <ToolbarButton
                 label={t("models.refreshMetadata")}
                 icon={DatabaseZap}
+                disabled={refreshing || refreshingMetadata}
                 onClick={() => onRefreshMetadata(provider.id)}
               />
               <ToolbarButton
@@ -228,7 +236,12 @@ function renderModelChoice({
       </div>
       <div className="model-capability-list">
         {MODEL_CAPABILITIES.map((capability) => (
-          <label key={capability}>
+          <label
+            className={`model-capability-chip ${
+              model.capabilities.includes(capability) ? "selected" : ""
+            }`}
+            key={capability}
+          >
             <input
               checked={model.capabilities.includes(capability)}
               type="checkbox"

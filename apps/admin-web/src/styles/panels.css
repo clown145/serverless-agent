@@ -954,8 +954,8 @@
   grid-column: 1 / -1;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  padding: 4px 8px 8px;
+  gap: 6px;
+  padding: 5px 8px 9px;
 }
 
 .model-metadata-line {
@@ -972,12 +972,38 @@
   overflow-wrap: anywhere;
 }
 
-.model-capability-list label {
+.model-capability-chip {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
+  min-height: 24px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-muted);
   color: var(--text-muted);
+  cursor: pointer;
   font-size: 12px;
+  font-weight: 600;
+  padding: 2px 9px 2px 6px;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.model-capability-chip:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.model-capability-chip.selected {
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
+  background: var(--accent-muted);
+  color: var(--text);
+}
+
+.model-capability-chip input {
+  width: 13px;
+  height: 13px;
+  margin: 0;
+  accent-color: var(--accent);
 }
 
 .model-choice.selected {

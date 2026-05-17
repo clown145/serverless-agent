@@ -28,6 +28,7 @@ import {
   listModelProviders,
   updateModelProviderCredential,
 } from "../../storage/repositories/model-providers-repository";
+import type { ModelProviderRecord } from "../../storage/repositories/model-settings-types";
 import { requireAdmin } from "../admin-auth";
 import {
   createProviderSchema,
@@ -230,12 +231,25 @@ export async function handleAdminModelProviderDetail(
 
     try {
       const remoteModels = await fetchProviderModels(env, provider);
-      const models = await upsertModelCatalog(env.AGENT_DB, {
+      let models = await upsertModelCatalog(env.AGENT_DB, {
         providerId,
         models: remoteModels
       });
+      const metadata = await refreshProviderMetadata(env, provider, providerId, models)
+        .catch((error) => ({
+          matched: 0,
+          error: error instanceof Error ? error.message : "Failed to refresh model metadata"
+        }));
+      if ("models" in metadata) {
+        models = metadata.models;
+      }
 
-      return jsonResponse({ ok: true, models });
+      return jsonResponse({
+        ok: true,
+        models,
+        metadataMatched: metadata.matched,
+        metadataError: "error" in metadata ? metadata.error : undefined
+      });
     } catch (error) {
       return errorResponse(
         502,
@@ -260,19 +274,18 @@ export async function handleAdminModelProviderDetail(
 
     try {
       const currentModels = await listModelCatalog(env.AGENT_DB, providerId);
-      const metadataByModelId = await fetchModelMetadata(parsed.data.source, {
+      const metadata = await refreshProviderMetadata(
+        env,
         provider,
-        modelIds: currentModels.map((model) => model.modelId)
-      });
-      const models = await updateModelCatalogMetadata(env.AGENT_DB, {
         providerId,
-        metadataByModelId
-      });
+        currentModels,
+        parsed.data.source
+      );
 
       return jsonResponse({
         ok: true,
-        models,
-        matched: metadataByModelId.size,
+        models: metadata.models,
+        matched: metadata.matched,
         source: parsed.data.source
       });
     } catch (error) {
@@ -285,6 +298,28 @@ export async function handleAdminModelProviderDetail(
   }
 
   return errorResponse(405, "method_not_allowed", "Method not allowed");
+}
+
+async function refreshProviderMetadata(
+  env: Env,
+  provider: ModelProviderRecord,
+  providerId: string,
+  models: Array<{ modelId: string }>,
+  source: "models.dev" = "models.dev"
+) {
+  const metadataByModelId = await fetchModelMetadata(source, {
+    provider,
+    modelIds: models.map((model) => model.modelId)
+  });
+  const updatedModels = await updateModelCatalogMetadata(env.AGENT_DB, {
+    providerId,
+    metadataByModelId
+  });
+
+  return {
+    models: updatedModels,
+    matched: metadataByModelId.size
+  };
 }
 
 export async function handleAdminModelCatalogDetail(

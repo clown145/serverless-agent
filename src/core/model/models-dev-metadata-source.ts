@@ -5,6 +5,15 @@ import {
 } from "./model-metadata";
 
 const MODELS_DEV_URL = "https://models.dev/api.json";
+const MODELS_DEV_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
+
+let modelsDevIndexCache:
+  | { expiresAt: number; index: Map<string, ModelsDevEntry[]> }
+  | undefined;
+
+export function clearModelsDevMetadataCache(): void {
+  modelsDevIndexCache = undefined;
+}
 
 type ModelsDevResponse = Record<string, ModelsDevProvider>;
 
@@ -53,8 +62,7 @@ export async function fetchModelsDevModelMetadata(
     return new Map();
   }
 
-  const providers = await fetchModelsDevProviders();
-  const index = buildModelsDevIndex(providers);
+  const index = await getModelsDevIndex();
 
   return new Map(
     modelIds
@@ -67,6 +75,21 @@ export async function fetchModelsDevModelMetadata(
       })
       .filter((entry): entry is [string, ModelMetadataResolution] => Boolean(entry[1]))
   );
+}
+
+async function getModelsDevIndex(): Promise<Map<string, ModelsDevEntry[]>> {
+  const now = Date.now();
+  if (modelsDevIndexCache && modelsDevIndexCache.expiresAt > now) {
+    return modelsDevIndexCache.index;
+  }
+
+  const providers = await fetchModelsDevProviders();
+  const index = buildModelsDevIndex(providers);
+  modelsDevIndexCache = {
+    expiresAt: now + MODELS_DEV_CACHE_TTL_MS,
+    index
+  };
+  return index;
 }
 
 async function fetchModelsDevProviders(): Promise<ModelsDevResponse> {

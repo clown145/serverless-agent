@@ -540,7 +540,11 @@ export function createAdminClient(getToken: () => string) {
       });
     },
     refreshProviderModels: (providerId: string) => {
-      return request<ApiResult<{ models: ModelCatalogItem[] }>>(
+      return request<ApiResult<{
+        models: ModelCatalogItem[];
+        metadataMatched?: number;
+        metadataError?: string;
+      }>>(
         `/admin/model-providers/${providerId}/refresh`,
         { method: "POST" }
       );

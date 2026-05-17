@@ -22,6 +22,8 @@ export function ModelsPanel({ client, notify }: PanelProps) {
   const [activeModelId, setActiveModelId] = useState("");
   const [testResult, setTestResult] = useState<ModelTestResult>();
   const [testingKey, setTestingKey] = useState("");
+  const [refreshingProviderId, setRefreshingProviderId] = useState("");
+  const [refreshingMetadataProviderId, setRefreshingMetadataProviderId] = useState("");
   const [draft, setDraft] = useState<ModelProviderDraft>(providerDraftDefaults("openai"));
 
   const modelsByProvider = useMemo(() => {
@@ -77,22 +79,35 @@ export function ModelsPanel({ client, notify }: PanelProps) {
   }
 
   async function refresh(providerId: string) {
+    setRefreshingProviderId(providerId);
     try {
-      await client.refreshProviderModels(providerId);
-      notify(t("models.modelsRefreshed"), "ok");
+      const result = await client.refreshProviderModels(providerId);
+      setModels(result.models);
+      notify(
+        result.metadataError
+          ? `${t("models.modelsRefreshed")} / ${result.metadataError}`
+          : t("models.modelsRefreshed"),
+        result.metadataError ? "error" : "ok"
+      );
       await load();
     } catch (error) {
       notify(error instanceof Error ? error.message : "Failed to refresh models", "error");
+    } finally {
+      setRefreshingProviderId("");
     }
   }
 
   async function refreshMetadata(providerId: string) {
+    setRefreshingMetadataProviderId(providerId);
     try {
       const result = await client.refreshProviderModelMetadata(providerId);
+      setModels(result.models);
       notify(t("models.metadataRefreshed", { count: result.matched }), "ok");
       await load();
     } catch (error) {
       notify(error instanceof Error ? error.message : "Failed to refresh metadata", "error");
+    } finally {
+      setRefreshingMetadataProviderId("");
     }
   }
 
@@ -213,6 +228,8 @@ export function ModelsPanel({ client, notify }: PanelProps) {
         }
         onStatusChange={(modelId, status) => void updateStatus(modelId, status)}
         onDelete={(providerId) => void removeProvider(providerId)}
+        refreshingProviderId={refreshingProviderId}
+        refreshingMetadataProviderId={refreshingMetadataProviderId}
         testingKey={testingKey}
       />
     </section>

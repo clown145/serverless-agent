@@ -144,6 +144,7 @@ export async function updateModelCatalogMetadata(
 ): Promise<ModelCatalogRecord[]> {
   const now = nowIso();
   const models = await listModelCatalog(db, input.providerId);
+  const statements: D1PreparedStatement[] = [];
 
   for (const model of models) {
     const matchedMetadata = input.metadataByModelId.get(model.modelId);
@@ -160,8 +161,8 @@ export async function updateModelCatalogMetadata(
     const capabilitiesSource =
       model.capabilitiesSource === "manual" ? "manual" : metadata.source;
 
-    await db
-      .prepare(
+    statements.push(
+      db.prepare(
         `UPDATE model_catalog
          SET
            capabilities_json = ?,
@@ -172,8 +173,8 @@ export async function updateModelCatalogMetadata(
            metadata_source = ?,
            metadata_confidence = ?,
            metadata_fetched_at = ?,
-           updated_at = ?
-         WHERE id = ?`
+            updated_at = ?
+          WHERE id = ?`
       )
       .bind(
         JSON.stringify(uniqueCapabilities(capabilities)),
@@ -187,7 +188,11 @@ export async function updateModelCatalogMetadata(
         now,
         model.id
       )
-      .run();
+    );
+  }
+
+  if (statements.length > 0) {
+    await db.batch(statements);
   }
 
   return listModelCatalog(db, input.providerId);

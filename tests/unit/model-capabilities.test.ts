@@ -4,12 +4,16 @@ import {
   normalizeModelCapabilities
 } from "../../src/core/model/capability-defaults";
 import { modelCapabilitiesFromMetadata } from "../../src/core/model/model-metadata";
-import { fetchModelsDevModelMetadata } from "../../src/core/model/models-dev-metadata-source";
+import {
+  clearModelsDevMetadataCache,
+  fetchModelsDevModelMetadata
+} from "../../src/core/model/models-dev-metadata-source";
 import type { ModelProviderRecord } from "../../src/storage/repositories/model-settings-types";
 import { mapModelCatalogRow } from "../../src/storage/repositories/model-settings-types";
 
 describe("model capabilities", () => {
   afterEach(() => {
+    clearModelsDevMetadataCache();
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
   });
