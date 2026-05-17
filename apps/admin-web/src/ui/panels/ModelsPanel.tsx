@@ -24,6 +24,7 @@ export function ModelsPanel({ client, notify }: PanelProps) {
   const [testingKey, setTestingKey] = useState("");
   const [refreshingProviderId, setRefreshingProviderId] = useState("");
   const [refreshingMetadataProviderId, setRefreshingMetadataProviderId] = useState("");
+  const [editingProviderId, setEditingProviderId] = useState("");
   const [draft, setDraft] = useState<ModelProviderDraft>(providerDraftDefaults("openai"));
 
   const modelsByProvider = useMemo(() => {
@@ -59,23 +60,63 @@ export function ModelsPanel({ client, notify }: PanelProps) {
 
   async function createProvider() {
     try {
-      await client.createModelProvider({
-        name: draft.name,
-        providerType: draft.providerType,
-        baseUrl: draft.baseUrl || undefined,
-        apiKey: draft.apiKey || undefined,
-        authType: draft.authType,
-        authHeader: draft.authHeader || undefined,
-        authQueryParam: draft.authQueryParam || undefined,
-        modelListStrategy: draft.modelListStrategy,
-        chatProtocol: draft.chatProtocol
-      });
+      await client.createModelProvider(providerPayload());
       notify(t("models.providerCreated"), "ok");
       setDraft({ ...draft, apiKey: "" });
       await load();
     } catch (error) {
       notify(error instanceof Error ? error.message : "Failed to create provider", "error");
     }
+  }
+
+  async function saveProvider() {
+    if (!editingProviderId) {
+      await createProvider();
+      return;
+    }
+
+    try {
+      await client.updateModelProvider(editingProviderId, providerPayload());
+      notify(t("models.providerSaved"), "ok");
+      cancelProviderEdit();
+      await load();
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "Failed to save provider", "error");
+    }
+  }
+
+  function providerPayload() {
+    return {
+      name: draft.name,
+      providerType: draft.providerType,
+      baseUrl: draft.baseUrl || undefined,
+      apiKey: draft.apiKey || undefined,
+      authType: draft.authType,
+      authHeader: draft.authHeader || undefined,
+      authQueryParam: draft.authQueryParam || undefined,
+      modelListStrategy: draft.modelListStrategy,
+      chatProtocol: draft.chatProtocol
+    };
+  }
+
+  function editProvider(provider: ModelProvider) {
+    setEditingProviderId(provider.id);
+    setDraft({
+      name: provider.name,
+      providerType: provider.providerType,
+      baseUrl: provider.baseUrl ?? "",
+      apiKey: "",
+      authType: provider.authType,
+      authHeader: provider.authHeader ?? "",
+      authQueryParam: provider.authQueryParam ?? "",
+      modelListStrategy: provider.modelListStrategy,
+      chatProtocol: provider.chatProtocol
+    });
+  }
+
+  function cancelProviderEdit() {
+    setEditingProviderId("");
+    setDraft(providerDraftDefaults("openai"));
   }
 
   async function refresh(providerId: string) {
@@ -190,9 +231,11 @@ export function ModelsPanel({ client, notify }: PanelProps) {
 
       <ModelProviderForm
         draft={draft}
+        editing={Boolean(editingProviderId)}
         onDraftChange={setDraft}
+        onCancel={cancelProviderEdit}
         onProviderTypeChange={(providerType) => setDraft(providerDraftDefaults(providerType))}
-        onSubmit={() => void createProvider()}
+        onSubmit={() => void saveProvider()}
       />
 
       <DefaultModelPicker
@@ -221,6 +264,7 @@ export function ModelsPanel({ client, notify }: PanelProps) {
         activeModelId={activeModelId}
         onRefresh={(providerId) => void refresh(providerId)}
         onRefreshMetadata={(providerId) => void refreshMetadata(providerId)}
+        onEdit={editProvider}
         onTest={(providerId, modelId) => void test(providerId, modelId)}
         onActivate={(providerId, modelId) => void activate(providerId, modelId)}
         onCapabilitiesChange={(modelId, capabilities) =>

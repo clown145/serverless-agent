@@ -26,6 +26,7 @@ import {
   deleteModelProviderRecord,
   getModelProviderRecord,
   listModelProviders,
+  updateModelProviderRecord,
   updateModelProviderCredential,
 } from "../../storage/repositories/model-providers-repository";
 import type { ModelProviderRecord } from "../../storage/repositories/model-settings-types";
@@ -36,6 +37,7 @@ import {
   setActiveModelSchema,
   testModelSchema,
   updateModelCatalogSchema,
+  updateProviderSchema,
   zodMessage
 } from "./model-settings/model-settings-schemas";
 import { toProviderDto } from "./model-settings/model-provider-dto";
@@ -184,6 +186,65 @@ export async function handleAdminModelProviderDetail(
     }
 
     return jsonResponse({ ok: true, deleted });
+  }
+
+  if (request.method === "PUT") {
+    const current = await getModelProviderRecord(env.AGENT_DB, providerId);
+    if (!current) {
+      return errorResponse(404, "provider_not_found", "Model provider not found");
+    }
+
+    const parsed = updateProviderSchema.safeParse(await request.json().catch(() => ({})));
+    if (!parsed.success) {
+      return errorResponse(400, "invalid_payload", zodMessage(parsed.error));
+    }
+
+    const defaults = modelProviderDefaults(parsed.data.providerType);
+    const authType = parsed.data.authType ?? defaults.authType;
+    const apiKey = parsed.data.apiKey?.trim();
+    if (
+      authType !== "none" &&
+      !apiKey &&
+      !parsed.data.apiKeySecret &&
+      !current.credentialId
+    ) {
+      return errorResponse(
+        400,
+        "missing_provider_api_key",
+        "API key is required unless auth is none"
+      );
+    }
+
+    let provider = await updateModelProviderRecord(env.AGENT_DB, providerId, {
+      name: parsed.data.name,
+      providerType: parsed.data.providerType,
+      baseUrl: parsed.data.baseUrl || undefined,
+      apiKeySecret: parsed.data.apiKeySecret,
+      authType,
+      authHeader: parsed.data.authHeader || undefined,
+      authQueryParam: parsed.data.authQueryParam || undefined,
+      modelListStrategy: parsed.data.modelListStrategy ?? defaults.modelListStrategy,
+      chatProtocol: parsed.data.chatProtocol ?? defaults.chatProtocol
+    });
+    if (!provider) {
+      return errorResponse(404, "provider_not_found", "Model provider not found");
+    }
+
+    if (apiKey) {
+      const result = await encryptCredentialOrRespond(env, apiKey);
+      if (result instanceof Response) {
+        return result;
+      }
+      const credential = await createModelCredentialRecord(env.AGENT_DB, {
+        providerId,
+        encryptedValue: result.encryptedValue,
+        iv: result.iv,
+        algorithm: result.algorithm
+      });
+      provider = await updateModelProviderCredential(env.AGENT_DB, providerId, credential.id) ?? provider;
+    }
+
+    return jsonResponse({ ok: true, provider: toProviderDto(provider) });
   }
 
   const pathname = new URL(request.url).pathname;

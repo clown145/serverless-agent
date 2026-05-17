@@ -1,6 +1,7 @@
 import {
   CheckCircle2,
   DatabaseZap,
+  Pencil,
   Power,
   PowerOff,
   RefreshCw,
@@ -26,6 +27,7 @@ type ModelProviderListProps = {
   activeModelId: string;
   onRefresh: (providerId: string) => void;
   onRefreshMetadata: (providerId: string) => void;
+  onEdit: (provider: ModelProvider) => void;
   onTest: (providerId: string, modelId?: string) => void;
   onActivate: (providerId: string, modelId: string) => void;
   onCapabilitiesChange: (modelId: string, capabilities: ModelCapability[]) => void;
@@ -44,6 +46,7 @@ export function ModelProviderList({
   activeModelId,
   onRefresh,
   onRefreshMetadata,
+  onEdit,
   onTest,
   onActivate,
   onCapabilitiesChange,
@@ -91,6 +94,12 @@ export function ModelProviderList({
                 icon={DatabaseZap}
                 disabled={refreshing || refreshingMetadata}
                 onClick={() => onRefreshMetadata(provider.id)}
+              />
+              <ToolbarButton
+                label={t("models.editProvider")}
+                icon={Pencil}
+                disabled={refreshing || refreshingMetadata}
+                onClick={() => onEdit(provider)}
               />
               <ToolbarButton
                 label={t("models.deleteProvider")}

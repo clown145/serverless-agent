@@ -36,14 +36,25 @@ export async function resolveProviderApiKey(
       throw new Error("AGENT_MASTER_KEY or INTERNAL_ADMIN_TOKEN is required to read provider keys");
     }
 
-    return decryptString(
-      {
-        encryptedValue: credential.encryptedValue,
-        iv: credential.iv,
-        algorithm: "AES-GCM"
-      },
-      masterKey
-    );
+    try {
+      return await decryptString(
+        {
+          encryptedValue: credential.encryptedValue,
+          iv: credential.iv,
+          algorithm: "AES-GCM"
+        },
+        masterKey
+      );
+    } catch (error) {
+      const fallback = readLegacyProviderSecret(env, provider);
+      if (fallback) {
+        return fallback;
+      }
+
+      throw new Error(
+        "Provider API key could not be decrypted. Restore the AGENT_MASTER_KEY or INTERNAL_ADMIN_TOKEN used when it was saved, or re-save this provider API key in the WebUI."
+      );
+    }
   }
 
   return readLegacyProviderSecret(env, provider);

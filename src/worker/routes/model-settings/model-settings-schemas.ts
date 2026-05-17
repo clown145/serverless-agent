@@ -19,6 +19,8 @@ export const createProviderSchema = z.object({
   chatProtocol: z.enum(["openai-chat-completions", "gemini-generate-content"]).optional()
 });
 
+export const updateProviderSchema = createProviderSchema;
+
 export const setActiveModelSchema = z.object({
   agentId: z.string().min(1).optional(),
   providerId: z.string().min(1),

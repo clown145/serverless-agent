@@ -539,6 +539,25 @@ export function createAdminClient(getToken: () => string) {
         body: JSON.stringify(body)
       });
     },
+    updateModelProvider: (providerId: string, body: {
+      name: string;
+      providerType: ModelProvider["providerType"];
+      baseUrl?: string;
+      apiKey?: string;
+      authType?: ModelProvider["authType"];
+      authHeader?: string;
+      authQueryParam?: string;
+      modelListStrategy?: ModelProvider["modelListStrategy"];
+      chatProtocol?: ModelProvider["chatProtocol"];
+    }) => {
+      return request<ApiResult<{ provider: ModelProvider }>>(
+        `/admin/model-providers/${providerId}`,
+        {
+          method: "PUT",
+          body: JSON.stringify(body)
+        }
+      );
+    },
     refreshProviderModels: (providerId: string) => {
       return request<ApiResult<{
         models: ModelCatalogItem[];

@@ -8,14 +8,18 @@ type ModelProviderFormProps = {
   draft: ModelProviderDraft;
   onProviderTypeChange: (value: ModelProvider["providerType"]) => void;
   onDraftChange: (draft: ModelProviderDraft) => void;
+  onCancel?: () => void;
   onSubmit: () => void;
+  editing?: boolean;
 };
 
 export function ModelProviderForm({
   draft,
   onProviderTypeChange,
   onDraftChange,
-  onSubmit
+  onCancel,
+  onSubmit,
+  editing = false
 }: ModelProviderFormProps) {
   const { t } = useI18n();
 
@@ -51,14 +55,20 @@ export function ModelProviderForm({
         <input
           value={draft.apiKey}
           autoComplete="off"
-          required={draft.authType !== "none"}
+          placeholder={editing ? t("models.apiKeyUnchanged") : undefined}
+          required={!editing && draft.authType !== "none"}
           type="password"
           onChange={(event) => update("apiKey", event.target.value)}
         />
       </label>
       <button className="primary-button" type="button" onClick={onSubmit}>
-        {t("common.add")}
+        {editing ? t("common.save") : t("common.add")}
       </button>
+      {editing && onCancel && (
+        <button type="button" onClick={onCancel}>
+          {t("common.cancel")}
+        </button>
+      )}
     </div>
   );
 }

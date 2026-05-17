@@ -24,6 +24,8 @@ export type CreateModelProviderInput = {
   chatProtocol: ChatProtocol;
 };
 
+export type UpdateModelProviderInput = CreateModelProviderInput;
+
 export async function createModelProviderRecord(
   db: D1Database,
   input: CreateModelProviderInput
@@ -112,6 +114,44 @@ export async function updateModelProviderCredential(
   await db
     .prepare("UPDATE model_providers SET credential_id = ?, updated_at = ? WHERE id = ?")
     .bind(credentialId, nowIso(), id)
+    .run();
+
+  return getModelProviderRecord(db, id);
+}
+
+export async function updateModelProviderRecord(
+  db: D1Database,
+  id: string,
+  input: UpdateModelProviderInput
+): Promise<ModelProviderRecord | undefined> {
+  await db
+    .prepare(
+      `UPDATE model_providers
+       SET name = ?,
+           provider_type = ?,
+           base_url = ?,
+           api_key_secret = ?,
+           auth_type = ?,
+           auth_header = ?,
+           auth_query_param = ?,
+           model_list_strategy = ?,
+           chat_protocol = ?,
+           updated_at = ?
+       WHERE id = ? AND status != 'deleted'`
+    )
+    .bind(
+      input.name,
+      input.providerType,
+      input.baseUrl ?? null,
+      input.apiKeySecret ?? "",
+      input.authType,
+      input.authHeader ?? null,
+      input.authQueryParam ?? null,
+      input.modelListStrategy,
+      input.chatProtocol,
+      nowIso(),
+      id
+    )
     .run();
 
   return getModelProviderRecord(db, id);
