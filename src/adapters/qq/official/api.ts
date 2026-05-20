@@ -25,7 +25,7 @@ export class QqOfficialApiClient {
     this.baseUrl = options.isSandbox
       ? QQ_OFFICIAL_SANDBOX_API_BASE_URL
       : QQ_OFFICIAL_API_BASE_URL;
-    this.fetcher = options.fetcher ?? fetch;
+    this.fetcher = options.fetcher ?? ((input, init) => fetch(input, init));
   }
 
   async getGatewayBot(): Promise<QqOfficialGatewayInfo> {
