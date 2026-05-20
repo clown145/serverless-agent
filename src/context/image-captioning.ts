@@ -66,22 +66,22 @@ async function captionMessageImages(
   captionModel: CaptionModel,
   message: ConversationContextMessage
 ): Promise<string[]> {
-  const captions: string[] = [];
-  let index = 1;
-  for (const part of message.attachments ?? []) {
-    if (part.type !== "image") {
-      continue;
-    }
+  const parts = (message.attachments ?? []).filter((p): p is ModelContentPart & { type: "image" } => p.type === "image");
+  if (parts.length === 0) return [];
 
+  return Promise.all(parts.map(async (part, i) => {
+    const index = i + 1;
     const attachment = part.sourceAttachment;
-    const caption = attachment && cachedCaptionMatches(attachment, captionModel)
-      ? attachment.captionText
-      : await generateAndCacheCaption(env, captionModel, message.id, part);
-    captions.push(`[Image ${index}]\n${caption}`);
-    index += 1;
-  }
-
-  return captions;
+    try {
+      const caption = attachment && cachedCaptionMatches(attachment, captionModel)
+        ? attachment.captionText
+        : await generateAndCacheCaption(env, captionModel, message.id, part);
+      return `[Image ${index}]\n${caption}`;
+    } catch (error) {
+      console.error(`Failed to caption image ${index} in message ${message.id}:`, error);
+      return `[Image ${index}]\n(Image description unavailable due to processing error)`;
+    }
+  }));
 }
 
 function cachedCaptionMatches(

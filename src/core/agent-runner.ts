@@ -70,11 +70,10 @@ async function runAgentForMessageInternal(
         modelId: message.modelId
       }
     );
-    const hasImages = message.attachments.some((attachment) => attachment.type === "image");
-    const modelConfig = hasImages
-      ? await getAgentModelConfig(env.AGENT_DB, message.agentId)
-      : undefined;
-    if (hasImages && modelConfig?.imageCaptionEnabled) {
+    const modelConfig = await getAgentModelConfig(env.AGENT_DB, message.agentId);
+    const imageCaptionEnabled = modelConfig?.imageCaptionEnabled ?? false;
+
+    if (imageCaptionEnabled) {
       const visionCapabilities = await resolveRoleModelCapabilities(env, message.agentId, "vision");
       if (!visionCapabilities || !supportsVision(visionCapabilities.capabilities)) {
         const text = [
@@ -88,7 +87,8 @@ async function runAgentForMessageInternal(
       }
     }
 
-    if (hasImages && !modelConfig?.imageCaptionEnabled && !supportsVision(capabilities.capabilities)) {
+    const hasImages = message.attachments.some((attachment) => attachment.type === "image");
+    if (hasImages && !imageCaptionEnabled && !supportsVision(capabilities.capabilities)) {
       const text = [
         "当前模型未标记为支持图片输入。",
         `模型：${capabilities.modelId}`,

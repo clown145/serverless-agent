@@ -14,7 +14,8 @@ import { rootConversationId } from "../conversations/ids";
 import { imagePartFromAttachment } from "./image-captioning";
 
 const CONTEXT_SCAN_LIMIT = 100;
-const MAX_INLINE_IMAGE_BYTES = 20 * 1024 * 1024;
+const MAX_INLINE_IMAGES = 4;
+const MAX_INLINE_IMAGE_BYTES = 10 * 1024 * 1024;
 
 export type LoadedAgentContext = {
   settings: ConversationSettingsRecord;
