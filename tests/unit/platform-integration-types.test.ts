@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { mapPlatformIntegrationRow } from "../../src/storage/repositories/platform-integration-types";
+import { toQqOfficialIntegrationDto } from "../../src/worker/routes/platforms/qq-official-dto";
 import { toTelegramIntegrationDto } from "../../src/worker/routes/platforms/telegram-dto";
 
 describe("platform integration types", () => {
@@ -46,6 +47,32 @@ describe("platform integration types", () => {
 
     expect(toTelegramIntegrationDto(integration)).toMatchObject({
       parseMode: "HTML"
+    });
+  });
+
+  it("maps QQ official config and defaults intents", () => {
+    const integration = mapPlatformIntegrationRow({
+      id: "pint-qq",
+      agent_id: "default",
+      platform: "qq",
+      name: "QQ Official",
+      credential_id: "pcred-qq",
+      config_json: "{\"appId\":\"12345\",\"isSandbox\":true}",
+      webhook_secret: null,
+      status: "active",
+      last_checked_at: null,
+      last_error: null,
+      created_at: "2026-01-01T00:00:00.000Z",
+      updated_at: "2026-01-01T00:00:00.000Z"
+    });
+
+    expect(toQqOfficialIntegrationDto(integration)).toMatchObject({
+      appId: "12345",
+      isSandbox: true,
+      enableGroupC2c: true,
+      enableGuildDirectMessage: true,
+      enablePublicGuildMessages: true,
+      hasCredential: true
     });
   });
 });

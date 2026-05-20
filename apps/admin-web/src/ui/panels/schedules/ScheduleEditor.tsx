@@ -91,6 +91,7 @@ export function ScheduleEditor({
         >
           <option value="webui">WebUI</option>
           <option value="telegram">Telegram</option>
+          <option value="qq">QQ</option>
           <option value="admin">Admin</option>
         </select>
       </label>
@@ -169,6 +170,10 @@ export function ScheduleEditor({
 function defaultConversationForPlatform(platform: Schedule["platform"]): string {
   if (platform === "telegram") {
     return "telegram:";
+  }
+
+  if (platform === "qq") {
+    return "qq:";
   }
 
   if (platform === "admin") {

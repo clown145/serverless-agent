@@ -452,3 +452,20 @@ export type TelegramIntegration = {
   createdAt: string;
   updatedAt: string;
 };
+
+export type QqOfficialIntegration = {
+  id: string;
+  agentId: string;
+  name: string;
+  status: string;
+  appId?: string;
+  isSandbox: boolean;
+  enableGroupC2c: boolean;
+  enableGuildDirectMessage: boolean;
+  enablePublicGuildMessages: boolean;
+  hasCredential: boolean;
+  lastCheckedAt?: string;
+  lastError?: string;
+  createdAt: string;
+  updatedAt: string;
+};

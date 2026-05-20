@@ -18,6 +18,7 @@ import type {
   ModelTestResult,
   PendingAction,
   PermissionPolicy,
+  QqOfficialIntegration,
   RunDetails,
   RunListItem,
   Schedule,
@@ -363,6 +364,77 @@ export function createAdminClient(getToken: () => string) {
           webhookPath: string;
         }>
       >("/admin/platforms/telegram");
+    },
+    getQqOfficialIntegrations: () => {
+      return request<ApiResult<{ integrations: QqOfficialIntegration[] }>>(
+        "/admin/platforms/qq-official"
+      );
+    },
+    createQqOfficialIntegration: (body: {
+      agentId?: string;
+      name: string;
+      appId: string;
+      secret?: string;
+      isSandbox?: boolean;
+      enableGroupC2c?: boolean;
+      enableGuildDirectMessage?: boolean;
+      enablePublicGuildMessages?: boolean;
+    }) => {
+      return request<ApiResult<{ integration: QqOfficialIntegration }>>(
+        "/admin/platforms/qq-official",
+        {
+          method: "POST",
+          body: JSON.stringify(body)
+        }
+      );
+    },
+    updateQqOfficialIntegration: (
+      integrationId: string,
+      body: {
+        appId?: string;
+        secret?: string;
+        isSandbox?: boolean;
+        enableGroupC2c?: boolean;
+        enableGuildDirectMessage?: boolean;
+        enablePublicGuildMessages?: boolean;
+      }
+    ) => {
+      return request<ApiResult<{ integration: QqOfficialIntegration }>>(
+        `/admin/platforms/qq-official-integrations/${integrationId}`,
+        {
+          method: "PUT",
+          body: JSON.stringify(body)
+        }
+      );
+    },
+    testQqOfficialIntegration: (integrationId: string) => {
+      return request<ApiResult<{ integration: QqOfficialIntegration; gateway: unknown }>>(
+        `/admin/platforms/qq-official-integrations/${integrationId}/test`,
+        { method: "POST" }
+      );
+    },
+    connectQqOfficialIntegration: (integrationId: string) => {
+      return request<ApiResult<{ integration: QqOfficialIntegration; gateway: unknown }>>(
+        `/admin/platforms/qq-official-integrations/${integrationId}/connect`,
+        { method: "POST" }
+      );
+    },
+    disconnectQqOfficialIntegration: (integrationId: string) => {
+      return request<ApiResult<{ gateway: unknown }>>(
+        `/admin/platforms/qq-official-integrations/${integrationId}/disconnect`,
+        { method: "POST" }
+      );
+    },
+    getQqOfficialIntegrationStatus: (integrationId: string) => {
+      return request<ApiResult<{ integration: QqOfficialIntegration; gateway: unknown }>>(
+        `/admin/platforms/qq-official-integrations/${integrationId}/status`
+      );
+    },
+    deleteQqOfficialIntegration: (integrationId: string) => {
+      return request<ApiResult<{ deleted: boolean }>>(
+        `/admin/platforms/qq-official-integrations/${integrationId}`,
+        { method: "DELETE" }
+      );
     },
     createTelegramIntegration: (body: {
       agentId?: string;

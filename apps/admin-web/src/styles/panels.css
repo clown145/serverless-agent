@@ -112,6 +112,29 @@
   margin-bottom: 14px;
 }
 
+.qq-official-form {
+  display: grid;
+  grid-template-columns:
+    minmax(120px, 0.7fr)
+    minmax(140px, 0.8fr)
+    minmax(160px, 0.9fr)
+    minmax(220px, 1.2fr)
+    minmax(120px, 0.7fr)
+    minmax(130px, 0.8fr)
+    minmax(130px, 0.8fr)
+    auto;
+  gap: 10px;
+  align-items: end;
+  margin-bottom: 14px;
+}
+
+.section-heading {
+  margin: 22px 0 12px;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 700;
+}
+
 .search-provider-form {
   grid-template-columns:
     minmax(130px, 0.7fr)
@@ -745,6 +768,12 @@
   margin-bottom: 14px;
 }
 
+.qq-official-list {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
 .telegram-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(120px, 160px) auto auto auto auto auto;
@@ -756,13 +785,27 @@
   padding: 12px;
 }
 
+.qq-official-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto auto auto auto;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  padding: 12px;
+}
+
 .telegram-row strong,
-.telegram-row span {
+.telegram-row span,
+.qq-official-row strong,
+.qq-official-row span {
   display: block;
   overflow-wrap: anywhere;
 }
 
-.telegram-row span {
+.telegram-row span,
+.qq-official-row span {
   color: var(--text-muted);
   font-size: 12px;
 }
@@ -1224,12 +1267,14 @@
   .mcp-form,
   .chat-session-bar,
   .telegram-form,
+  .qq-official-form,
   .search-provider-form,
   .model-default-picker,
   .model-role-card,
   .conversations-layout,
   .conversation-form-grid,
   .telegram-row,
+  .qq-official-row,
   .search-provider-row,
   .model-provider-head,
   .debug-message-row,

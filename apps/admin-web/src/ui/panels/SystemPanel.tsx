@@ -33,6 +33,8 @@ export function SystemPanel({ token, onTokenChange }: SystemPanelProps) {
             "/admin/platforms/telegram",
             "/admin/platforms/telegram/:integrationId/test",
             "/admin/platforms/telegram/:integrationId/webhook",
+            "/admin/platforms/qq-official",
+            "/admin/platforms/qq-official-integrations/:integrationId/connect",
             "/admin/mcp/servers",
             "/admin/mcp/tools/:toolId",
             "/admin/runs",

@@ -1,9 +1,14 @@
 import { RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
-import type { TelegramIntegration } from "../../api/types";
+import type { QqOfficialIntegration, TelegramIntegration } from "../../api/types";
 import { useI18n } from "../i18n/I18nProvider";
 import { JsonBlock } from "../JsonBlock";
 import { ToolbarButton } from "../ToolbarButton";
+import {
+  QqOfficialIntegrationForm,
+  type QqOfficialIntegrationDraft
+} from "./platforms/QqOfficialIntegrationForm";
+import { QqOfficialIntegrationList } from "./platforms/QqOfficialIntegrationList";
 import {
   TelegramIntegrationForm,
   type TelegramIntegrationDraft
@@ -14,6 +19,7 @@ import type { PanelProps } from "./types";
 export function PlatformsPanel({ client, notify }: PanelProps) {
   const { t } = useI18n();
   const [integrations, setIntegrations] = useState<TelegramIntegration[]>([]);
+  const [qqIntegrations, setQqIntegrations] = useState<QqOfficialIntegration[]>([]);
   const [webhookUrl, setWebhookUrl] = useState("");
   const [result, setResult] = useState<unknown>();
   const [draft, setDraft] = useState<TelegramIntegrationDraft>({
@@ -23,12 +29,26 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
     webhookSecret: "",
     parseMode: "HTML"
   });
+  const [qqDraft, setQqDraft] = useState<QqOfficialIntegrationDraft>({
+    agentId: "default",
+    name: "QQ Official",
+    appId: "",
+    secret: "",
+    isSandbox: false,
+    enableGroupC2c: true,
+    enableGuildDirectMessage: true,
+    enablePublicGuildMessages: true
+  });
 
   async function load() {
     try {
-      const response = await client.getTelegramIntegrations();
-      setIntegrations(response.integrations);
-      setWebhookUrl(`${window.location.origin}${response.webhookPath}`);
+      const [telegramResponse, qqResponse] = await Promise.all([
+        client.getTelegramIntegrations(),
+        client.getQqOfficialIntegrations()
+      ]);
+      setIntegrations(telegramResponse.integrations);
+      setWebhookUrl(`${window.location.origin}${telegramResponse.webhookPath}`);
+      setQqIntegrations(qqResponse.integrations);
     } catch (error) {
       notify(error instanceof Error ? error.message : "Failed to load platforms", "error");
     }
@@ -65,6 +85,27 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
     }
   }
 
+  async function createQqIntegration() {
+    try {
+      const created = await client.createQqOfficialIntegration({
+        agentId: qqDraft.agentId || undefined,
+        name: qqDraft.name,
+        appId: qqDraft.appId,
+        secret: qqDraft.secret || undefined,
+        isSandbox: qqDraft.isSandbox,
+        enableGroupC2c: qqDraft.enableGroupC2c,
+        enableGuildDirectMessage: qqDraft.enableGuildDirectMessage,
+        enablePublicGuildMessages: qqDraft.enablePublicGuildMessages
+      });
+      setResult(created);
+      setQqDraft({ ...qqDraft, secret: "" });
+      notify(t("platforms.qqOfficialSaved"), "ok");
+      await load();
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "Failed to save QQ official", "error");
+    }
+  }
+
   async function testIntegration(id: string) {
     await runAction(() => client.testTelegramIntegration(id), t("platforms.botTested"));
   }
@@ -95,6 +136,29 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
     await runAction(() => client.deleteTelegramIntegration(id), t("platforms.integrationDeleted"));
   }
 
+  async function testQqIntegration(id: string) {
+    await runAction(() => client.testQqOfficialIntegration(id), t("platforms.qqOfficialTested"));
+  }
+
+  async function connectQqIntegration(id: string) {
+    await runAction(() => client.connectQqOfficialIntegration(id), t("platforms.qqGatewayConnected"));
+  }
+
+  async function disconnectQqIntegration(id: string) {
+    await runAction(
+      () => client.disconnectQqOfficialIntegration(id),
+      t("platforms.qqGatewayDisconnected")
+    );
+  }
+
+  async function getQqStatus(id: string) {
+    await runAction(() => client.getQqOfficialIntegrationStatus(id), t("platforms.qqGatewayStatusLoaded"));
+  }
+
+  async function deleteQqIntegration(id: string) {
+    await runAction(() => client.deleteQqOfficialIntegration(id), t("platforms.qqOfficialDeleted"));
+  }
+
   async function runAction(action: () => Promise<unknown>, okMessage: string) {
     try {
       const response = await action();
@@ -115,11 +179,28 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
       <header className="panel-header">
         <div>
           <h1>{t("platforms.title")}</h1>
-          <p>Telegram</p>
+          <p>Telegram / QQ Official</p>
         </div>
         <ToolbarButton label={t("common.refresh")} icon={RefreshCw} onClick={() => void load()} />
       </header>
 
+      <h2 className="section-heading">QQ Official</h2>
+      <QqOfficialIntegrationForm
+        draft={qqDraft}
+        onDraftChange={setQqDraft}
+        onSubmit={() => void createQqIntegration()}
+      />
+
+      <QqOfficialIntegrationList
+        integrations={qqIntegrations}
+        onTest={(id) => void testQqIntegration(id)}
+        onConnect={(id) => void connectQqIntegration(id)}
+        onDisconnect={(id) => void disconnectQqIntegration(id)}
+        onStatus={(id) => void getQqStatus(id)}
+        onDelete={(id) => void deleteQqIntegration(id)}
+      />
+
+      <h2 className="section-heading">Telegram</h2>
       <div className="field-row">
         <label>
           {t("platforms.telegramWebhookUrl")}

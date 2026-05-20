@@ -22,6 +22,8 @@ import { handleAdminPendingActionConfirm } from "./routes/admin-pending-action-c
 import { handleAdminPendingActions } from "./routes/admin-pending-actions";
 import { handleAdminPermissionPolicies } from "./routes/admin-permission-policies";
 import { handleAdminPermissionPolicyDetail } from "./routes/admin-permission-policy-detail";
+import { handleAdminQqOfficialIntegrationDetail } from "./routes/admin-qq-official-integration-detail";
+import { handleAdminQqOfficialIntegrations } from "./routes/admin-qq-official-integrations";
 import { handleAdminRunDetail } from "./routes/admin-run-detail";
 import { handleAdminRuns } from "./routes/admin-runs";
 import { handleAdminScheduleDetail } from "./routes/admin-schedule-detail";
@@ -105,6 +107,19 @@ export async function routeRequest(
     const telegramPath = url.pathname.replace("/admin/platforms/telegram/", "");
     const integrationId = decodeURIComponent(telegramPath.split("/")[0] ?? "");
     return handleAdminTelegramIntegrationDetail(request, env, integrationId);
+  }
+
+  if (url.pathname === "/admin/platforms/qq-official") {
+    return handleAdminQqOfficialIntegrations(request, env);
+  }
+
+  if (url.pathname.startsWith("/admin/platforms/qq-official-integrations/")) {
+    const qqOfficialPath = url.pathname.replace(
+      "/admin/platforms/qq-official-integrations/",
+      ""
+    );
+    const integrationId = decodeURIComponent(qqOfficialPath.split("/")[0] ?? "");
+    return handleAdminQqOfficialIntegrationDetail(request, env, integrationId);
   }
 
   if (request.method === "POST" && url.pathname === "/admin/platforms/qq-official/connect-all") {
@@ -261,6 +276,10 @@ export async function routeRequest(
         "/admin/platforms/telegram/:integrationId/test",
         "/admin/platforms/telegram/:integrationId/commands",
         "/admin/platforms/telegram/:integrationId/webhook",
+        "/admin/platforms/qq-official",
+        "/admin/platforms/qq-official-integrations/:integrationId/test",
+        "/admin/platforms/qq-official-integrations/:integrationId/connect",
+        "/admin/platforms/qq-official-integrations/:integrationId/status",
         "/admin/platforms/qq-official/connect",
         "/admin/platforms/qq-official/disconnect",
         "/admin/platforms/qq-official/status",
