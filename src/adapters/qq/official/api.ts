@@ -35,7 +35,9 @@ export class QqOfficialApiClient {
 
   async sendGroupMessage(input: {
     groupOpenId: string;
-    content: string;
+    content?: string;
+    media?: QqOfficialMedia;
+    msgType?: number;
     msgId?: string;
     msgSeq?: number;
     eventId?: string;
@@ -46,7 +48,8 @@ export class QqOfficialApiClient {
         method: "POST",
         body: {
           content: input.content,
-          msg_type: 0,
+          media: input.media,
+          msg_type: input.msgType ?? 0,
           msg_id: input.msgId,
           msg_seq: input.msgSeq ?? randomMessageSeq(),
           event_id: input.eventId
@@ -57,7 +60,9 @@ export class QqOfficialApiClient {
 
   async sendC2cMessage(input: {
     openId: string;
-    content: string;
+    content?: string;
+    media?: QqOfficialMedia;
+    msgType?: number;
     msgId?: string;
     msgSeq?: number;
     eventId?: string;
@@ -68,7 +73,8 @@ export class QqOfficialApiClient {
         method: "POST",
         body: {
           content: input.content,
-          msg_type: 0,
+          media: input.media,
+          msg_type: input.msgType ?? 0,
           msg_id: input.msgId,
           msg_seq: input.msgSeq ?? randomMessageSeq(),
           event_id: input.eventId

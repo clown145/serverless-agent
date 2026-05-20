@@ -2,6 +2,8 @@ import { resolveQqOfficialBotForAgent } from "../../adapters/qq/official/config"
 import { getStoredQqOfficialGatewayStatus, QqOfficialGatewaySession } from "../../adapters/qq/official/gateway-session";
 import { getQqOfficialConversation, targetFromStoredConversation } from "../../adapters/qq/official/conversation-store";
 import { QqOfficialApiClient } from "../../adapters/qq/official/api";
+import { qqOfficialFileDataBase64, qqOfficialFileType } from "../../adapters/qq/official/media";
+import type { OutboundFile } from "../outbound/types";
 import type { Env } from "../../shared/types/env";
 import { errorResponse, jsonResponse } from "../../shared/http";
 
@@ -36,7 +38,7 @@ export class QQOfficialGatewayDurableObject {
 
       if (request.method === "POST" && url.pathname === "/send") {
         const input = (await request.json()) as QqOfficialSendRequest;
-        const result = await this.send(agentId, input);
+        const result = await this.send(agentId, normalizeSendRequest(input));
         return jsonResponse({ ok: true, result });
       }
     } catch (error) {
@@ -91,8 +93,8 @@ export class QQOfficialGatewayDurableObject {
     agentId: string,
     input: QqOfficialSendRequest
   ): Promise<QqOfficialSendResponse> {
-    if (!input.conversationId || !input.text) {
-      return { ok: false, error: "conversationId and text are required" };
+    if (!input.conversationId || (!input.text && !input.file)) {
+      return { ok: false, error: "conversationId and text or file are required" };
     }
 
     const config = await resolveQqOfficialBotForAgent(this.env, agentId);
@@ -117,13 +119,21 @@ export class QQOfficialGatewayDurableObject {
       isSandbox: config.isSandbox
     });
     const target = targetFromStoredConversation(conversation);
-    const common = {
+    const common: QqOfficialSendCommon = {
       content: input.text,
       msgId: input.replyToMessageId ?? conversation.lastMessageId,
       eventId: conversation.lastEventId
     };
 
     if (target.kind === "group") {
+      if (input.file) {
+        common.media = await api.uploadGroupFile({
+          groupOpenId: target.groupOpenId,
+          fileDataBase64: qqOfficialFileDataBase64(input.file),
+          fileType: qqOfficialFileType(input.file)
+        });
+        common.msgType = 7;
+      }
       const response = await api.sendGroupMessage({
         groupOpenId: target.groupOpenId,
         ...common
@@ -131,23 +141,37 @@ export class QQOfficialGatewayDurableObject {
       return { ok: true, providerMessageId: response.id };
     }
     if (target.kind === "c2c") {
+      if (input.file) {
+        common.media = await api.uploadC2cFile({
+          openId: target.openId,
+          fileDataBase64: qqOfficialFileDataBase64(input.file),
+          fileType: qqOfficialFileType(input.file)
+        });
+        common.msgType = 7;
+      }
       const response = await api.sendC2cMessage({
         openId: target.openId,
         ...common
       });
       return { ok: true, providerMessageId: response.id };
     }
+    if (input.file) {
+      return {
+        ok: false,
+        error: "QQ official file upload is currently supported for group and C2C conversations only"
+      };
+    }
     if (target.kind === "direct") {
       const response = await api.sendDirectMessage({
         guildId: target.guildId,
-        ...common
+        ...textOnlyCommon(common)
       });
       return { ok: true, providerMessageId: response.id };
     }
 
     const response = await api.sendChannelMessage({
       channelId: target.channelId,
-      ...common
+      ...textOnlyCommon(common)
     });
     return { ok: true, providerMessageId: response.id };
   }
@@ -155,7 +179,8 @@ export class QQOfficialGatewayDurableObject {
 
 export type QqOfficialSendRequest = {
   conversationId: string;
-  text: string;
+  text?: string;
+  file?: OutboundFile;
   replyToMessageId?: string;
 };
 
@@ -164,3 +189,43 @@ export type QqOfficialSendResponse = {
   providerMessageId?: string;
   error?: string;
 };
+
+type QqOfficialSendCommon = {
+  content?: string;
+  msgId?: string;
+  eventId?: string;
+  media?: {
+    file_uuid: string;
+    file_info: string;
+    ttl?: number;
+  };
+  msgType?: number;
+};
+
+function normalizeSendRequest(input: QqOfficialSendRequest): QqOfficialSendRequest {
+  if (!input.file) {
+    return input;
+  }
+
+  return {
+    ...input,
+    file: {
+      ...input.file,
+      bytes: Array.isArray(input.file.bytes)
+        ? new Uint8Array(input.file.bytes)
+        : input.file.bytes
+    }
+  };
+}
+
+function textOnlyCommon(common: QqOfficialSendCommon): {
+  content: string;
+  msgId?: string;
+  eventId?: string;
+} {
+  return {
+    content: common.content ?? "",
+    msgId: common.msgId,
+    eventId: common.eventId
+  };
+}
