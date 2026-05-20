@@ -113,14 +113,10 @@ jobs:
             exit 1
           fi
 
-          if [ "$R2_ATTACHMENT_RETENTION_DAYS" = "0" ]; then
-            npx wrangler r2 bucket lifecycle remove "$R2_BUCKET_NAME" \
-              --name expire-agent-attachments \
-              --force || true
-          else
-            npx wrangler r2 bucket lifecycle remove "$R2_BUCKET_NAME" \
-              --name expire-agent-attachments \
-              --force || true
+          npx wrangler r2 bucket lifecycle remove "$R2_BUCKET_NAME" \
+            --name expire-agent-attachments || true
+
+          if [ "$R2_ATTACHMENT_RETENTION_DAYS" != "0" ]; then
             npx wrangler r2 bucket lifecycle add "$R2_BUCKET_NAME" \
               expire-agent-attachments \
               attachments/ \
