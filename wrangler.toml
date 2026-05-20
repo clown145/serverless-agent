@@ -27,9 +27,17 @@ crons = ["*/5 * * * *"]
 name = "AGENT_OBJECT"
 class_name = "AgentDurableObject"
 
+[[durable_objects.bindings]]
+name = "QQ_OFFICIAL_GATEWAY"
+class_name = "QQOfficialGatewayDurableObject"
+
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["AgentDurableObject"]
+
+[[migrations]]
+tag = "v2"
+new_sqlite_classes = ["QQOfficialGatewayDurableObject"]
 
 [[queues.producers]]
 binding = "AGENT_QUEUE"

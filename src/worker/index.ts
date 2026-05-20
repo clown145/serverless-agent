@@ -1,4 +1,5 @@
 import { AgentDurableObject } from "../agents/agent-durable-object";
+import { QQOfficialGatewayDurableObject } from "../platforms/qq/qq-official-gateway-durable-object";
 import { handleScheduled } from "../scheduler/scheduled";
 import type { Env } from "../shared/types/env";
 import type { QueueMessageBody } from "../shared/types/queue";
@@ -6,6 +7,7 @@ import { handleQueueBatch } from "./queue-consumer";
 import { routeRequest } from "./router";
 
 export { AgentDurableObject };
+export { QQOfficialGatewayDurableObject };
 
 export default {
   fetch(request: Request, env: Env, ctx: ExecutionContext) {

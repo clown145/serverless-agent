@@ -38,6 +38,10 @@ import { handleAdminTools } from "./routes/admin-tools";
 import { handleAdminUi } from "./routes/admin-ui";
 import { handleAdminVfs } from "./routes/admin-vfs";
 import { handleHealth } from "./routes/health";
+import {
+  handleQqOfficialGatewayAdmin,
+  handleQqOfficialGatewayConnectAll
+} from "./routes/qq-official-gateway";
 import { handleTelegramWebhook } from "./routes/telegram-webhook";
 
 export async function routeRequest(
@@ -101,6 +105,14 @@ export async function routeRequest(
     const telegramPath = url.pathname.replace("/admin/platforms/telegram/", "");
     const integrationId = decodeURIComponent(telegramPath.split("/")[0] ?? "");
     return handleAdminTelegramIntegrationDetail(request, env, integrationId);
+  }
+
+  if (request.method === "POST" && url.pathname === "/admin/platforms/qq-official/connect-all") {
+    return handleQqOfficialGatewayConnectAll(env);
+  }
+
+  if (url.pathname.startsWith("/admin/platforms/qq-official/")) {
+    return handleQqOfficialGatewayAdmin(request, env);
   }
 
   if (request.method === "GET" && url.pathname === "/admin/tools") {
@@ -249,6 +261,10 @@ export async function routeRequest(
         "/admin/platforms/telegram/:integrationId/test",
         "/admin/platforms/telegram/:integrationId/commands",
         "/admin/platforms/telegram/:integrationId/webhook",
+        "/admin/platforms/qq-official/connect",
+        "/admin/platforms/qq-official/disconnect",
+        "/admin/platforms/qq-official/status",
+        "/admin/platforms/qq-official/connect-all",
         "/admin/tools",
         "/admin/tools/call",
         "/admin/tools/calls",

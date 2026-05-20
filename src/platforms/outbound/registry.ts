@@ -1,3 +1,4 @@
+import { createQqOfficialOutboundAdapter } from "../../adapters/qq/official/outbound";
 import { createTelegramOutboundAdapter } from "../../adapters/telegram/outbound";
 import type { Env } from "../../shared/types/env";
 import type { Platform } from "../../shared/types/internal-message";
@@ -9,6 +10,10 @@ export function getPlatformOutboundAdapter(
 ): PlatformOutboundAdapter | undefined {
   if (platform === "telegram") {
     return createTelegramOutboundAdapter(env);
+  }
+
+  if (platform === "qq") {
+    return createQqOfficialOutboundAdapter(env);
   }
 
   return undefined;

@@ -1,3 +1,4 @@
+import { connectConfiguredQqOfficialGateways } from "../adapters/qq/official/keepalive";
 import { createId } from "../shared/ids";
 import { nowIso } from "../shared/time";
 import type { Env } from "../shared/types/env";
@@ -11,6 +12,7 @@ export async function handleScheduled(
 ): Promise<void> {
   const scheduledTime = new Date(controller.scheduledTime).toISOString();
   await sweepDueSchedules(env, scheduledTime);
+  await connectConfiguredQqOfficialGateways(env).catch(() => undefined);
 
   const agentId = env.DEFAULT_AGENT_ID ?? "default";
   const job: QueueMessageBody = {

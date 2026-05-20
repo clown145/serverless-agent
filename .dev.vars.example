@@ -15,3 +15,8 @@ MODEL_PROVIDER=mock
 
 # Optional admin protection
 # INTERNAL_ADMIN_TOKEN=change-me
+
+# QQ official bot gateway
+# QQ_OFFICIAL_APP_ID=1234567890
+# QQ_OFFICIAL_SECRET=...
+# QQ_OFFICIAL_SANDBOX=false
