@@ -3,6 +3,7 @@ import { contextCommand } from "./system/context-command";
 import { helpCommand } from "./system/help-command";
 import { modelCommand } from "./system/model-command";
 import { newConversationCommand } from "./system/new-conversation-command";
+import { sidCommand } from "./system/sid-command";
 import { taskCommand } from "./system/task-command";
 import { switchConversationCommand } from "./system/switch-conversation-command";
 import type { CommandDefinition } from "./types";
@@ -13,6 +14,7 @@ const COMMANDS: CommandDefinition[] = [
   switchConversationCommand,
   contextCommand,
   modelCommand,
+  sidCommand,
   taskCommand
 ];
 

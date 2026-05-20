@@ -12,7 +12,8 @@ describe("telegram commands", () => {
       { command: "model", description: "Show or set the model" },
       { command: "context", description: "Show or update context settings" },
       { command: "compact", description: "Compact conversation context" },
-      { command: "task", description: "Create a delayed or recurring task" }
+      { command: "task", description: "Create a delayed or recurring task" },
+      { command: "sid", description: "Show session and permission IDs" }
     ]);
   });
 });

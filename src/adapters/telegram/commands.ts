@@ -14,7 +14,8 @@ const COMMAND_DESCRIPTIONS: Record<string, string> = {
   model: "Show or set the model",
   context: "Show or update context settings",
   compact: "Compact conversation context",
-  task: "Create a delayed or recurring task"
+  task: "Create a delayed or recurring task",
+  sid: "Show session and permission IDs"
 };
 
 const MENU_COMMANDS = [
@@ -26,7 +27,8 @@ const MENU_COMMANDS = [
   "model",
   "context",
   "compact",
-  "task"
+  "task",
+  "sid"
 ];
 
 export function createTelegramBotCommands(): TelegramBotCommand[] {
