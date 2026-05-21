@@ -1,5 +1,7 @@
 import { Plus } from "lucide-react";
+import { useState } from "react";
 import { useI18n } from "../../i18n/I18nProvider";
+import { WeixinOcAdvancedFields } from "./WeixinOcAdvancedFields";
 
 export type WeixinOcIntegrationDraft = {
   agentId: string;
@@ -26,6 +28,7 @@ export function WeixinOcIntegrationForm({
   onSubmit
 }: WeixinOcIntegrationFormProps) {
   const { t } = useI18n();
+  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   return (
     <div className="weixin-oc-form">
@@ -44,80 +47,20 @@ export function WeixinOcIntegrationForm({
           onChange={(event) => onDraftChange({ ...draft, name: event.target.value })}
         />
       </label>
-      <label>
-        {t("platforms.weixinOcBaseUrl")}
-        <input
-          value={draft.baseUrl}
-          onChange={(event) => onDraftChange({ ...draft, baseUrl: event.target.value })}
-        />
-      </label>
-      <label>
-        {t("platforms.weixinOcCdnBaseUrl")}
-        <input
-          value={draft.cdnBaseUrl}
-          onChange={(event) => onDraftChange({ ...draft, cdnBaseUrl: event.target.value })}
-        />
-      </label>
-      <label>
-        {t("platforms.weixinOcBotType")}
-        <input
-          value={draft.botType}
-          onChange={(event) => onDraftChange({ ...draft, botType: event.target.value })}
-        />
-      </label>
-      <label>
-        {t("platforms.weixinOcQrPollMs")}
-        <input
-          type="number"
-          min="1000"
-          value={draft.qrPollIntervalMs}
-          onChange={(event) =>
-            onDraftChange({ ...draft, qrPollIntervalMs: Number(event.target.value) })
-          }
-        />
-      </label>
-      <label>
-        {t("platforms.weixinOcLongPollMs")}
-        <input
-          type="number"
-          min="5000"
-          value={draft.longPollTimeoutMs}
-          onChange={(event) =>
-            onDraftChange({ ...draft, longPollTimeoutMs: Number(event.target.value) })
-          }
-        />
-      </label>
-      <label>
-        {t("platforms.weixinOcApiTimeoutMs")}
-        <input
-          type="number"
-          min="5000"
-          value={draft.apiTimeoutMs}
-          onChange={(event) =>
-            onDraftChange({ ...draft, apiTimeoutMs: Number(event.target.value) })
-          }
-        />
-      </label>
-      <label>
-        {t("platforms.weixinOcToken")}
-        <input
-          type="password"
-          value={draft.token}
-          onChange={(event) => onDraftChange({ ...draft, token: event.target.value })}
-        />
-      </label>
-      <label>
-        {t("platforms.weixinOcAccountId")}
-        <input
-          value={draft.accountId}
-          onChange={(event) => onDraftChange({ ...draft, accountId: event.target.value })}
-        />
-      </label>
+      <button
+        className="secondary-button weixin-oc-advanced-toggle"
+        type="button"
+        onClick={() => setAdvancedOpen((open) => !open)}
+      >
+        {advancedOpen ? t("platforms.weixinOcHideAdvanced") : t("platforms.weixinOcShowAdvanced")}
+      </button>
+      {advancedOpen && (
+        <WeixinOcAdvancedFields draft={draft} onDraftChange={onDraftChange} />
+      )}
       <button className="primary-button" type="button" onClick={onSubmit}>
         <Plus size={16} />
-        {t("common.add")}
+        {t("platforms.weixinOcCreateAndLogin")}
       </button>
     </div>
   );
 }
-

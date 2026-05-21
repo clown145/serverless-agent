@@ -144,6 +144,22 @@
   margin-bottom: 14px;
 }
 
+.weixin-oc-advanced-toggle {
+  align-self: end;
+}
+
+.weixin-oc-advanced-fields {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  align-items: end;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: #f8fafc;
+  padding: 12px;
+}
+
 .platform-adapter-modal {
   width: min(94vw, 780px);
 }
@@ -198,21 +214,23 @@
 .platform-adapter-dialog .telegram-form,
 .platform-adapter-dialog .qq-official-form,
 .platform-adapter-dialog .wecom-form,
-.platform-adapter-dialog .weixin-oc-form {
+.platform-adapter-dialog .weixin-oc-form,
+.platform-adapter-dialog .weixin-oc-advanced-fields {
   margin-bottom: 0;
 }
 
 .platform-adapter-dialog .telegram-form,
 .platform-adapter-dialog .qq-official-form,
 .platform-adapter-dialog .wecom-form,
-.platform-adapter-dialog .weixin-oc-form {
+.platform-adapter-dialog .weixin-oc-form,
+.platform-adapter-dialog .weixin-oc-advanced-fields {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .platform-adapter-dialog .telegram-form button,
 .platform-adapter-dialog .qq-official-form button,
 .platform-adapter-dialog .wecom-form button,
-.platform-adapter-dialog .weixin-oc-form button {
+.platform-adapter-dialog .weixin-oc-form > .primary-button {
   grid-column: 1 / -1;
   justify-self: start;
 }
