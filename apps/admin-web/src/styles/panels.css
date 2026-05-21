@@ -136,6 +136,14 @@
   margin-bottom: 14px;
 }
 
+.weixin-oc-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  align-items: end;
+  margin-bottom: 14px;
+}
+
 .section-heading {
   margin: 22px 0 12px;
   color: var(--text);
@@ -788,6 +796,12 @@
   margin-bottom: 14px;
 }
 
+.weixin-oc-list {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
 .telegram-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(120px, 160px) auto auto auto auto auto;
@@ -821,13 +835,27 @@
   padding: 12px;
 }
 
+.weixin-oc-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto auto auto auto;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  padding: 12px;
+}
+
 .telegram-row strong,
 .telegram-row span,
 .qq-official-row strong,
 .qq-official-row span,
 .wecom-row strong,
 .wecom-row span,
-.wecom-row a {
+.wecom-row a,
+.weixin-oc-row strong,
+.weixin-oc-row span,
+.weixin-oc-row a {
   display: block;
   overflow-wrap: anywhere;
 }
@@ -835,16 +863,28 @@
 .telegram-row span,
 .qq-official-row span,
 .wecom-row span,
-.wecom-row a {
+.wecom-row a,
+.weixin-oc-row span,
+.weixin-oc-row a {
   color: var(--text-muted);
   font-size: 12px;
 }
 
-.wecom-row a {
+.wecom-row a,
+.weixin-oc-row a {
   align-items: center;
   display: inline-flex;
   gap: 5px;
   text-decoration: none;
+}
+
+.weixin-oc-row .qr-link {
+  border: 1px solid var(--border-strong);
+  border-radius: 7px;
+  color: var(--text);
+  justify-content: center;
+  min-height: 34px;
+  min-width: 34px;
 }
 
 .inline-select-label {
@@ -1306,6 +1346,7 @@
   .telegram-form,
   .qq-official-form,
   .wecom-form,
+  .weixin-oc-form,
   .search-provider-form,
   .model-default-picker,
   .model-role-card,
@@ -1314,6 +1355,7 @@
   .telegram-row,
   .qq-official-row,
   .wecom-row,
+  .weixin-oc-row,
   .search-provider-row,
   .model-provider-head,
   .debug-message-row,

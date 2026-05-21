@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const platformSchema = z.enum(["telegram", "qq", "wecom", "webhook", "admin", "webui"]);
+export const platformSchema = z.enum(["telegram", "qq", "wecom", "weixin_oc", "webhook", "admin", "webui"]);
 
 export const listConversationsQuerySchema = z.object({
   agentId: z.string().min(1).optional(),

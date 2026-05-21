@@ -41,6 +41,8 @@ import { handleAdminUi } from "./routes/admin-ui";
 import { handleAdminVfs } from "./routes/admin-vfs";
 import { handleAdminWecomIntegrationDetail } from "./routes/admin-wecom-integration-detail";
 import { handleAdminWecomIntegrations } from "./routes/admin-wecom-integrations";
+import { handleAdminWeixinOcIntegrationDetail } from "./routes/admin-weixin-oc-integration-detail";
+import { handleAdminWeixinOcIntegrations } from "./routes/admin-weixin-oc-integrations";
 import { handleHealth } from "./routes/health";
 import {
   handleQqOfficialGatewayAdmin,
@@ -146,6 +148,16 @@ export async function routeRequest(
     const wecomPath = url.pathname.replace("/admin/platforms/wecom-integrations/", "");
     const integrationId = decodeURIComponent(wecomPath.split("/")[0] ?? "");
     return handleAdminWecomIntegrationDetail(request, env, integrationId);
+  }
+
+  if (url.pathname === "/admin/platforms/weixin-oc") {
+    return handleAdminWeixinOcIntegrations(request, env);
+  }
+
+  if (url.pathname.startsWith("/admin/platforms/weixin-oc-integrations/")) {
+    const weixinOcPath = url.pathname.replace("/admin/platforms/weixin-oc-integrations/", "");
+    const integrationId = decodeURIComponent(weixinOcPath.split("/")[0] ?? "");
+    return handleAdminWeixinOcIntegrationDetail(request, env, integrationId);
   }
 
   if (request.method === "GET" && url.pathname === "/admin/tools") {
@@ -306,6 +318,10 @@ export async function routeRequest(
         "/admin/platforms/wecom",
         "/admin/platforms/wecom-integrations/:integrationId/test",
         "/admin/platforms/wecom-integrations/:integrationId/contact-way",
+        "/admin/platforms/weixin-oc",
+        "/admin/platforms/weixin-oc-integrations/:integrationId/login",
+        "/admin/platforms/weixin-oc-integrations/:integrationId/connect",
+        "/admin/platforms/weixin-oc-integrations/:integrationId/status",
         "/admin/tools",
         "/admin/tools/call",
         "/admin/tools/calls",

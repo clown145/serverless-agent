@@ -4,6 +4,7 @@ export interface Env {
   AGENT_QUEUE: Queue<QueueMessageBody>;
   AGENT_OBJECT: DurableObjectNamespace;
   QQ_OFFICIAL_GATEWAY: DurableObjectNamespace;
+  WEIXIN_OC_GATEWAY: DurableObjectNamespace;
   AGENT_BUCKET: R2Bucket;
   AGENT_DB: D1Database;
   AGENT_KV: KVNamespace;

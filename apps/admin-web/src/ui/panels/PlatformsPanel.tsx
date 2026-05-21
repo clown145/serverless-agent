@@ -3,7 +3,9 @@ import { useEffect, useState } from "react";
 import type {
   QqOfficialIntegration,
   TelegramIntegration,
-  WecomIntegration
+  WecomIntegration,
+  WeixinOcGatewayStatus,
+  WeixinOcIntegration
 } from "../../api/types";
 import { useI18n } from "../i18n/I18nProvider";
 import { JsonBlock } from "../JsonBlock";
@@ -23,6 +25,11 @@ import {
   type WecomIntegrationDraft
 } from "./platforms/WecomIntegrationForm";
 import { WecomIntegrationList } from "./platforms/WecomIntegrationList";
+import {
+  WeixinOcIntegrationForm,
+  type WeixinOcIntegrationDraft
+} from "./platforms/WeixinOcIntegrationForm";
+import { WeixinOcIntegrationList } from "./platforms/WeixinOcIntegrationList";
 import type { PanelProps } from "./types";
 
 export function PlatformsPanel({ client, notify }: PanelProps) {
@@ -30,6 +37,10 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
   const [integrations, setIntegrations] = useState<TelegramIntegration[]>([]);
   const [qqIntegrations, setQqIntegrations] = useState<QqOfficialIntegration[]>([]);
   const [wecomIntegrations, setWecomIntegrations] = useState<WecomIntegration[]>([]);
+  const [weixinOcIntegrations, setWeixinOcIntegrations] = useState<WeixinOcIntegration[]>([]);
+  const [weixinOcStatuses, setWeixinOcStatuses] = useState<
+    Record<string, WeixinOcGatewayStatus | undefined>
+  >({});
   const [webhookUrl, setWebhookUrl] = useState("");
   const [result, setResult] = useState<unknown>();
   const [draft, setDraft] = useState<TelegramIntegrationDraft>({
@@ -61,18 +72,32 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
     openKfId: "",
     webhookSecret: ""
   });
+  const [weixinOcDraft, setWeixinOcDraft] = useState<WeixinOcIntegrationDraft>({
+    agentId: "default",
+    name: "WeChat Personal",
+    baseUrl: "https://ilinkai.weixin.qq.com",
+    cdnBaseUrl: "https://novac2c.cdn.weixin.qq.com/c2c",
+    botType: "3",
+    qrPollIntervalMs: 1000,
+    longPollTimeoutMs: 35000,
+    apiTimeoutMs: 15000,
+    token: "",
+    accountId: ""
+  });
 
   async function load() {
     try {
-      const [telegramResponse, qqResponse, wecomResponse] = await Promise.all([
+      const [telegramResponse, qqResponse, wecomResponse, weixinOcResponse] = await Promise.all([
         client.getTelegramIntegrations(),
         client.getQqOfficialIntegrations(),
-        client.getWecomIntegrations()
+        client.getWecomIntegrations(),
+        client.getWeixinOcIntegrations()
       ]);
       setIntegrations(telegramResponse.integrations);
       setWebhookUrl(`${window.location.origin}${telegramResponse.webhookPath}`);
       setQqIntegrations(qqResponse.integrations);
       setWecomIntegrations(wecomResponse.integrations);
+      setWeixinOcIntegrations(weixinOcResponse.integrations);
     } catch (error) {
       notify(error instanceof Error ? error.message : "Failed to load platforms", "error");
     }
@@ -153,6 +178,29 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
     }
   }
 
+  async function createWeixinOcIntegration() {
+    try {
+      const created = await client.createWeixinOcIntegration({
+        agentId: weixinOcDraft.agentId || undefined,
+        name: weixinOcDraft.name,
+        baseUrl: weixinOcDraft.baseUrl || undefined,
+        cdnBaseUrl: weixinOcDraft.cdnBaseUrl || undefined,
+        botType: weixinOcDraft.botType || undefined,
+        qrPollIntervalMs: weixinOcDraft.qrPollIntervalMs,
+        longPollTimeoutMs: weixinOcDraft.longPollTimeoutMs,
+        apiTimeoutMs: weixinOcDraft.apiTimeoutMs,
+        token: weixinOcDraft.token || undefined,
+        accountId: weixinOcDraft.accountId || undefined
+      });
+      setResult(created);
+      setWeixinOcDraft({ ...weixinOcDraft, token: "", accountId: "" });
+      notify(t("platforms.weixinOcSaved"), "ok");
+      await load();
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "Failed to save WeChat Personal", "error");
+    }
+  }
+
   async function testIntegration(id: string) {
     await runAction(() => client.testTelegramIntegration(id), t("platforms.botTested"));
   }
@@ -221,6 +269,63 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
     await runAction(() => client.deleteWecomIntegration(id), t("platforms.wecomDeleted"));
   }
 
+  async function startWeixinOcLogin(id: string) {
+    await runWeixinOcAction(
+      id,
+      () => client.startWeixinOcLogin(id),
+      t("platforms.weixinOcLoginStarted")
+    );
+  }
+
+  async function connectWeixinOcIntegration(id: string) {
+    await runWeixinOcAction(
+      id,
+      () => client.connectWeixinOcIntegration(id),
+      t("platforms.weixinOcConnected")
+    );
+  }
+
+  async function getWeixinOcStatus(id: string) {
+    await runWeixinOcAction(
+      id,
+      () => client.getWeixinOcIntegrationStatus(id),
+      t("platforms.weixinOcStatusLoaded")
+    );
+  }
+
+  async function disconnectWeixinOcIntegration(id: string) {
+    await runAction(
+      () => client.disconnectWeixinOcIntegration(id),
+      t("platforms.weixinOcDisconnected")
+    );
+  }
+
+  async function deleteWeixinOcIntegration(id: string) {
+    await runAction(() => client.deleteWeixinOcIntegration(id), t("platforms.weixinOcDeleted"));
+  }
+
+  async function runWeixinOcAction(
+    id: string,
+    action: () => Promise<{
+      gateway?: { status?: WeixinOcGatewayStatus };
+      [key: string]: unknown;
+    }>,
+    okMessage: string
+  ) {
+    try {
+      const response = await action();
+      setResult(response);
+      setWeixinOcStatuses((current) => ({
+        ...current,
+        [id]: response.gateway?.status
+      }));
+      notify(okMessage, "ok");
+      await load();
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "WeChat Personal action failed", "error");
+    }
+  }
+
   async function runAction(action: () => Promise<unknown>, okMessage: string) {
     try {
       const response = await action();
@@ -241,7 +346,7 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
       <header className="panel-header">
         <div>
           <h1>{t("platforms.title")}</h1>
-          <p>Telegram / QQ Official / WeCom</p>
+          <p>Telegram / QQ Official / WeChat Personal / WeCom</p>
         </div>
         <ToolbarButton label={t("common.refresh")} icon={RefreshCw} onClick={() => void load()} />
       </header>
@@ -275,6 +380,23 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
         onTest={(id) => void testWecomIntegration(id)}
         onCreateContactWay={(id) => void createWecomContactWay(id)}
         onDelete={(id) => void deleteWecomIntegration(id)}
+      />
+
+      <h2 className="section-heading">WeChat Personal</h2>
+      <WeixinOcIntegrationForm
+        draft={weixinOcDraft}
+        onDraftChange={setWeixinOcDraft}
+        onSubmit={() => void createWeixinOcIntegration()}
+      />
+
+      <WeixinOcIntegrationList
+        integrations={weixinOcIntegrations}
+        gatewayStatuses={weixinOcStatuses}
+        onLogin={(id) => void startWeixinOcLogin(id)}
+        onConnect={(id) => void connectWeixinOcIntegration(id)}
+        onStatus={(id) => void getWeixinOcStatus(id)}
+        onDisconnect={(id) => void disconnectWeixinOcIntegration(id)}
+        onDelete={(id) => void deleteWeixinOcIntegration(id)}
       />
 
       <h2 className="section-heading">Telegram</h2>

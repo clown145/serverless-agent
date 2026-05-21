@@ -1,6 +1,7 @@
 import { createQqOfficialOutboundAdapter } from "../../adapters/qq/official/outbound";
 import { createTelegramOutboundAdapter } from "../../adapters/telegram/outbound";
 import { createWecomOutboundAdapter } from "../../adapters/wecom/outbound";
+import { createWeixinOcOutboundAdapter } from "../../adapters/weixin-oc/outbound";
 import type { Env } from "../../shared/types/env";
 import type { Platform } from "../../shared/types/internal-message";
 import type { PlatformOutboundAdapter } from "./types";
@@ -19,6 +20,10 @@ export function getPlatformOutboundAdapter(
 
   if (platform === "wecom") {
     return createWecomOutboundAdapter(env);
+  }
+
+  if (platform === "weixin_oc") {
+    return createWeixinOcOutboundAdapter(env);
   }
 
   return undefined;

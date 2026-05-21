@@ -45,5 +45,9 @@ function defaultScheduleConversation(platform: Platform): string {
     return "wecom:kf:";
   }
 
+  if (platform === "weixin_oc") {
+    return "weixin_oc:";
+  }
+
   return "admin:schedule";
 }

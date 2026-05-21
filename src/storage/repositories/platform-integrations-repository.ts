@@ -138,6 +138,18 @@ export async function updatePlatformIntegrationCredential(
   return getPlatformIntegrationRecord(db, id);
 }
 
+export async function clearPlatformIntegrationCredential(
+  db: D1Database,
+  id: string
+): Promise<PlatformIntegrationRecord | undefined> {
+  await db
+    .prepare("UPDATE platform_integrations SET credential_id = NULL, updated_at = ? WHERE id = ?")
+    .bind(nowIso(), id)
+    .run();
+
+  return getPlatformIntegrationRecord(db, id);
+}
+
 export async function updatePlatformIntegrationConfig(
   db: D1Database,
   id: string,
@@ -146,6 +158,26 @@ export async function updatePlatformIntegrationConfig(
   await db
     .prepare("UPDATE platform_integrations SET config_json = ?, updated_at = ? WHERE id = ?")
     .bind(JSON.stringify(config), nowIso(), id)
+    .run();
+
+  return getPlatformIntegrationRecord(db, id);
+}
+
+export async function updatePlatformIntegrationNameAndConfig(
+  db: D1Database,
+  id: string,
+  input: {
+    name?: string;
+    config: Record<string, unknown>;
+  }
+): Promise<PlatformIntegrationRecord | undefined> {
+  await db
+    .prepare(
+      `UPDATE platform_integrations
+       SET name = COALESCE(?, name), config_json = ?, updated_at = ?
+       WHERE id = ?`
+    )
+    .bind(input.name ?? null, JSON.stringify(input.config), nowIso(), id)
     .run();
 
   return getPlatformIntegrationRecord(db, id);

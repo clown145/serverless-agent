@@ -3,6 +3,7 @@ import { mapPlatformIntegrationRow } from "../../src/storage/repositories/platfo
 import { toQqOfficialIntegrationDto } from "../../src/worker/routes/platforms/qq-official-dto";
 import { toTelegramIntegrationDto } from "../../src/worker/routes/platforms/telegram-dto";
 import { toWecomIntegrationDto } from "../../src/worker/routes/platforms/wecom-dto";
+import { toWeixinOcIntegrationDto } from "../../src/worker/routes/platforms/weixin-oc-dto";
 
 describe("platform integration types", () => {
   it("parses config JSON and credential metadata", () => {
@@ -98,6 +99,32 @@ describe("platform integration types", () => {
       openKfId: "wkf_1",
       hasSecret: true,
       webhookSecretConfigured: true
+    });
+  });
+
+  it("maps Weixin OC config and login metadata", () => {
+    const integration = mapPlatformIntegrationRow({
+      id: "pint-weixin-oc",
+      agent_id: "default",
+      platform: "weixin_oc",
+      name: "WeChat Personal",
+      credential_id: "pcred-wxoc",
+      config_json: "{\"accountId\":\"wxid\",\"contextTokens\":{\"user\":\"ctx\"},\"syncBuf\":\"abc\"}",
+      webhook_secret: null,
+      status: "active",
+      last_checked_at: null,
+      last_error: null,
+      created_at: "2026-01-01T00:00:00.000Z",
+      updated_at: "2026-01-01T00:00:00.000Z"
+    });
+
+    expect(toWeixinOcIntegrationDto(integration)).toMatchObject({
+      baseUrl: "https://ilinkai.weixin.qq.com",
+      accountId: "wxid",
+      hasCredential: true,
+      configured: true,
+      contextTokenCount: 1,
+      syncBufLength: 3
     });
   });
 });

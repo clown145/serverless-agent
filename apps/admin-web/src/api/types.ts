@@ -50,7 +50,7 @@ export type ChatMessage = {
   id: string;
   agentId: string;
   conversationId: string;
-  platform: "telegram" | "qq" | "wecom" | "webhook" | "admin" | "webui";
+  platform: "telegram" | "qq" | "wecom" | "weixin_oc" | "webhook" | "admin" | "webui";
   platformMessageId: string;
   senderId: string;
   role: "user" | "assistant";
@@ -76,7 +76,7 @@ export type ConversationSettings = {
   agentId: string;
   conversationId: string;
   sessionId: string;
-  platform: "telegram" | "qq" | "wecom" | "webhook" | "admin" | "webui";
+  platform: "telegram" | "qq" | "wecom" | "weixin_oc" | "webhook" | "admin" | "webui";
   rootConversationId: string;
   title?: string;
   modelProviderId?: string;
@@ -490,4 +490,47 @@ export type WecomIntegration = {
   lastError?: string;
   createdAt: string;
   updatedAt: string;
+};
+
+export type WeixinOcIntegration = {
+  id: string;
+  agentId: string;
+  name: string;
+  status: string;
+  baseUrl: string;
+  cdnBaseUrl: string;
+  botType: string;
+  qrPollIntervalMs: number;
+  longPollTimeoutMs: number;
+  apiTimeoutMs: number;
+  hasCredential: boolean;
+  accountId?: string;
+  configured: boolean;
+  syncBufLength: number;
+  contextTokenCount: number;
+  lastCheckedAt?: string;
+  lastError?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type WeixinOcGatewayStatus = {
+  agentId: string;
+  integrationId: string;
+  configured: boolean;
+  accountId?: string;
+  baseUrl: string;
+  syncBufLength: number;
+  contextTokenCount: number;
+  loginSession?: {
+    sessionKey: string;
+    status: string;
+    qrcode: string;
+    qrcodeImgContent: string;
+    qrImageUrl: string;
+    startedAt: string;
+    error?: string;
+  };
+  updatedAt: string;
+  lastError?: string;
 };

@@ -9,15 +9,15 @@ describe("messaging schemas", () => {
   it("accepts VFS file sources", () => {
     expect(
       sendFileInputSchema.parse({
-        platform: "telegram",
-        conversationId: "telegram:123",
+        platform: "weixin_oc",
+        conversationId: "weixin_oc:wx-user",
         source: {
           type: "vfs",
           path: "/workspace/report.md"
         }
       })
     ).toMatchObject({
-      platform: "telegram",
+      platform: "weixin_oc",
       source: {
         type: "vfs",
         path: "/workspace/report.md"

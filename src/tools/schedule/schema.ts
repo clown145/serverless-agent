@@ -8,7 +8,7 @@ export const scheduleStatusSchema = z.enum([
   "failed"
 ]);
 
-export const platformSchema = z.enum(["telegram", "qq", "wecom", "webhook", "admin", "webui"]);
+export const platformSchema = z.enum(["telegram", "qq", "wecom", "weixin_oc", "webhook", "admin", "webui"]);
 export const actorRoleSchema = z.enum(["owner", "admin", "member", "unknown"]);
 
 const dueAtSchema = z
@@ -57,7 +57,7 @@ export type ScheduleIdInput = z.infer<typeof scheduleIdInputSchema>;
 
 const platformProperty = {
   type: "string",
-  enum: ["telegram", "qq", "wecom", "webhook", "admin", "webui"],
+      enum: ["telegram", "qq", "wecom", "weixin_oc", "webhook", "admin", "webui"],
   description: "Target platform. Defaults to the current message platform."
 } as const;
 

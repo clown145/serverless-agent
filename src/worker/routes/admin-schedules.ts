@@ -18,7 +18,7 @@ const createScheduleSchema = z
     agentId: z.string().min(1).optional(),
     title: z.string().min(1).optional(),
     text: z.string().min(1),
-    platform: z.enum(["telegram", "qq", "wecom", "webhook", "admin", "webui"]).optional(),
+    platform: z.enum(["telegram", "qq", "wecom", "weixin_oc", "webhook", "admin", "webui"]).optional(),
     conversationId: z.string().min(1).optional(),
     actorId: z.string().min(1).optional(),
     actorRole: z.enum(["owner", "admin", "member", "unknown"]).optional(),

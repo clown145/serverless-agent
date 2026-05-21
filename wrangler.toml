@@ -31,6 +31,10 @@ class_name = "AgentDurableObject"
 name = "QQ_OFFICIAL_GATEWAY"
 class_name = "QQOfficialGatewayDurableObject"
 
+[[durable_objects.bindings]]
+name = "WEIXIN_OC_GATEWAY"
+class_name = "WeixinOcGatewayDurableObject"
+
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["AgentDurableObject"]
@@ -38,6 +42,10 @@ new_sqlite_classes = ["AgentDurableObject"]
 [[migrations]]
 tag = "v2"
 new_sqlite_classes = ["QQOfficialGatewayDurableObject"]
+
+[[migrations]]
+tag = "v3"
+new_sqlite_classes = ["WeixinOcGatewayDurableObject"]
 
 [[queues.producers]]
 binding = "AGENT_QUEUE"

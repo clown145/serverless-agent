@@ -93,6 +93,7 @@ export function ScheduleEditor({
           <option value="telegram">Telegram</option>
           <option value="qq">QQ</option>
           <option value="wecom">WeCom</option>
+          <option value="weixin_oc">WeChat Personal</option>
           <option value="admin">Admin</option>
         </select>
       </label>
@@ -179,6 +180,10 @@ function defaultConversationForPlatform(platform: Schedule["platform"]): string 
 
   if (platform === "wecom") {
     return "wecom:kf:";
+  }
+
+  if (platform === "weixin_oc") {
+    return "weixin_oc:";
   }
 
   if (platform === "admin") {

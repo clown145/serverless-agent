@@ -28,6 +28,8 @@ import type {
   SetupStatus,
   TelegramIntegration,
   WecomIntegration,
+  WeixinOcGatewayStatus,
+  WeixinOcIntegration,
   ToolCatalogItem,
   ToolCallHistoryItem,
   ToolDebugCall,
@@ -441,6 +443,71 @@ export function createAdminClient(getToken: () => string) {
     deleteWecomIntegration: (integrationId: string) => {
       return request<ApiResult<{ deleted: boolean }>>(
         `/admin/platforms/wecom-integrations/${integrationId}`,
+        { method: "DELETE" }
+      );
+    },
+    getWeixinOcIntegrations: () => {
+      return request<ApiResult<{ integrations: WeixinOcIntegration[] }>>(
+        "/admin/platforms/weixin-oc"
+      );
+    },
+    createWeixinOcIntegration: (body: {
+      agentId?: string;
+      name: string;
+      baseUrl?: string;
+      cdnBaseUrl?: string;
+      botType?: string;
+      qrPollIntervalMs?: number;
+      longPollTimeoutMs?: number;
+      apiTimeoutMs?: number;
+      token?: string;
+      accountId?: string;
+    }) => {
+      return request<ApiResult<{ integration: WeixinOcIntegration }>>(
+        "/admin/platforms/weixin-oc",
+        {
+          method: "POST",
+          body: JSON.stringify(body)
+        }
+      );
+    },
+    startWeixinOcLogin: (integrationId: string) => {
+      return request<
+        ApiResult<{
+          integration: WeixinOcIntegration;
+          gateway: { ok: boolean; status?: WeixinOcGatewayStatus };
+        }>
+      >(`/admin/platforms/weixin-oc-integrations/${integrationId}/login`, {
+        method: "POST"
+      });
+    },
+    connectWeixinOcIntegration: (integrationId: string) => {
+      return request<
+        ApiResult<{
+          integration: WeixinOcIntegration;
+          gateway: { ok: boolean; status?: WeixinOcGatewayStatus };
+        }>
+      >(`/admin/platforms/weixin-oc-integrations/${integrationId}/connect`, {
+        method: "POST"
+      });
+    },
+    disconnectWeixinOcIntegration: (integrationId: string) => {
+      return request<ApiResult<{ gateway: unknown }>>(
+        `/admin/platforms/weixin-oc-integrations/${integrationId}/disconnect`,
+        { method: "POST" }
+      );
+    },
+    getWeixinOcIntegrationStatus: (integrationId: string) => {
+      return request<
+        ApiResult<{
+          integration: WeixinOcIntegration;
+          gateway: { ok: boolean; status?: WeixinOcGatewayStatus };
+        }>
+      >(`/admin/platforms/weixin-oc-integrations/${integrationId}/status`);
+    },
+    deleteWeixinOcIntegration: (integrationId: string) => {
+      return request<ApiResult<{ deleted: boolean }>>(
+        `/admin/platforms/weixin-oc-integrations/${integrationId}`,
         { method: "DELETE" }
       );
     },
