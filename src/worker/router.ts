@@ -39,12 +39,15 @@ import { handleAdminToolCalls } from "./routes/admin-tool-calls";
 import { handleAdminTools } from "./routes/admin-tools";
 import { handleAdminUi } from "./routes/admin-ui";
 import { handleAdminVfs } from "./routes/admin-vfs";
+import { handleAdminWecomIntegrationDetail } from "./routes/admin-wecom-integration-detail";
+import { handleAdminWecomIntegrations } from "./routes/admin-wecom-integrations";
 import { handleHealth } from "./routes/health";
 import {
   handleQqOfficialGatewayAdmin,
   handleQqOfficialGatewayConnectAll
 } from "./routes/qq-official-gateway";
 import { handleTelegramWebhook } from "./routes/telegram-webhook";
+import { handleWecomWebhook } from "./routes/wecom-webhook";
 
 export async function routeRequest(
   request: Request,
@@ -59,6 +62,11 @@ export async function routeRequest(
 
   if (request.method === "POST" && url.pathname === "/webhooks/telegram") {
     return handleTelegramWebhook(request, env, ctx);
+  }
+
+  if (url.pathname.startsWith("/webhooks/wecom/")) {
+    const webhookSecret = decodeURIComponent(url.pathname.replace("/webhooks/wecom/", ""));
+    return handleWecomWebhook(request, env, ctx, webhookSecret);
   }
 
   if (url.pathname === "/admin/messages") {
@@ -128,6 +136,16 @@ export async function routeRequest(
 
   if (url.pathname.startsWith("/admin/platforms/qq-official/")) {
     return handleQqOfficialGatewayAdmin(request, env);
+  }
+
+  if (url.pathname === "/admin/platforms/wecom") {
+    return handleAdminWecomIntegrations(request, env);
+  }
+
+  if (url.pathname.startsWith("/admin/platforms/wecom-integrations/")) {
+    const wecomPath = url.pathname.replace("/admin/platforms/wecom-integrations/", "");
+    const integrationId = decodeURIComponent(wecomPath.split("/")[0] ?? "");
+    return handleAdminWecomIntegrationDetail(request, env, integrationId);
   }
 
   if (request.method === "GET" && url.pathname === "/admin/tools") {
@@ -264,6 +282,7 @@ export async function routeRequest(
       routes: [
         "/health",
         "/webhooks/telegram",
+        "/webhooks/wecom/:webhookSecret",
         "/admin/messages",
         "/admin/messages/:messageId/attachments/:attachmentId",
         "/admin/conversations",
@@ -284,6 +303,9 @@ export async function routeRequest(
         "/admin/platforms/qq-official/disconnect",
         "/admin/platforms/qq-official/status",
         "/admin/platforms/qq-official/connect-all",
+        "/admin/platforms/wecom",
+        "/admin/platforms/wecom-integrations/:integrationId/test",
+        "/admin/platforms/wecom-integrations/:integrationId/contact-way",
         "/admin/tools",
         "/admin/tools/call",
         "/admin/tools/calls",

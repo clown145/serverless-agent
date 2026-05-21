@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const messagingPlatformSchema = z.enum(["telegram", "qq", "webhook", "admin", "webui"]);
+export const messagingPlatformSchema = z.enum(["telegram", "qq", "wecom", "webhook", "admin", "webui"]);
 
 export const sendMessageInputSchema = z.object({
   platform: messagingPlatformSchema,
@@ -78,7 +78,7 @@ export const sendMessageInputJsonSchema = {
   properties: {
     platform: {
       type: "string",
-      enum: ["telegram", "qq", "webhook", "admin", "webui"],
+      enum: ["telegram", "qq", "wecom", "webhook", "admin", "webui"],
       description: "Target platform for the outbound message."
     },
     conversationId: {
@@ -143,7 +143,7 @@ export const sendFileInputJsonSchema = {
   properties: {
     platform: {
       type: "string",
-      enum: ["telegram", "qq", "webhook", "admin", "webui"],
+      enum: ["telegram", "qq", "wecom", "webhook", "admin", "webui"],
       description: "Target platform for the outbound file."
     },
     conversationId: {
@@ -175,7 +175,7 @@ export const sendButtonsInputJsonSchema = {
   properties: {
     platform: {
       type: "string",
-      enum: ["telegram", "qq", "webhook", "admin", "webui"],
+      enum: ["telegram", "qq", "wecom", "webhook", "admin", "webui"],
       description: "Target platform for the outbound buttons."
     },
     conversationId: {

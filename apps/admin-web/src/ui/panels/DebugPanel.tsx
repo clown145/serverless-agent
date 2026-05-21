@@ -46,6 +46,7 @@ export function DebugPanel({ client, notify, onRun }: DebugPanelProps) {
             <option value="webui">WebUI</option>
             <option value="admin">Admin</option>
             <option value="qq">QQ</option>
+            <option value="wecom">WeCom</option>
             <option value="webhook">Webhook</option>
           </select>
           <ToolbarButton label={t("common.refresh")} icon={RefreshCw} onClick={() => void load()} />

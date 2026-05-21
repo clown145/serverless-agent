@@ -1,6 +1,10 @@
 import { RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
-import type { QqOfficialIntegration, TelegramIntegration } from "../../api/types";
+import type {
+  QqOfficialIntegration,
+  TelegramIntegration,
+  WecomIntegration
+} from "../../api/types";
 import { useI18n } from "../i18n/I18nProvider";
 import { JsonBlock } from "../JsonBlock";
 import { ToolbarButton } from "../ToolbarButton";
@@ -14,12 +18,18 @@ import {
   type TelegramIntegrationDraft
 } from "./platforms/TelegramIntegrationForm";
 import { TelegramIntegrationList } from "./platforms/TelegramIntegrationList";
+import {
+  WecomIntegrationForm,
+  type WecomIntegrationDraft
+} from "./platforms/WecomIntegrationForm";
+import { WecomIntegrationList } from "./platforms/WecomIntegrationList";
 import type { PanelProps } from "./types";
 
 export function PlatformsPanel({ client, notify }: PanelProps) {
   const { t } = useI18n();
   const [integrations, setIntegrations] = useState<TelegramIntegration[]>([]);
   const [qqIntegrations, setQqIntegrations] = useState<QqOfficialIntegration[]>([]);
+  const [wecomIntegrations, setWecomIntegrations] = useState<WecomIntegration[]>([]);
   const [webhookUrl, setWebhookUrl] = useState("");
   const [result, setResult] = useState<unknown>();
   const [draft, setDraft] = useState<TelegramIntegrationDraft>({
@@ -39,16 +49,30 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
     enableGuildDirectMessage: true,
     enablePublicGuildMessages: true
   });
+  const [wecomDraft, setWecomDraft] = useState<WecomIntegrationDraft>({
+    agentId: "default",
+    name: "WeCom Customer Service",
+    corpId: "",
+    secret: "",
+    token: "",
+    encodingAesKey: "",
+    apiBaseUrl: "https://qyapi.weixin.qq.com/cgi-bin/",
+    customerServiceName: "",
+    openKfId: "",
+    webhookSecret: ""
+  });
 
   async function load() {
     try {
-      const [telegramResponse, qqResponse] = await Promise.all([
+      const [telegramResponse, qqResponse, wecomResponse] = await Promise.all([
         client.getTelegramIntegrations(),
-        client.getQqOfficialIntegrations()
+        client.getQqOfficialIntegrations(),
+        client.getWecomIntegrations()
       ]);
       setIntegrations(telegramResponse.integrations);
       setWebhookUrl(`${window.location.origin}${telegramResponse.webhookPath}`);
       setQqIntegrations(qqResponse.integrations);
+      setWecomIntegrations(wecomResponse.integrations);
     } catch (error) {
       notify(error instanceof Error ? error.message : "Failed to load platforms", "error");
     }
@@ -106,6 +130,29 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
     }
   }
 
+  async function createWecomIntegration() {
+    try {
+      const created = await client.createWecomIntegration({
+        agentId: wecomDraft.agentId || undefined,
+        name: wecomDraft.name,
+        corpId: wecomDraft.corpId,
+        secret: wecomDraft.secret || undefined,
+        token: wecomDraft.token || undefined,
+        encodingAesKey: wecomDraft.encodingAesKey || undefined,
+        apiBaseUrl: wecomDraft.apiBaseUrl || undefined,
+        customerServiceName: wecomDraft.customerServiceName || undefined,
+        openKfId: wecomDraft.openKfId || undefined,
+        webhookSecret: wecomDraft.webhookSecret || undefined
+      });
+      setResult(created);
+      setWecomDraft({ ...wecomDraft, secret: "", encodingAesKey: "", webhookSecret: "" });
+      notify(t("platforms.wecomSaved"), "ok");
+      await load();
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "Failed to save WeCom", "error");
+    }
+  }
+
   async function testIntegration(id: string) {
     await runAction(() => client.testTelegramIntegration(id), t("platforms.botTested"));
   }
@@ -159,6 +206,21 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
     await runAction(() => client.deleteQqOfficialIntegration(id), t("platforms.qqOfficialDeleted"));
   }
 
+  async function testWecomIntegration(id: string) {
+    await runAction(() => client.testWecomIntegration(id), t("platforms.wecomTested"));
+  }
+
+  async function createWecomContactWay(id: string) {
+    await runAction(
+      () => client.createWecomContactWay(id),
+      t("platforms.wecomContactWayCreated")
+    );
+  }
+
+  async function deleteWecomIntegration(id: string) {
+    await runAction(() => client.deleteWecomIntegration(id), t("platforms.wecomDeleted"));
+  }
+
   async function runAction(action: () => Promise<unknown>, okMessage: string) {
     try {
       const response = await action();
@@ -179,7 +241,7 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
       <header className="panel-header">
         <div>
           <h1>{t("platforms.title")}</h1>
-          <p>Telegram / QQ Official</p>
+          <p>Telegram / QQ Official / WeCom</p>
         </div>
         <ToolbarButton label={t("common.refresh")} icon={RefreshCw} onClick={() => void load()} />
       </header>
@@ -198,6 +260,21 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
         onDisconnect={(id) => void disconnectQqIntegration(id)}
         onStatus={(id) => void getQqStatus(id)}
         onDelete={(id) => void deleteQqIntegration(id)}
+      />
+
+      <h2 className="section-heading">WeCom Customer Service</h2>
+      <WecomIntegrationForm
+        draft={wecomDraft}
+        onDraftChange={setWecomDraft}
+        onSubmit={() => void createWecomIntegration()}
+      />
+
+      <WecomIntegrationList
+        integrations={wecomIntegrations}
+        origin={window.location.origin}
+        onTest={(id) => void testWecomIntegration(id)}
+        onCreateContactWay={(id) => void createWecomContactWay(id)}
+        onDelete={(id) => void deleteWecomIntegration(id)}
       />
 
       <h2 className="section-heading">Telegram</h2>

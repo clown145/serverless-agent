@@ -35,6 +35,8 @@ export function SystemPanel({ token, onTokenChange }: SystemPanelProps) {
             "/admin/platforms/telegram/:integrationId/webhook",
             "/admin/platforms/qq-official",
             "/admin/platforms/qq-official-integrations/:integrationId/connect",
+            "/admin/platforms/wecom",
+            "/admin/platforms/wecom-integrations/:integrationId/contact-way",
             "/admin/mcp/servers",
             "/admin/mcp/tools/:toolId",
             "/admin/runs",

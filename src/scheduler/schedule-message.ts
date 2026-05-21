@@ -33,5 +33,17 @@ function defaultScheduleConversation(platform: Platform): string {
     return "webui:schedule";
   }
 
+  if (platform === "telegram") {
+    return "telegram:";
+  }
+
+  if (platform === "qq") {
+    return "qq:";
+  }
+
+  if (platform === "wecom") {
+    return "wecom:kf:";
+  }
+
   return "admin:schedule";
 }

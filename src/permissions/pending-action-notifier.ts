@@ -47,6 +47,7 @@ function normalizePlatform(platform: string | undefined): Platform | undefined {
   if (
     platform === "telegram" ||
     platform === "qq" ||
+    platform === "wecom" ||
     platform === "webhook" ||
     platform === "admin" ||
     platform === "webui"

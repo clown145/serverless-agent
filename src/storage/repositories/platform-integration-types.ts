@@ -1,4 +1,4 @@
-export type PlatformIntegrationPlatform = "telegram" | "qq" | "webhook";
+export type PlatformIntegrationPlatform = "telegram" | "qq" | "wecom" | "webhook";
 
 export type PlatformIntegrationRecord = {
   id: string;

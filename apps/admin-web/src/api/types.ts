@@ -50,7 +50,7 @@ export type ChatMessage = {
   id: string;
   agentId: string;
   conversationId: string;
-  platform: "telegram" | "qq" | "webhook" | "admin" | "webui";
+  platform: "telegram" | "qq" | "wecom" | "webhook" | "admin" | "webui";
   platformMessageId: string;
   senderId: string;
   role: "user" | "assistant";
@@ -76,7 +76,7 @@ export type ConversationSettings = {
   agentId: string;
   conversationId: string;
   sessionId: string;
-  platform: "telegram" | "qq" | "webhook" | "admin" | "webui";
+  platform: "telegram" | "qq" | "wecom" | "webhook" | "admin" | "webui";
   rootConversationId: string;
   title?: string;
   modelProviderId?: string;
@@ -464,6 +464,28 @@ export type QqOfficialIntegration = {
   enableGuildDirectMessage: boolean;
   enablePublicGuildMessages: boolean;
   hasCredential: boolean;
+  lastCheckedAt?: string;
+  lastError?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type WecomIntegration = {
+  id: string;
+  agentId: string;
+  name: string;
+  status: string;
+  corpId?: string;
+  apiBaseUrl: string;
+  customerServiceName?: string;
+  openKfId?: string;
+  hasSecret: boolean;
+  tokenConfigured: boolean;
+  encodingAesKeyConfigured: boolean;
+  webhookSecretConfigured: boolean;
+  webhookPath: string;
+  contactUrl?: string;
+  qrCodeUrl?: string;
   lastCheckedAt?: string;
   lastError?: string;
   createdAt: string;

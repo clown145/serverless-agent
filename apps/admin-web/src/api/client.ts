@@ -27,6 +27,7 @@ import type {
   SearchTestResult,
   SetupStatus,
   TelegramIntegration,
+  WecomIntegration,
   ToolCatalogItem,
   ToolCallHistoryItem,
   ToolDebugCall,
@@ -368,6 +369,79 @@ export function createAdminClient(getToken: () => string) {
     getQqOfficialIntegrations: () => {
       return request<ApiResult<{ integrations: QqOfficialIntegration[] }>>(
         "/admin/platforms/qq-official"
+      );
+    },
+    getWecomIntegrations: () => {
+      return request<
+        ApiResult<{
+          integrations: WecomIntegration[];
+          webhookPath: string;
+        }>
+      >("/admin/platforms/wecom");
+    },
+    createWecomIntegration: (body: {
+      agentId?: string;
+      name: string;
+      corpId: string;
+      secret?: string;
+      token?: string;
+      encodingAesKey?: string;
+      apiBaseUrl?: string;
+      customerServiceName?: string;
+      openKfId?: string;
+      webhookSecret?: string;
+    }) => {
+      return request<ApiResult<{ integration: WecomIntegration }>>(
+        "/admin/platforms/wecom",
+        {
+          method: "POST",
+          body: JSON.stringify(body)
+        }
+      );
+    },
+    updateWecomIntegration: (
+      integrationId: string,
+      body: {
+        corpId?: string;
+        secret?: string;
+        token?: string;
+        encodingAesKey?: string;
+        apiBaseUrl?: string;
+        customerServiceName?: string;
+        openKfId?: string;
+      }
+    ) => {
+      return request<ApiResult<{ integration: WecomIntegration }>>(
+        `/admin/platforms/wecom-integrations/${integrationId}`,
+        {
+          method: "PUT",
+          body: JSON.stringify(body)
+        }
+      );
+    },
+    testWecomIntegration: (integrationId: string) => {
+      return request<ApiResult<{ integration: WecomIntegration; accounts: unknown }>>(
+        `/admin/platforms/wecom-integrations/${integrationId}/test`,
+        { method: "POST" }
+      );
+    },
+    createWecomContactWay: (integrationId: string) => {
+      return request<
+        ApiResult<{
+          integration: WecomIntegration;
+          contactUrl: string;
+          qrCodeUrl: string;
+          contact: unknown;
+        }>
+      >(
+        `/admin/platforms/wecom-integrations/${integrationId}/contact-way`,
+        { method: "POST" }
+      );
+    },
+    deleteWecomIntegration: (integrationId: string) => {
+      return request<ApiResult<{ deleted: boolean }>>(
+        `/admin/platforms/wecom-integrations/${integrationId}`,
+        { method: "DELETE" }
       );
     },
     createQqOfficialIntegration: (body: {

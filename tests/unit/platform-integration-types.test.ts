@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { mapPlatformIntegrationRow } from "../../src/storage/repositories/platform-integration-types";
 import { toQqOfficialIntegrationDto } from "../../src/worker/routes/platforms/qq-official-dto";
 import { toTelegramIntegrationDto } from "../../src/worker/routes/platforms/telegram-dto";
+import { toWecomIntegrationDto } from "../../src/worker/routes/platforms/wecom-dto";
 
 describe("platform integration types", () => {
   it("parses config JSON and credential metadata", () => {
@@ -73,6 +74,30 @@ describe("platform integration types", () => {
       enableGuildDirectMessage: true,
       enablePublicGuildMessages: true,
       hasCredential: true
+    });
+  });
+
+  it("maps WeCom config", () => {
+    const integration = mapPlatformIntegrationRow({
+      id: "pint-wecom",
+      agent_id: "default",
+      platform: "wecom",
+      name: "WeCom",
+      credential_id: "pcred-wecom",
+      config_json: "{\"corpId\":\"ww123\",\"openKfId\":\"wkf_1\"}",
+      webhook_secret: "webhook-secret",
+      status: "active",
+      last_checked_at: null,
+      last_error: null,
+      created_at: "2026-01-01T00:00:00.000Z",
+      updated_at: "2026-01-01T00:00:00.000Z"
+    });
+
+    expect(toWecomIntegrationDto(integration)).toMatchObject({
+      corpId: "ww123",
+      openKfId: "wkf_1",
+      hasSecret: true,
+      webhookSecretConfigured: true
     });
   });
 });
