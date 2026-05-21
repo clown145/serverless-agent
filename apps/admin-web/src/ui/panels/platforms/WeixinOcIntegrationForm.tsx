@@ -18,12 +18,14 @@ export type WeixinOcIntegrationDraft = {
 
 type WeixinOcIntegrationFormProps = {
   draft: WeixinOcIntegrationDraft;
+  submitting?: boolean;
   onDraftChange: (draft: WeixinOcIntegrationDraft) => void;
   onSubmit: () => void;
 };
 
 export function WeixinOcIntegrationForm({
   draft,
+  submitting = false,
   onDraftChange,
   onSubmit
 }: WeixinOcIntegrationFormProps) {
@@ -57,9 +59,14 @@ export function WeixinOcIntegrationForm({
       {advancedOpen && (
         <WeixinOcAdvancedFields draft={draft} onDraftChange={onDraftChange} />
       )}
-      <button className="primary-button" type="button" onClick={onSubmit}>
+      <button
+        className="primary-button"
+        type="button"
+        onClick={onSubmit}
+        disabled={submitting}
+      >
         <Plus size={16} />
-        {t("platforms.weixinOcCreateAndLogin")}
+        {submitting ? t("platforms.weixinOcCreatingLogin") : t("platforms.weixinOcCreateAndLogin")}
       </button>
     </div>
   );

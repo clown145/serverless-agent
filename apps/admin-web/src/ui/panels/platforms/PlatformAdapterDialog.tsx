@@ -33,6 +33,7 @@ type PlatformAdapterDialogProps = {
   qqDraft: QqOfficialIntegrationDraft;
   wecomDraft: WecomIntegrationDraft;
   weixinOcDraft: WeixinOcIntegrationDraft;
+  weixinOcSubmitting?: boolean;
   telegramWebhookUrl: string;
   onStateChange: (state: PlatformAdapterDialogState) => void;
   onTelegramDraftChange: (draft: TelegramIntegrationDraft) => void;
@@ -79,6 +80,7 @@ export function PlatformAdapterDialog({
   qqDraft,
   wecomDraft,
   weixinOcDraft,
+  weixinOcSubmitting = false,
   telegramWebhookUrl,
   onStateChange,
   onTelegramDraftChange,
@@ -139,6 +141,7 @@ export function PlatformAdapterDialog({
             <div className="adapter-form-stack">
               <WeixinOcIntegrationForm
                 draft={weixinOcDraft}
+                submitting={weixinOcSubmitting}
                 onDraftChange={onWeixinOcDraftChange}
                 onSubmit={onWeixinOcSubmit}
               />

@@ -37,6 +37,7 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
     open: false,
     selectedAdapter: "weixin_oc"
   });
+  const [weixinOcSubmitting, setWeixinOcSubmitting] = useState(false);
   const [webhookUrl, setWebhookUrl] = useState("");
   const [result, setResult] = useState<unknown>();
   const [draft, setDraft] = useState<TelegramIntegrationDraft>({
@@ -178,6 +179,12 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
   }
 
   async function createWeixinOcIntegration() {
+    if (weixinOcSubmitting) {
+      return;
+    }
+
+    setWeixinOcSubmitting(true);
+    let createdIntegrationId: string | undefined;
     try {
       const created = await client.createWeixinOcIntegration({
         agentId: weixinOcDraft.agentId || undefined,
@@ -191,6 +198,7 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
         token: weixinOcDraft.token || undefined,
         accountId: weixinOcDraft.accountId || undefined
       });
+      createdIntegrationId = created.integration.id;
       const login = await client.startWeixinOcLogin(created.integration.id);
       const loginSession = login.gateway.status?.loginSession;
       setResult(login);
@@ -210,7 +218,19 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
       notify(t("platforms.weixinOcLoginStarted"), "ok");
       await load();
     } catch (error) {
-      notify(error instanceof Error ? error.message : "Failed to save WeChat Personal", "error");
+      if (createdIntegrationId) {
+        await load();
+        notify(
+          `${t("platforms.weixinOcSavedLoginFailed")}: ${
+            error instanceof Error ? error.message : "Failed to start WeChat Personal login"
+          }`,
+          "error"
+        );
+      } else {
+        notify(error instanceof Error ? error.message : "Failed to save WeChat Personal", "error");
+      }
+    } finally {
+      setWeixinOcSubmitting(false);
     }
   }
 
@@ -389,6 +409,7 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
         qqDraft={qqDraft}
         wecomDraft={wecomDraft}
         weixinOcDraft={weixinOcDraft}
+        weixinOcSubmitting={weixinOcSubmitting}
         telegramWebhookUrl={webhookUrl}
         onStateChange={setAdapterDialog}
         onTelegramDraftChange={setDraft}
