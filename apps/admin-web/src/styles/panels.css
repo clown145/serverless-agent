@@ -846,6 +846,37 @@
   padding: 12px;
 }
 
+.weixin-oc-qr-panel {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 168px minmax(180px, 1fr);
+  gap: 12px;
+  align-items: center;
+  border-top: 1px solid var(--border);
+  margin-top: 2px;
+  padding-top: 12px;
+}
+
+.weixin-oc-qr-panel img {
+  width: 168px;
+  height: 168px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: #fff;
+  object-fit: contain;
+}
+
+.weixin-oc-qr-panel div {
+  display: grid;
+  gap: 6px;
+}
+
+.weixin-oc-qr-panel input {
+  grid-column: 1 / -1;
+  font-family: SFMono-Regular, Consolas, Liberation Mono, monospace;
+  font-size: 12px;
+}
+
 .telegram-row strong,
 .telegram-row span,
 .qq-official-row strong,
@@ -1356,6 +1387,7 @@
   .qq-official-row,
   .wecom-row,
   .weixin-oc-row,
+  .weixin-oc-qr-panel,
   .search-provider-row,
   .model-provider-head,
   .debug-message-row,

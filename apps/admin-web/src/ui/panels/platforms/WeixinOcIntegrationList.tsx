@@ -1,4 +1,4 @@
-import { LogIn, PlugZap, QrCode, Radio, Trash2, Unplug, Wifi } from "lucide-react";
+import { ExternalLink, LogIn, PlugZap, Radio, Trash2, Unplug, Wifi } from "lucide-react";
 import type { WeixinOcGatewayStatus, WeixinOcIntegration } from "../../../api/types";
 import { useI18n } from "../../i18n/I18nProvider";
 import { StatusBadge } from "../../StatusBadge";
@@ -55,18 +55,6 @@ export function WeixinOcIntegrationList({
               {integration.lastError && <span>{integration.lastError}</span>}
             </div>
             <StatusBadge value={integration.status} />
-            {qr?.qrImageUrl && (
-              <a
-                className="qr-link"
-                href={qr.qrImageUrl}
-                target="_blank"
-                rel="noreferrer"
-                title={t("platforms.weixinOcOpenQr")}
-                aria-label={t("platforms.weixinOcOpenQr")}
-              >
-                <QrCode size={16} />
-              </a>
-            )}
             <ToolbarButton
               label={t("platforms.weixinOcLogin")}
               icon={LogIn}
@@ -93,6 +81,29 @@ export function WeixinOcIntegrationList({
               variant="danger"
               onClick={() => onDelete(integration.id)}
             />
+            {qr?.qrImageUrl && (
+              <div className="weixin-oc-qr-panel">
+                <img
+                  src={qr.qrImageUrl}
+                  alt={t("platforms.weixinOcQrAlt")}
+                  loading="lazy"
+                />
+                <div>
+                  <strong>{t("platforms.weixinOcScanQr")}</strong>
+                  <span>{t("platforms.weixinOcQrStatus")}: {qr.status}</span>
+                  <a href={qr.qrImageUrl} target="_blank" rel="noreferrer">
+                    <ExternalLink size={14} />
+                    {t("platforms.weixinOcOpenQr")}
+                  </a>
+                </div>
+                <input
+                  readOnly
+                  value={qr.qrcodeImgContent}
+                  aria-label={t("platforms.weixinOcQrRaw")}
+                  onFocus={(event) => event.currentTarget.select()}
+                />
+              </div>
+            )}
           </div>
         );
       })}
@@ -105,4 +116,3 @@ export function WeixinOcIntegrationList({
     </div>
   );
 }
-

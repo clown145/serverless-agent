@@ -335,6 +335,9 @@ export const translations: Record<Locale, Record<string, string>> = {
     "platforms.weixinOcNoAccount": "无账号 ID",
     "platforms.weixinOcQrStatus": "二维码状态",
     "platforms.weixinOcOpenQr": "打开登录二维码",
+    "platforms.weixinOcScanQr": "使用微信扫码确认登录",
+    "platforms.weixinOcQrAlt": "个人微信登录二维码",
+    "platforms.weixinOcQrRaw": "二维码原始内容",
     "platforms.noWeixinOc": "暂无个人微信集成",
 
     "vfs.title": "VFS",
@@ -772,6 +775,9 @@ export const translations: Record<Locale, Record<string, string>> = {
     "platforms.weixinOcNoAccount": "no account ID",
     "platforms.weixinOcQrStatus": "QR status",
     "platforms.weixinOcOpenQr": "Open login QR",
+    "platforms.weixinOcScanQr": "Scan with WeChat to confirm login",
+    "platforms.weixinOcQrAlt": "WeChat Personal login QR",
+    "platforms.weixinOcQrRaw": "QR raw content",
     "platforms.noWeixinOc": "No WeChat Personal integrations",
 
     "vfs.title": "VFS",
