@@ -144,6 +144,84 @@
   margin-bottom: 14px;
 }
 
+.platform-adapter-modal {
+  width: min(94vw, 780px);
+}
+
+.platform-adapter-dialog {
+  display: grid;
+  gap: 16px;
+}
+
+.adapter-choice-list {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.adapter-choice {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: #f8fafc;
+  color: var(--text);
+  padding: 10px;
+  text-align: left;
+}
+
+.adapter-choice:hover,
+.adapter-choice.selected {
+  border-color: #87b8b2;
+  background: var(--accent-muted);
+}
+
+.adapter-choice strong,
+.adapter-choice span {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.adapter-choice span {
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.adapter-form-shell,
+.adapter-form-stack {
+  display: grid;
+  gap: 12px;
+}
+
+.platform-adapter-dialog .field-row,
+.platform-adapter-dialog .telegram-form,
+.platform-adapter-dialog .qq-official-form,
+.platform-adapter-dialog .wecom-form,
+.platform-adapter-dialog .weixin-oc-form {
+  margin-bottom: 0;
+}
+
+.platform-adapter-dialog .telegram-form,
+.platform-adapter-dialog .qq-official-form,
+.platform-adapter-dialog .wecom-form,
+.platform-adapter-dialog .weixin-oc-form {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.platform-adapter-dialog .telegram-form button,
+.platform-adapter-dialog .qq-official-form button,
+.platform-adapter-dialog .wecom-form button,
+.platform-adapter-dialog .weixin-oc-form button {
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+
+.weixin-oc-dialog-qr {
+  grid-column: auto;
+  margin-top: 0;
+}
+
 .section-heading {
   margin: 22px 0 12px;
   color: var(--text);
@@ -1378,6 +1456,11 @@
   .qq-official-form,
   .wecom-form,
   .weixin-oc-form,
+  .adapter-choice-list,
+  .platform-adapter-dialog .telegram-form,
+  .platform-adapter-dialog .qq-official-form,
+  .platform-adapter-dialog .wecom-form,
+  .platform-adapter-dialog .weixin-oc-form,
   .search-provider-form,
   .model-default-picker,
   .model-role-card,

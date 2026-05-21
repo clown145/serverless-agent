@@ -1,4 +1,4 @@
-import { RefreshCw } from "lucide-react";
+import { Plus, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 import type {
   QqOfficialIntegration,
@@ -11,24 +11,16 @@ import { useI18n } from "../i18n/I18nProvider";
 import { JsonBlock } from "../JsonBlock";
 import { ToolbarButton } from "../ToolbarButton";
 import {
-  QqOfficialIntegrationForm,
-  type QqOfficialIntegrationDraft
-} from "./platforms/QqOfficialIntegrationForm";
+  PlatformAdapterDialog,
+  type PlatformAdapterDialogState
+} from "./platforms/PlatformAdapterDialog";
+import type { QqOfficialIntegrationDraft } from "./platforms/QqOfficialIntegrationForm";
 import { QqOfficialIntegrationList } from "./platforms/QqOfficialIntegrationList";
-import {
-  TelegramIntegrationForm,
-  type TelegramIntegrationDraft
-} from "./platforms/TelegramIntegrationForm";
+import type { TelegramIntegrationDraft } from "./platforms/TelegramIntegrationForm";
 import { TelegramIntegrationList } from "./platforms/TelegramIntegrationList";
-import {
-  WecomIntegrationForm,
-  type WecomIntegrationDraft
-} from "./platforms/WecomIntegrationForm";
+import type { WecomIntegrationDraft } from "./platforms/WecomIntegrationForm";
 import { WecomIntegrationList } from "./platforms/WecomIntegrationList";
-import {
-  WeixinOcIntegrationForm,
-  type WeixinOcIntegrationDraft
-} from "./platforms/WeixinOcIntegrationForm";
+import type { WeixinOcIntegrationDraft } from "./platforms/WeixinOcIntegrationForm";
 import { WeixinOcIntegrationList } from "./platforms/WeixinOcIntegrationList";
 import type { PanelProps } from "./types";
 
@@ -41,6 +33,10 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
   const [weixinOcStatuses, setWeixinOcStatuses] = useState<
     Record<string, WeixinOcGatewayStatus | undefined>
   >({});
+  const [adapterDialog, setAdapterDialog] = useState<PlatformAdapterDialogState>({
+    open: false,
+    selectedAdapter: "weixin_oc"
+  });
   const [webhookUrl, setWebhookUrl] = useState("");
   const [result, setResult] = useState<unknown>();
   const [draft, setDraft] = useState<TelegramIntegrationDraft>({
@@ -122,6 +118,7 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
         setResult(created);
       }
       setDraft({ ...draft, botToken: "", webhookSecret: "" });
+      setAdapterDialog((current) => ({ ...current, open: false }));
       notify(
         draft.botToken
           ? t("platforms.telegramSavedWebhook")
@@ -148,6 +145,7 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
       });
       setResult(created);
       setQqDraft({ ...qqDraft, secret: "" });
+      setAdapterDialog((current) => ({ ...current, open: false }));
       notify(t("platforms.qqOfficialSaved"), "ok");
       await load();
     } catch (error) {
@@ -171,6 +169,7 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
       });
       setResult(created);
       setWecomDraft({ ...wecomDraft, secret: "", encodingAesKey: "", webhookSecret: "" });
+      setAdapterDialog((current) => ({ ...current, open: false }));
       notify(t("platforms.wecomSaved"), "ok");
       await load();
     } catch (error) {
@@ -192,9 +191,23 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
         token: weixinOcDraft.token || undefined,
         accountId: weixinOcDraft.accountId || undefined
       });
-      setResult(created);
+      const login = await client.startWeixinOcLogin(created.integration.id);
+      const loginSession = login.gateway.status?.loginSession;
+      setResult(login);
+      setWeixinOcStatuses((current) => ({
+        ...current,
+        [created.integration.id]: login.gateway.status
+      }));
+      setAdapterDialog((current) => ({
+        ...current,
+        open: true,
+        selectedAdapter: "weixin_oc",
+        weixinOcQrImageUrl: loginSession?.qrImageUrl,
+        weixinOcQrContent: loginSession?.qrcodeImgContent,
+        weixinOcQrStatus: loginSession?.status
+      }));
       setWeixinOcDraft({ ...weixinOcDraft, token: "", accountId: "" });
-      notify(t("platforms.weixinOcSaved"), "ok");
+      notify(t("platforms.weixinOcLoginStarted"), "ok");
       await load();
     } catch (error) {
       notify(error instanceof Error ? error.message : "Failed to save WeChat Personal", "error");
@@ -348,16 +361,48 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
           <h1>{t("platforms.title")}</h1>
           <p>Telegram / QQ Official / WeChat Personal / WeCom</p>
         </div>
-        <ToolbarButton label={t("common.refresh")} icon={RefreshCw} onClick={() => void load()} />
+        <div className="panel-header-actions">
+          <button
+            className="primary-button"
+            type="button"
+            onClick={() =>
+              setAdapterDialog((current) => ({
+                ...current,
+                open: true,
+                selectedAdapter: "weixin_oc",
+                weixinOcQrImageUrl: undefined,
+                weixinOcQrContent: undefined,
+                weixinOcQrStatus: undefined
+              }))
+            }
+          >
+            <Plus size={16} />
+            {t("platforms.addAdapter")}
+          </button>
+          <ToolbarButton label={t("common.refresh")} icon={RefreshCw} onClick={() => void load()} />
+        </div>
       </header>
 
-      <h2 className="section-heading">QQ Official</h2>
-      <QqOfficialIntegrationForm
-        draft={qqDraft}
-        onDraftChange={setQqDraft}
-        onSubmit={() => void createQqIntegration()}
+      <PlatformAdapterDialog
+        state={adapterDialog}
+        telegramDraft={draft}
+        qqDraft={qqDraft}
+        wecomDraft={wecomDraft}
+        weixinOcDraft={weixinOcDraft}
+        telegramWebhookUrl={webhookUrl}
+        onStateChange={setAdapterDialog}
+        onTelegramDraftChange={setDraft}
+        onQqDraftChange={setQqDraft}
+        onWecomDraftChange={setWecomDraft}
+        onWeixinOcDraftChange={setWeixinOcDraft}
+        onTelegramSubmit={() => void createIntegration()}
+        onQqSubmit={() => void createQqIntegration()}
+        onWecomSubmit={() => void createWecomIntegration()}
+        onWeixinOcSubmit={() => void createWeixinOcIntegration()}
+        onTelegramWebhookUrlChange={setWebhookUrl}
       />
 
+      <h2 className="section-heading">QQ Official</h2>
       <QqOfficialIntegrationList
         integrations={qqIntegrations}
         onTest={(id) => void testQqIntegration(id)}
@@ -368,12 +413,6 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
       />
 
       <h2 className="section-heading">WeCom Customer Service</h2>
-      <WecomIntegrationForm
-        draft={wecomDraft}
-        onDraftChange={setWecomDraft}
-        onSubmit={() => void createWecomIntegration()}
-      />
-
       <WecomIntegrationList
         integrations={wecomIntegrations}
         origin={window.location.origin}
@@ -383,12 +422,6 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
       />
 
       <h2 className="section-heading">WeChat Personal</h2>
-      <WeixinOcIntegrationForm
-        draft={weixinOcDraft}
-        onDraftChange={setWeixinOcDraft}
-        onSubmit={() => void createWeixinOcIntegration()}
-      />
-
       <WeixinOcIntegrationList
         integrations={weixinOcIntegrations}
         gatewayStatuses={weixinOcStatuses}
@@ -400,19 +433,6 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
       />
 
       <h2 className="section-heading">Telegram</h2>
-      <div className="field-row">
-        <label>
-          {t("platforms.telegramWebhookUrl")}
-          <input value={webhookUrl} onChange={(event) => setWebhookUrl(event.target.value)} />
-        </label>
-      </div>
-
-      <TelegramIntegrationForm
-        draft={draft}
-        onDraftChange={setDraft}
-        onSubmit={() => void createIntegration()}
-      />
-
       <TelegramIntegrationList
         integrations={integrations}
         onUpdateParseMode={(id, parseMode) => void updateParseMode(id, parseMode)}
