@@ -13,6 +13,7 @@ import {
   buildWeixinOcTextItem,
   normalizeWeixinOcInboundMessage
 } from "../../adapters/weixin-oc/normalize";
+import { persistWeixinOcInboundMedia } from "../../adapters/weixin-oc/inbound-media";
 import {
   buildWeixinOcFileItem,
   buildWeixinOcImageItem,
@@ -308,7 +309,10 @@ export class WeixinOcGatewayDurableObject {
       if (!normalized) {
         continue;
       }
-      await this.dispatchInbound(config.agentId, normalized);
+      await this.dispatchInbound(
+        config.agentId,
+        await persistWeixinOcInboundMedia(this.env, config, normalized)
+      );
     }
 
     if (dirty) {

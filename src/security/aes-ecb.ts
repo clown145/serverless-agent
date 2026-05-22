@@ -19,6 +19,21 @@ const S_BOX = [
 
 const RCON = [0x00, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36] as const;
 
+export function decryptAes128EcbPkcs7(input: Uint8Array, key: Uint8Array): Uint8Array {
+  if (input.length === 0 || input.length % 16 !== 0) {
+    throw new Error("AES-128 ECB ciphertext must be a non-empty multiple of 16 bytes");
+  }
+
+  const output = new Uint8Array(input.length);
+  const expandedKey = expandAes128Key(key);
+
+  for (let offset = 0; offset < input.length; offset += 16) {
+    output.set(decryptAes128Block(input.slice(offset, offset + 16), expandedKey), offset);
+  }
+
+  return pkcs7Unpad(output);
+}
+
 export function encryptAes128EcbPkcs7(input: Uint8Array, key: Uint8Array): Uint8Array {
   const padded = pkcs7Pad(input);
   const output = new Uint8Array(padded.length);
@@ -53,6 +68,28 @@ export function encryptAes128Block(input: Uint8Array, key: Uint8Array): Uint8Arr
   return state;
 }
 
+export function decryptAes128Block(input: Uint8Array, key: Uint8Array): Uint8Array {
+  const expandedKey = key.length === 176 ? key : expandAes128Key(key);
+  if (input.length !== 16) {
+    throw new Error("AES-128 block input must be 16 bytes");
+  }
+
+  const state = new Uint8Array(input);
+  addRoundKey(state, expandedKey, 10);
+
+  for (let round = 9; round > 0; round -= 1) {
+    invShiftRows(state);
+    invSubBytes(state);
+    addRoundKey(state, expandedKey, round);
+    invMixColumns(state);
+  }
+
+  invShiftRows(state);
+  invSubBytes(state);
+  addRoundKey(state, expandedKey, 0);
+  return state;
+}
+
 export function aes128EcbPaddedSize(plaintextSize: number): number {
   return Math.ceil((plaintextSize + 1) / 16) * 16;
 }
@@ -64,6 +101,19 @@ function pkcs7Pad(input: Uint8Array): Uint8Array {
   output.set(input);
   output.fill(padLength, input.length);
   return output;
+}
+
+function pkcs7Unpad(input: Uint8Array): Uint8Array {
+  const padLength = input[input.length - 1] ?? 0;
+  if (padLength < 1 || padLength > 16 || padLength > input.length) {
+    throw new Error("Invalid AES PKCS#7 padding");
+  }
+  for (let index = input.length - padLength; index < input.length; index += 1) {
+    if (input[index] !== padLength) {
+      throw new Error("Invalid AES PKCS#7 padding");
+    }
+  }
+  return input.slice(0, input.length - padLength);
 }
 
 function expandAes128Key(key: Uint8Array): Uint8Array {
@@ -116,6 +166,12 @@ function subBytes(state: Uint8Array): void {
   }
 }
 
+function invSubBytes(state: Uint8Array): void {
+  for (let index = 0; index < state.length; index += 1) {
+    state[index] = INV_S_BOX[state[index] ?? 0] ?? 0;
+  }
+}
+
 function shiftRows(state: Uint8Array): void {
   const next = new Uint8Array(state);
   state[1] = next[5] ?? 0;
@@ -134,6 +190,24 @@ function shiftRows(state: Uint8Array): void {
   state[15] = next[11] ?? 0;
 }
 
+function invShiftRows(state: Uint8Array): void {
+  const next = new Uint8Array(state);
+  state[1] = next[13] ?? 0;
+  state[5] = next[1] ?? 0;
+  state[9] = next[5] ?? 0;
+  state[13] = next[9] ?? 0;
+
+  state[2] = next[10] ?? 0;
+  state[6] = next[14] ?? 0;
+  state[10] = next[2] ?? 0;
+  state[14] = next[6] ?? 0;
+
+  state[3] = next[7] ?? 0;
+  state[7] = next[11] ?? 0;
+  state[11] = next[15] ?? 0;
+  state[15] = next[3] ?? 0;
+}
+
 function mixColumns(state: Uint8Array): void {
   for (let column = 0; column < 4; column += 1) {
     const offset = column * 4;
@@ -146,6 +220,21 @@ function mixColumns(state: Uint8Array): void {
     state[offset + 1] = a0 ^ multiply2(a1) ^ multiply3(a2) ^ a3;
     state[offset + 2] = a0 ^ a1 ^ multiply2(a2) ^ multiply3(a3);
     state[offset + 3] = multiply3(a0) ^ a1 ^ a2 ^ multiply2(a3);
+  }
+}
+
+function invMixColumns(state: Uint8Array): void {
+  for (let column = 0; column < 4; column += 1) {
+    const offset = column * 4;
+    const a0 = state[offset] ?? 0;
+    const a1 = state[offset + 1] ?? 0;
+    const a2 = state[offset + 2] ?? 0;
+    const a3 = state[offset + 3] ?? 0;
+
+    state[offset] = multiply14(a0) ^ multiply11(a1) ^ multiply13(a2) ^ multiply9(a3);
+    state[offset + 1] = multiply9(a0) ^ multiply14(a1) ^ multiply11(a2) ^ multiply13(a3);
+    state[offset + 2] = multiply13(a0) ^ multiply9(a1) ^ multiply14(a2) ^ multiply11(a3);
+    state[offset + 3] = multiply11(a0) ^ multiply13(a1) ^ multiply9(a2) ^ multiply14(a3);
   }
 }
 
@@ -164,3 +253,41 @@ function multiply2(value: number): number {
 function multiply3(value: number): number {
   return multiply2(value) ^ value;
 }
+
+function multiply(value: number, factor: number): number {
+  let result = 0;
+  let current = value;
+  let multiplier = factor;
+  while (multiplier > 0) {
+    if (multiplier & 1) {
+      result ^= current;
+    }
+    current = multiply2(current);
+    multiplier >>>= 1;
+  }
+  return result & 0xff;
+}
+
+function multiply9(value: number): number {
+  return multiply(value, 9);
+}
+
+function multiply11(value: number): number {
+  return multiply(value, 11);
+}
+
+function multiply13(value: number): number {
+  return multiply(value, 13);
+}
+
+function multiply14(value: number): number {
+  return multiply(value, 14);
+}
+
+const INV_S_BOX = (() => {
+  const inverse = new Array<number>(256).fill(0);
+  S_BOX.forEach((value, index) => {
+    inverse[value] = index;
+  });
+  return inverse;
+})();

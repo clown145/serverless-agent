@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  attachmentsFromWeixinOcItems,
   buildWeixinOcTextItem,
   normalizeWeixinOcInboundMessage,
   parseWeixinOcConversationId,
@@ -45,14 +46,35 @@ describe("Weixin OC normalize", () => {
     });
   });
 
-  it("keeps encrypted media as text placeholders until media decoding is available", () => {
+  it("creates image attachments for encrypted media", () => {
     const items = [
-      { type: 2 },
+      {
+        type: 2,
+        msg_id: "img-1",
+        image_item: {
+          media: {
+            encrypt_query_param: "download-param",
+            aes_key: "YWVz"
+          },
+          aeskey: "00112233445566778899aabbccddeeff",
+          mid_size: 1234
+        }
+      },
       { type: 3, voice_item: { text: "transcribed" } },
       { type: 4, file_item: { file_name: "report.pdf", len: "12" } },
       { type: 5 }
     ];
     expect(textFromWeixinOcItems(items)).toBe("[图片]\ntranscribed\n[文件]\n[视频]");
+    expect(attachmentsFromWeixinOcItems(items)).toMatchObject([
+      {
+        id: "wxoc_image_img-1",
+        type: "image",
+        name: "weixin-oc-image-img-1.jpg",
+        mimeType: "image/jpeg",
+        size: 1234
+      }
+    ]);
+    expect(attachmentsFromWeixinOcItems(items)[0]?.sourceUrl).toMatch(/^weixin-oc:cdn:/);
 
     expect(
       normalizeWeixinOcInboundMessage(
@@ -63,7 +85,12 @@ describe("Weixin OC normalize", () => {
         },
         "default"
       )?.attachments
-    ).toEqual([]);
+    ).toMatchObject([
+      {
+        type: "image",
+        sourceUrl: expect.stringMatching(/^weixin-oc:cdn:/)
+      }
+    ]);
   });
 
   it("builds outbound text items", () => {

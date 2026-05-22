@@ -28,6 +28,7 @@ export type WeixinOcAccountState = {
 
 export type WeixinOcMessageItem = {
   type?: number;
+  msg_id?: string;
   text_item?: {
     text?: string;
   };
@@ -39,6 +40,7 @@ export type WeixinOcMessageItem = {
     media?: WeixinOcMediaRef;
     aeskey?: string;
     mid_size?: number;
+    hd_size?: number;
   };
   video_item?: {
     media?: WeixinOcMediaRef;
@@ -56,6 +58,7 @@ export type WeixinOcMediaRef = {
   encrypt_query_param?: string;
   aes_key?: string;
   encrypt_type?: number;
+  full_url?: string;
 };
 
 export type WeixinOcInboundMessage = {
