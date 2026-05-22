@@ -150,6 +150,8 @@ VFS 路径规则：
 
 通用 HTTP 工具后续再加，并放到高权限等级。
 
+当前实现包含 `http.request` 作为高权限通用 HTTP 工具。它对公网 API 开放，但会阻断 localhost、私有 IPv4、IPv6 本地地址和重定向后的私网目标；权限等级为 level 4，scope 为 `http:request`。
+
 ## 当前实现
 
 运行时代码已经实现：

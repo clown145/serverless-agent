@@ -10,6 +10,16 @@ const TOOL_EXAMPLES: Record<string, Record<string, unknown>> = {
     maxChars: 6000,
     includeLinks: false
   },
+  "http.request": {
+    url: "https://api.github.com/repos/cloudflare/workers-sdk",
+    method: "GET",
+    headers: {
+      accept: "application/json"
+    },
+    query: {},
+    bodyType: "none",
+    maxBytes: 20000
+  },
   "vfs.list_dir": {
     path: "/"
   },

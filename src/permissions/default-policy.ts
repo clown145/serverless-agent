@@ -9,6 +9,7 @@ const OWNER_SCOPES = [
   "message:send_image",
   "message:send_buttons",
   "web:search",
+  "http:request",
   "schedule:read",
   "schedule:write"
 ];

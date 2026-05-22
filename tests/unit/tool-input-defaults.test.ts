@@ -12,6 +12,11 @@ describe("tool input defaults", () => {
       url: "https://workers.cloudflare.com",
       maxChars: 6000
     });
+    expect(createToolInputDraft(tool("http.request"))).toMatchObject({
+      url: "https://api.github.com/repos/cloudflare/workers-sdk",
+      method: "GET",
+      bodyType: "none"
+    });
     expect(createToolInputDraft(tool("messaging.send_file"))).toMatchObject({
       platform: "telegram",
       source: {
