@@ -1,5 +1,6 @@
 import type { JsonSchema } from "../core/model/types";
 import type { Env } from "../shared/types/env";
+import type { Platform } from "../shared/types/internal-message";
 
 export type PermissionLevel = 0 | 1 | 2 | 3 | 4 | 5;
 
@@ -23,6 +24,10 @@ export type ToolSource = {
   name: string;
 };
 
+export type ToolExecutionBehavior = {
+  preventsFinalResponse?: boolean;
+};
+
 export type ToolAnnotations = {
   title?: string;
   readOnlyHint?: boolean;
@@ -38,6 +43,8 @@ export type ToolDefinition = {
   inputSchema: JsonSchema;
   outputSchema?: JsonSchema;
   annotations?: ToolAnnotations;
+  platforms?: Platform[];
+  behavior?: ToolExecutionBehavior;
   permission: PermissionRequirement;
   sideEffect: ToolSideEffect;
   timeoutMs: number;

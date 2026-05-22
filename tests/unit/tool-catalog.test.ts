@@ -24,5 +24,17 @@ describe("tool catalog", () => {
     expect(catalog.map((tool) => tool.name)).toContain("messaging.send_file");
     expect(catalog.map((tool) => tool.name)).toContain("messaging.send_image");
     expect(catalog.map((tool) => tool.name)).toContain("messaging.send_buttons");
+    expect(catalog.map((tool) => tool.name)).toContain("telegram.send_file");
+    expect(catalog.map((tool) => tool.name)).toContain("telegram.send_image");
+    expect(catalog.map((tool) => tool.name)).toContain("weixin_oc.send_file");
+    expect(catalog.map((tool) => tool.name)).toContain("weixin_oc.send_image");
+    expect(catalog.find((tool) => tool.name === "weixin_oc.send_image")?.platforms).toEqual([
+      "weixin_oc"
+    ]);
+    expect(
+      catalog.find((tool) => tool.name === "weixin_oc.send_image")?.behavior
+    ).toMatchObject({
+      preventsFinalResponse: true
+    });
   });
 });

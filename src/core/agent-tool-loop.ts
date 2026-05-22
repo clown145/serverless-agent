@@ -3,6 +3,7 @@ import type { Env } from "../shared/types/env";
 import type { InternalMessage } from "../shared/types/internal-message";
 import { selectSkillForMessage } from "../skills/skill-selector";
 import { filterToolsForSkill } from "../skills/skill-tools";
+import { filterToolsForPlatform } from "../tools/platform-availability";
 import type { SelectedSkill } from "../skills/skill-selector";
 import {
   completeRun
@@ -51,7 +52,10 @@ export async function executeAgentToolLoop(
     : context.history;
   await recordContextStep(env, runId, message.agentId, selectedSkill);
 
-  const registryTools = filterToolsForSkill(registry.list(), selectedSkill);
+  const registryTools = filterToolsForPlatform(
+    filterToolsForSkill(registry.list(), selectedSkill),
+    message.platform
+  );
   const allowedToolNames = new Set(
     registryTools.map((tool) => tool.definition.name)
   );
@@ -165,8 +169,10 @@ async function executeToolCall(
 
   return {
     result,
-    sentMessage:
-      toolCall.name === "messaging.send_message" && result.status === "success"
+    sentMessage: Boolean(
+      registry.get(toolCall.name)?.definition.behavior?.preventsFinalResponse &&
+      result.status === "success"
+    )
   };
 }
 

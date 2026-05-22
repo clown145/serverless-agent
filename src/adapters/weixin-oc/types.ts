@@ -83,7 +83,58 @@ export type WeixinOcTextItem = {
   };
 };
 
-export type WeixinOcSendItem = WeixinOcTextItem | Record<string, unknown>;
+export type WeixinOcImageItem = {
+  type: 2;
+  image_item: {
+    media: WeixinOcMediaRef;
+    mid_size: number;
+  };
+};
+
+export type WeixinOcFileItem = {
+  type: 4;
+  file_item: {
+    media: WeixinOcMediaRef;
+    file_name: string;
+    len: string;
+  };
+};
+
+export type WeixinOcSendItem =
+  | WeixinOcTextItem
+  | WeixinOcImageItem
+  | WeixinOcFileItem
+  | Record<string, unknown>;
+
+export type WeixinOcMediaUploadKind = "image" | "file";
+
+export type WeixinOcUploadedMedia = {
+  filekey: string;
+  downloadEncryptedQueryParam: string;
+  aesKeyBase64: string;
+  plainSize: number;
+  ciphertextSize: number;
+};
+
+export type WeixinOcGetUploadUrlInput = {
+  filekey: string;
+  media_type: number;
+  to_user_id: string;
+  rawsize: number;
+  rawfilemd5: string;
+  filesize: number;
+  thumb_rawsize?: number;
+  thumb_rawfilemd5?: string;
+  thumb_filesize?: number;
+  no_need_thumb?: boolean;
+  aeskey: string;
+};
+
+export type WeixinOcGetUploadUrlResult = {
+  upload_param?: string;
+  thumb_upload_param?: string;
+  upload_full_url?: string;
+};
 
 export type WeixinOcSendResult = {
   ret?: number;
@@ -92,4 +143,3 @@ export type WeixinOcSendResult = {
   message_id?: string;
   msg_id?: string;
 };
-

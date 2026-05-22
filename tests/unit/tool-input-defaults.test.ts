@@ -18,6 +18,12 @@ describe("tool input defaults", () => {
         type: "vfs"
       }
     });
+    expect(createToolInputDraft(tool("weixin_oc.send_image"))).toMatchObject({
+      source: {
+        type: "url"
+      },
+      caption: "image"
+    });
   });
 
   it("falls back to required JSON schema properties", () => {

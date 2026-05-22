@@ -43,6 +43,15 @@ export const sendImageInputSchema = sendFileInputSchema;
 
 export type SendImageInput = z.infer<typeof sendImageInputSchema>;
 
+export const currentConversationFileInputSchema = z.object({
+  source: fileSourceSchema,
+  caption: z.string().min(1).max(1024).optional(),
+  fileName: z.string().min(1).max(255).optional(),
+  mimeType: z.string().min(1).max(120).optional()
+});
+
+export type CurrentConversationFileInput = z.infer<typeof currentConversationFileInputSchema>;
+
 export const buttonActionSchema = z.enum([
   "agent.message",
   "pending.confirm",
@@ -169,6 +178,27 @@ export const sendFileInputJsonSchema = {
 } as const;
 
 export const sendImageInputJsonSchema = sendFileInputJsonSchema;
+
+export const currentConversationFileInputJsonSchema = {
+  type: "object",
+  properties: {
+    source: fileSourceJsonSchema,
+    caption: {
+      type: "string",
+      description: "Optional caption."
+    },
+    fileName: {
+      type: "string",
+      description: "Optional outgoing file name override."
+    },
+    mimeType: {
+      type: "string",
+      description: "Optional outgoing MIME type override."
+    }
+  },
+  required: ["source"],
+  additionalProperties: false
+} as const;
 
 export const sendButtonsInputJsonSchema = {
   type: "object",

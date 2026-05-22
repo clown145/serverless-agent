@@ -1,5 +1,7 @@
 import type {
   WeixinOcApiConfig,
+  WeixinOcGetUploadUrlInput,
+  WeixinOcGetUploadUrlResult,
   WeixinOcSendItem,
   WeixinOcSendResult,
   WeixinOcUpdatesResponse
@@ -65,6 +67,26 @@ export class WeixinOcApiClient {
       },
       tokenRequired: true,
       timeoutMs
+    });
+  }
+
+  async getUploadUrl(input: WeixinOcGetUploadUrlInput): Promise<WeixinOcGetUploadUrlResult> {
+    return this.requestJson("POST", "ilink/bot/getuploadurl", {
+      payload: {
+        filekey: input.filekey,
+        media_type: input.media_type,
+        to_user_id: input.to_user_id,
+        rawsize: input.rawsize,
+        rawfilemd5: input.rawfilemd5,
+        filesize: input.filesize,
+        thumb_rawsize: input.thumb_rawsize,
+        thumb_rawfilemd5: input.thumb_rawfilemd5,
+        thumb_filesize: input.thumb_filesize,
+        no_need_thumb: input.no_need_thumb,
+        aeskey: input.aeskey,
+        base_info: DEFAULT_BASE_INFO
+      },
+      tokenRequired: true
     });
   }
 

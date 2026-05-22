@@ -13,11 +13,17 @@ import {
   buildWeixinOcTextItem,
   normalizeWeixinOcInboundMessage
 } from "../../adapters/weixin-oc/normalize";
+import {
+  buildWeixinOcFileItem,
+  buildWeixinOcImageItem,
+  uploadWeixinOcMedia
+} from "../../adapters/weixin-oc/media";
 import { getWeixinOcAccountState, withWeixinOcAccountState } from "../../adapters/weixin-oc/state";
 import type { WeixinOcBotConfig } from "../../adapters/weixin-oc/config";
 import type {
   WeixinOcAccountState,
-  WeixinOcLoginSession
+  WeixinOcLoginSession,
+  WeixinOcSendItem
 } from "../../adapters/weixin-oc/types";
 import { createId } from "../../shared/ids";
 import { errorResponse, jsonResponse } from "../../shared/http";
@@ -72,8 +78,14 @@ export class WeixinOcGatewayDurableObject {
         const input = (await request.json().catch(() => ({}))) as {
           userId?: string;
           text?: string;
+          kind?: "text" | "image" | "file";
+          file?: {
+            bytes?: number[];
+            fileName?: string;
+            mimeType?: string;
+          };
         };
-        const result = await this.sendText(agentId, input, integrationId);
+        const result = await this.sendMessage(agentId, input, integrationId);
         return jsonResponse({ ok: result.ok, result }, { status: result.ok ? 200 : 400 });
       }
 
@@ -306,16 +318,29 @@ export class WeixinOcGatewayDurableObject {
     }
   }
 
-  private async sendText(
+  private async sendMessage(
     agentId: string,
-    input: { userId?: string; text?: string },
+    input: {
+      userId?: string;
+      text?: string;
+      kind?: "text" | "image" | "file";
+      file?: {
+        bytes?: number[];
+        fileName?: string;
+        mimeType?: string;
+      };
+    },
     integrationId?: string
   ): Promise<{ ok: boolean; providerMessageId?: string; error?: string }> {
     const config = await this.requireConfig(agentId, integrationId);
     const userId = input.userId?.trim();
     const text = input.text?.trim();
-    if (!userId || !text) {
-      return { ok: false, error: "userId and text are required" };
+    const kind = input.kind ?? "text";
+    if (!userId) {
+      return { ok: false, error: "userId is required" };
+    }
+    if (kind === "text" && !text) {
+      return { ok: false, error: "text is required" };
     }
     if (!config.token) {
       return { ok: false, error: "Weixin OC is not logged in" };
@@ -329,21 +354,64 @@ export class WeixinOcGatewayDurableObject {
       };
     }
 
-    const payload = await this.createClient(config).sendMessage({
-      toUserId: userId,
-      contextToken,
-      itemList: [buildWeixinOcTextItem(text)]
-    });
-    if (!isSuccessfulWeixinOcPayload(payload as Record<string, unknown>)) {
-      return {
-        ok: false,
-        error: formatWeixinOcApiError(payload as Record<string, unknown>)
-      };
+    const itemList: WeixinOcSendItem[] = [];
+    if (kind === "text") {
+      itemList.push(buildWeixinOcTextItem(text ?? ""));
+    } else {
+      const file = parseGatewayFile(input.file);
+      if (!file) {
+        return { ok: false, error: "file bytes, fileName, and mimeType are required" };
+      }
+      if (text) {
+        itemList.push(buildWeixinOcTextItem(text));
+      }
+      const client = this.createClient(config);
+      const uploaded = await uploadWeixinOcMedia({
+        client,
+        cdnBaseUrl: config.cdnBaseUrl,
+        toUserId: userId,
+        file,
+        kind
+      });
+      itemList.push(
+        kind === "image"
+          ? buildWeixinOcImageItem(uploaded)
+          : buildWeixinOcFileItem({
+              uploaded,
+              fileName: file.fileName
+            })
+      );
+    }
+
+    return this.sendItems(config, userId, contextToken, itemList);
+  }
+
+  private async sendItems(
+    config: WeixinOcBotConfig,
+    userId: string,
+    contextToken: string,
+    itemList: WeixinOcSendItem[]
+  ): Promise<{ ok: boolean; providerMessageId?: string; error?: string }> {
+    let providerMessageId: string | undefined;
+
+    for (const item of itemList) {
+      const payload = await this.createClient(config).sendMessage({
+        toUserId: userId,
+        contextToken,
+        itemList: [item]
+      });
+      if (!isSuccessfulWeixinOcPayload(payload as Record<string, unknown>)) {
+        return {
+          ok: false,
+          error: formatWeixinOcApiError(payload as Record<string, unknown>)
+        };
+      }
+      providerMessageId = payload.message_id ?? payload.msg_id ?? createId("wxoc_sent");
     }
 
     return {
       ok: true,
-      providerMessageId: payload.message_id ?? payload.msg_id ?? createId("wxoc_sent")
+      providerMessageId
     };
   }
 
@@ -530,4 +598,24 @@ function qrImageUrl(qrcodeImgContent: string): string {
 
 function stringFromUnknown(value: unknown): string | undefined {
   return typeof value === "string" && value.trim() ? value.trim() : undefined;
+}
+
+function parseGatewayFile(input: {
+  bytes?: number[];
+  fileName?: string;
+  mimeType?: string;
+} | undefined): { bytes: Uint8Array; fileName: string; mimeType: string } | undefined {
+  const fileName = input?.fileName?.trim();
+  const mimeType = input?.mimeType?.trim();
+  if (!fileName || !mimeType || !Array.isArray(input?.bytes)) {
+    return undefined;
+  }
+  if (input.bytes.some((byte) => !Number.isInteger(byte) || byte < 0 || byte > 255)) {
+    return undefined;
+  }
+  return {
+    bytes: new Uint8Array(input.bytes),
+    fileName,
+    mimeType
+  };
 }

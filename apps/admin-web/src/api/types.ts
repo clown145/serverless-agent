@@ -330,6 +330,10 @@ export type ToolCatalogItem = {
     scopes: string[];
     confirmationRequired?: boolean;
   };
+  platforms?: ChatMessage["platform"][];
+  behavior?: {
+    preventsFinalResponse?: boolean;
+  };
   sideEffect: "none" | "workspace_write" | "external_write" | "dangerous";
   timeoutMs: number;
 };

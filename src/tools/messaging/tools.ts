@@ -1,10 +1,12 @@
 import { getPlatformOutboundAdapter } from "../../platforms/outbound/registry";
-import { insertOutboundTextMessage } from "../../storage/repositories/messages-repository";
 import type { Platform } from "../../shared/types/internal-message";
+import { insertOutboundTextMessage } from "../../storage/repositories/messages-repository";
 import { builtinTool } from "../builtin/source";
-import type { RegisteredTool, ToolResult } from "../types";
+import type { RegisteredTool } from "../types";
 import { resolveOutboundFile } from "./file-source";
+import { platformMessagingTools } from "./platform-tools";
 import { failed } from "./result";
+import { handlePlatformResult, unsupported } from "./send-common";
 import {
   sendButtonsInputJsonSchema,
   sendButtonsInputSchema,
@@ -21,7 +23,8 @@ export function createMessagingTools(): RegisteredTool[] {
     sendMessageTool(),
     sendFileTool(),
     sendImageTool(),
-    sendButtonsTool()
+    sendButtonsTool(),
+    ...platformMessagingTools()
   ];
 }
 
@@ -39,6 +42,9 @@ function sendMessageTool(): RegisteredTool {
       permission: {
         level: 3,
         scopes: ["message:send"]
+      },
+      behavior: {
+        preventsFinalResponse: true
       },
       sideEffect: "external_write",
       timeoutMs: 10_000
@@ -96,6 +102,9 @@ function sendFileTool(): RegisteredTool {
         level: 3,
         scopes: ["message:send_file"]
       },
+      behavior: {
+        preventsFinalResponse: true
+      },
       sideEffect: "external_write",
       timeoutMs: 20_000
     },
@@ -143,6 +152,9 @@ function sendImageTool(): RegisteredTool {
       permission: {
         level: 3,
         scopes: ["message:send_image"]
+      },
+      behavior: {
+        preventsFinalResponse: true
       },
       sideEffect: "external_write",
       timeoutMs: 20_000
@@ -192,6 +204,9 @@ function sendButtonsTool(): RegisteredTool {
         level: 3,
         scopes: ["message:send_buttons"]
       },
+      behavior: {
+        preventsFinalResponse: true
+      },
       sideEffect: "external_write",
       timeoutMs: 10_000
     },
@@ -221,43 +236,4 @@ function sendButtonsTool(): RegisteredTool {
       return handlePlatformResult(context, parsed.data, result);
     }
   });
-}
-
-async function handlePlatformResult(
-  context: Parameters<RegisteredTool["execute"]>[0],
-  input: {
-    platform: Platform;
-    conversationId: string;
-    text?: string;
-    caption?: string;
-  },
-  result: { ok: boolean; providerMessageId?: string; error?: string }
-): Promise<ToolResult> {
-  if (!result.ok) {
-    return failed("platform_send_failed", result.error ?? "Platform send failed", true);
-  }
-
-  const message = await insertOutboundTextMessage(context.env.AGENT_DB, {
-    agentId: context.agentId,
-    platform: input.platform,
-    conversationId: input.conversationId,
-    text: input.text ?? input.caption ?? "[attachment]",
-    platformMessageId: result.providerMessageId
-  });
-
-  return {
-    status: "success",
-    output: {
-      messageId: message.id,
-      providerMessageId: result.providerMessageId
-    }
-  };
-}
-
-function unsupported(platform: string, capability: string): ToolResult {
-  return failed(
-    "capability_not_supported",
-    `${platform} does not support ${capability}`,
-    false
-  );
 }

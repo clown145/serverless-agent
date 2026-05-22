@@ -1,5 +1,6 @@
 import { physicalConversationForPlatform } from "../../conversations/ids";
 import type {
+  OutboundFile,
   PlatformOutboundAdapter,
   PlatformSendResult
 } from "../../platforms/outbound/types";
@@ -12,6 +13,14 @@ export function createWeixinOcOutboundAdapter(env: Env): PlatformOutboundAdapter
     platform: "weixin_oc",
     sendText: (input) =>
       sendWeixinOcText(env, input.agentId, input.conversationId, input.text),
+    sendFile: (input) =>
+      sendWeixinOcFile(env, input.agentId, input.conversationId, input.file, {
+        caption: input.caption
+      }),
+    sendImage: (input) =>
+      sendWeixinOcImage(env, input.agentId, input.conversationId, input.file, {
+        caption: input.caption
+      }),
     sendActivity: (input) =>
       sendWeixinOcActivity(env, input.agentId, input.conversationId)
   };
@@ -32,8 +41,29 @@ export async function sendWeixinOcText(
 
   return sendViaGateway(env, agentId, {
     userId: target.userId,
-    text
+    text,
+    kind: "text"
   });
+}
+
+export async function sendWeixinOcFile(
+  env: Env,
+  agentId: string,
+  conversationId: string,
+  file: OutboundFile,
+  options: { caption?: string } = {}
+): Promise<PlatformSendResult> {
+  return sendWeixinOcMedia(env, agentId, conversationId, file, "file", options);
+}
+
+export async function sendWeixinOcImage(
+  env: Env,
+  agentId: string,
+  conversationId: string,
+  file: OutboundFile,
+  options: { caption?: string } = {}
+): Promise<PlatformSendResult> {
+  return sendWeixinOcMedia(env, agentId, conversationId, file, "image", options);
 }
 
 export async function sendWeixinOcActivity(
@@ -66,7 +96,16 @@ export async function sendWeixinOcActivity(
 async function sendViaGateway(
   env: Env,
   agentId: string,
-  body: { userId: string; text: string }
+  body: {
+    userId: string;
+    text?: string;
+    kind: "text" | "image" | "file";
+    file?: {
+      bytes: number[];
+      fileName: string;
+      mimeType: string;
+    };
+  }
 ): Promise<PlatformSendResult> {
   const response = await fetchWeixinOcGateway(env, agentId, "/send", {
     method: "POST",
@@ -90,3 +129,29 @@ async function sendViaGateway(
   return payload?.result ?? { ok: false, error: "Weixin OC send returned no result" };
 }
 
+function sendWeixinOcMedia(
+  env: Env,
+  agentId: string,
+  conversationId: string,
+  file: OutboundFile,
+  kind: "image" | "file",
+  options: { caption?: string }
+): Promise<PlatformSendResult> {
+  const target = parseWeixinOcConversationId(
+    physicalConversationForPlatform("weixin_oc", conversationId)
+  );
+  if (!target) {
+    return Promise.resolve({ ok: false, error: "Conversation is not a Weixin OC conversation" });
+  }
+
+  return sendViaGateway(env, agentId, {
+    userId: target.userId,
+    text: options.caption,
+    kind,
+    file: {
+      bytes: Array.from(file.bytes),
+      fileName: file.fileName,
+      mimeType: file.mimeType
+    }
+  });
+}

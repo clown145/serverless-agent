@@ -64,6 +64,34 @@ const TOOL_EXAMPLES: Record<string, Record<string, unknown>> = {
     },
     caption: "image"
   },
+  "telegram.send_file": {
+    source: {
+      type: "vfs",
+      path: "/workspace/report.md"
+    },
+    caption: "report"
+  },
+  "telegram.send_image": {
+    source: {
+      type: "url",
+      url: "https://example.com/image.jpg"
+    },
+    caption: "image"
+  },
+  "weixin_oc.send_file": {
+    source: {
+      type: "vfs",
+      path: "/workspace/report.md"
+    },
+    caption: "report"
+  },
+  "weixin_oc.send_image": {
+    source: {
+      type: "url",
+      url: "https://example.com/image.jpg"
+    },
+    caption: "image"
+  },
   "messaging.send_buttons": {
     platform: "telegram",
     conversationId: "telegram:123456",

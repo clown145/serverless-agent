@@ -9,6 +9,7 @@ import { nowIso } from "../../shared/time";
 import { createBuiltinTools } from "../builtin/create-builtin-tools";
 import { createEnabledMcpTools } from "../mcp/runtime-tools";
 import { evaluateToolPermission } from "../permissions/policy";
+import { toolAllowsPlatform } from "../platform-availability";
 import type { RegisteredTool, ToolResult } from "../types";
 import {
   createPendingToolResult,
@@ -17,6 +18,7 @@ import {
 
 export type ToolRegistry = {
   execute(name: string, input: RegistryExecuteInput): Promise<ToolResult>;
+  get(name: string): RegisteredTool | undefined;
   list(): RegisteredTool[];
 };
 
@@ -45,12 +47,21 @@ export function createToolRegistry(
   const byName = new Map(tools.map((tool) => [tool.definition.name, tool]));
 
   return {
+    get: (name) => byName.get(name),
     list: () => tools,
 
     execute: async (name, input) => {
       const tool = byName.get(name);
       if (!tool) {
         return failed("unknown_tool", `Unknown tool: ${name}`, false);
+      }
+
+      if (!toolAllowsPlatform(tool.definition, input.platform)) {
+        return failed(
+          "platform_tool_unavailable",
+          `${name} is only available on ${tool.definition.platforms?.join(", ")}`,
+          false
+        );
       }
 
       const toolCallId = createId("tool");

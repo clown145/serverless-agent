@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  currentConversationFileInputSchema,
   sendButtonsInputSchema,
   sendFileInputSchema,
   sendImageInputSchema
@@ -40,6 +41,23 @@ describe("messaging schemas", () => {
       source: {
         type: "attachment"
       }
+    });
+  });
+
+  it("accepts current conversation platform media inputs", () => {
+    expect(
+      currentConversationFileInputSchema.parse({
+        source: {
+          type: "url",
+          url: "https://example.com/image.jpg"
+        },
+        caption: "image"
+      })
+    ).toMatchObject({
+      source: {
+        type: "url"
+      },
+      caption: "image"
     });
   });
 

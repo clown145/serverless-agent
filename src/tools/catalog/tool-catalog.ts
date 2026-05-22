@@ -20,6 +20,8 @@ export type ToolCatalogItem = StandardToolDefinition & {
   description: string;
   source: ToolSource;
   permission: ToolDefinition["permission"];
+  platforms?: ToolDefinition["platforms"];
+  behavior?: ToolDefinition["behavior"];
   sideEffect: ToolDefinition["sideEffect"];
   timeoutMs: number;
 };
@@ -34,6 +36,8 @@ export function toToolCatalogItem(tool: RegisteredTool): ToolCatalogItem {
     description: tool.definition.description,
     source: tool.source,
     permission: tool.definition.permission,
+    platforms: tool.definition.platforms,
+    behavior: tool.definition.behavior,
     sideEffect: tool.definition.sideEffect,
     timeoutMs: tool.definition.timeoutMs
   };
