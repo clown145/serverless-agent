@@ -10,6 +10,7 @@
 - [architecture/STORAGE_MODEL.md](architecture/STORAGE_MODEL.md): D1、R2、KV、DO storage 的职责。
 - [architecture/TOOLS_AND_BOUNDARIES.md](architecture/TOOLS_AND_BOUNDARIES.md): 工具系统、VFS、Git、邮件、搜索边界。
 - [architecture/FAILURE_AND_CONCURRENCY.md](architecture/FAILURE_AND_CONCURRENCY.md): 失败恢复、重试、幂等和并发模型。
+- [architecture/PLATFORM_INTEGRATIONS.md](architecture/PLATFORM_INTEGRATIONS.md): Telegram、微信、企业微信及 QQ 官方机器人的网关集成与会话维持原理。
 
 ## 总体拓扑
 

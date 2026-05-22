@@ -2,11 +2,41 @@
 
 这个项目推荐用 GitHub Actions 部署到 Cloudflare Workers，不需要在 Cloudflare Dashboard 里绑定仓库。
 
-部署流程参考了 `cloud-mail` 的做法：Actions 读取 GitHub secrets/vars，自动解析或创建 Cloudflare 资源，把 D1/KV 等 ID 写进临时 Wrangler 配置，然后执行 migration 和 deploy。
+## 极速开始 (Fork & Deploy)
 
-参考：
+只要 Fork 本仓库并配置好 GitHub 环境变量，即可实现一键自动部署：
 
-- https://github.com/maillab/cloud-mail/blob/main/.github%2Fworkflows%2Fdeploy-cloudflare.yml
+### 第一步：Fork 仓库
+1. 点击 GitHub 页面右上角的 **Fork** 按钮，将本仓库 Fork 到你自己的账号下。
+
+### 第二步：配置 GitHub Secrets & Variables
+在你自己仓库的 **Settings -> Secrets and variables -> Actions** 页面配置以下项：
+
+#### 1. 必须配置的 Secrets (密文)
+- `CLOUDFLARE_ACCOUNT_ID`：你的 Cloudflare 账户 ID。
+- `CLOUDFLARE_API_TOKEN`：具有 Workers、D1、KV、R2、Queues 编辑/写入权限的 API Token。
+- `INTERNAL_ADMIN_TOKEN`：后台管理系统 Admin WebUI 登录及加解密所需的密钥（请设置一个强密码）。
+
+#### 2. 可选配置的 Variables (变量)
+- `WORKER_NAME`：自定义部署的 Worker 名称（默认 `serverless-agent`）。
+- `AGENT_TIMEZONE`：定时任务的时区（默认 `Asia/Shanghai`）。
+- `MODEL_PROVIDER`：默认大模型提供商（默认 `mock`，可选 `openai` 或 `gemini`）。
+
+### 第三步：触发部署工作流
+1. 进入你仓库的 **Actions** 标签页。
+2. **启用 Actions（关键）**：由于 GitHub 默认对 Fork 的仓库禁用 Actions，你需要先点击页面中的大绿色按钮 **"I understand my workflows, go ahead and enable them"**。
+3. 在左侧列表选择 **Deploy to Cloudflare Workers** 工作流。
+4. 点击右侧的 **Run workflow** 手动触发部署（首轮成功部署后，后续当你同步上游代码或推送到 `main` 分支时，也会自动触发更新部署）。
+5. 工作流运行成功后，所有依赖资源（D1、KV、R2、Queue）都会自动创建并配置好，无需手动操作。
+
+### 第四步：访问后台管理端
+部署成功后，访问以下地址进入管理控制台：
+```text
+https://<你的Worker子域名>.workers.dev/ui
+```
+输入你配置的 `INTERNAL_ADMIN_TOKEN` 即可登录并开始配置你的 AI Agent。
+
+---
 
 ## Required Secrets
 

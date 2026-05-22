@@ -1,81 +1,80 @@
 # Roadmap
 
-## Phase 0: 架构和规范
+下面是 `serverless-agent` 平台的开发阶段图，展示了已完成的核心能力和后续演进路线。
 
-- 建立仓库。
-- 固定目录结构。
-- 写清楚模块边界。
-- 定义内部消息、VFS、tool、skill manifest 草案。
-- 明确 Cloudflare 平台映射。
+## Phase 0: 架构和规范 🟢 [已完成]
 
-## Phase 1: 最小可运行内核
+- `[x]` 建立仓库。
+- `[x]` 固定目录结构。
+- `[x]` 划分模块边界。
+- `[x]` 定义内部消息、VFS、tool、skill manifest 规范草案。
+- `[x]` 明确 Cloudflare 平台映射。
 
-- Worker HTTP 入口。
-- Queue consumer。
-- Agent Durable Object。
-- D1 schema。
-- R2 VFS。
-- 基础 audit log。
-- Telegram webhook。
-- 基础消息回复。
+## Phase 1: 最小可运行内核 🟢 [已完成]
 
-## Phase 2: Skills 和工具系统
+- `[x]` Worker HTTP 入口与路由分发。
+- `[x]` Queue consumer 异步任务处理。
+- `[x]` Agent Durable Object 实例管理与消息串行化。
+- `[x]` D1 关系型数据库 schema 迁移与存储。
+- `[x]` R2 虚拟文件系统 (VFS) 物理层实现。
+- `[x]` 基础 audit log 审计。
+- `[x]` Telegram Webhook 收发与格式化退回。
 
-- skill manifest 解析。
-- skill loader。
-- tool registry。
-- VFS 工具。
-- messaging 工具。
-- scheduler 工具。
-- permission engine。
+## Phase 2: Skills 和工具系统 🟢 [已完成]
 
-## Phase 3: 未来任务和心跳
+- `[x]` skill manifest 解析。
+- `[x]` skill loader 运行时选择与加载。
+- `[x]` tool registry 动态工具注册表。
+- `[x]` VFS 工具（ls, cat, write, rm 等）。
+- `[x]` messaging 平台消息下行发送工具。
+- `[x]` scheduler 定时器操作工具。
+- `[x]` permission engine 细粒度工具调用授权策略。
 
-- Durable Object alarms。
-- Cron sweep。
-- schedule 表。
-- heartbeat 表。
-- retry policy。
-- dead-letter 处理。
+## Phase 3: 未来任务和心跳 🟢 [已完成]
 
-## Phase 4: 多平台接入
+- `[x]` Durable Object alarms 周期心跳。
+- `[x]` Cron sweeper 定期清理与到期调度。
+- `[x]` schedules 与 heartbeats 核心表管理。
+- `[x]` 失败重试逻辑 (retry policy)。
 
-- QQ adapter。
-- 平台账号绑定。
-- 多平台 identity 映射。
-- 群聊权限策略。
-- 平台限流。
+## Phase 4: 多平台接入 🟢 [已完成]
 
-## Phase 5: 扩展工具
+- `[x]` Telegram 适配器。
+- `[x]` QQ 官方机器人长连接网关 (QQ Official Gateway DO)。
+- `[x]` 微信公众号与个人微信网关 (Weixin OC DO) 及扫码登录流程 *(注：未经真实环境测试)*。
+- `[x]` 企业微信 Webhook 收发适配。
+- `[x]` 多平台 identity 绑定与解析映射。
+- `[x]` 平台消息限流与安全沙箱。
 
-- GitHub API sync。
-- 入站邮件处理。
-- 出站邮件工具。
-- RSS/URL monitor。
-- 本地搜索。
-- 外部搜索 API。
+## Phase 5: 扩展工具 🟡 [部分完成]
 
-## Phase 6: 管理面板
+- `[x]` 外部搜索提供商 (Tavily & Exa API) 对接。
+- `[ ]` GitHub / GitLab API sync 工具（含 Repo 读取、Commit、PR）。
+- `[ ]` 入站邮件接收与解析工具。
+- `[ ]` 出站邮件发送工具。
+- `[ ]` RSS/URL 网页变动监控。
 
-- Agent 配置。
-- Skill 管理。
-- 权限管理。
-- Run 查看。
-- Audit log 查看。
-- 手动重试和暂停。
+## Phase 6: 管理面板 (Admin WebUI) 🟢 [已完成]
 
-## Phase 7: 高级能力
+- `[x]` 模型设置与 Agent 绑定配置。
+- `[x]` 运行日志 (Runs) 与步序记录 (Steps) 查看。
+- `[x]` 调试沙盒控制台 (Chat/Debug Console)。
+- `[x]` 在线虚拟文件系统 (VFS) 浏览器。
+- `[x]` 定时任务 (Schedules) 在线添加、查看与管理。
+- `[x]` Pending Actions 手动审批与拒绝。
+- `[x]` 权限策略 (Permission Policies) 编辑与查看。
 
-- 多 agent 协作。
-- 长期计划系统。
-- 自动生成和更新 skills。
-- Vectorize 或外部向量库。
-- 容器 runner 或外部 runner 接入。
+## Phase 7: 高级能力 🔴 [规划中]
 
-## 暂不做
+- `[ ]` 多 Agent 协同与工作流编排。
+- `[ ]` 长期计划系统 (Long-term planning & self-reflection)。
+- `[ ]` 自动化代码修改、Skill 自我更新升级。
+- `[ ]` Cloudflare Vectorize 向量检索引擎接入。
+- `[ ]` 外部安全容器/执行沙箱 (Container runner) 接入。
 
-- 真正 `git pull`。
-- 任意 shell 执行。
-- 任意代码运行。
-- 浏览器自动化。
-- 无限制自主外发消息。
+## 暂不做/安全边界 🚫
+
+- `[x]` 不执行物理主机的 `git pull` 与本地 merge。
+- `[x]` 不直接运行本地 shell 命令。
+- `[x]` 不提供无限制的外部网页浏览器自动化控制。
+- `[x]` 严禁 LLM 在未经 Pending Action 确认的情况下，向外部群组外发群发无限制的广播消息。

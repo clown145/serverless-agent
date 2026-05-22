@@ -5,10 +5,10 @@
 ## 目标
 
 - 运行在 Cloudflare Workers / Queues / Durable Objects / R2 / D1 上。
-- 支持 Telegram、QQ、Webhook 等多平台入口。
-- 使用 R2 + D1 实现虚拟文件系统，用来存放 skills、workspace、artifacts、memory。
-- 用 Durable Object 或 Cloudflare Agents 维护每个 agent 的长期状态和串行执行。
-- 用工具权限系统控制“大权限”操作，例如发消息、发邮件、同步 GitHub、调用外部 API。
+- 已支持 Telegram、QQ 官方机器人、微信公众号/个人微信、企业微信、Web UI 等多平台入口。
+- 使用 R2 + D1 实现虚拟文件系统 (VFS)，存放 skills、workspace、artifacts、memory。
+- 用 Durable Object 维护每个 agent 的长期状态和串行执行（保证同一会话请求串行化）。
+- 用工具权限系统控制“高特权”操作，例如发送平台消息、读写文件系统等，支持 Pending 确认逻辑。
 - 支持心跳、未来任务、定时任务、失败重试和审计日志。
 
 ## 非目标
@@ -50,20 +50,27 @@ D1 / R2 / KV / External APIs
 - [docs/ADMIN_WEBUI.md](docs/ADMIN_WEBUI.md): React/Vite 管理控制台和 `platform:webui` 入口。
 - [docs/GITHUB_ACTIONS_DEPLOY.md](docs/GITHUB_ACTIONS_DEPLOY.md): 不绑定 Cloudflare 仓库的 GitHub Actions 部署方式。
 - [docs/ROADMAP.md](docs/ROADMAP.md): MVP 到长期版本路线。
+- [docs/architecture/PLATFORM_INTEGRATIONS.md](docs/architecture/PLATFORM_INTEGRATIONS.md): 各社交平台网关长连接与拉取消息的具体实现原理。
 - [specs/](specs): 内部消息、工具、VFS、skill manifest 的接口草案。
 
-## 第一版 MVP
+## 当前实现与功能状态
 
-第一版只做稳定内核：
+目前仓库已经超越了最初的 MVP 阶段，核心内核以及大部分周边平台生态均已实现，并且有完备的单元测试覆盖。
 
-1. Telegram webhook 收发消息。
-2. 每个用户或会话绑定一个 agent state。
-3. R2-backed 虚拟文件系统。
-4. 基础 skills 加载。
-5. 基础工具：读文件、写文件、列目录、发消息、创建未来任务。
-6. 定时任务和心跳。
-7. 简单权限系统。
-8. 运行日志和错误记录。
-9. 最小 Admin WebUI。
+### 1. 已实现的核心功能 ✅
+- **多平台收发与网关适配**：
+  - **Telegram Webhook**：完备的收发消息及富文本格式化回退（HTML/Markdown 转纯文本）容错机制。
+  - **QQ 官方机器人 (QQ Official)**：利用 Durable Object 进行网关长连接维护和会话维持。
+  - **微信公众号 / 个人微信 (Weixin OC)**：基于腾讯 `iLink` 接口实现扫码登录、状态轮询与长连接保持。*(注：未经真实环境测试，仅通过 Mock 单元测试验证)*
+  - **企业微信 (Wecom)**：支持 Webhook 接收。
+- **Agent 运行循环与上下文**：基于 LLM 决策、具备可选技能（Skills）过滤与运行时工具注册机制的 `agent-tool-loop`。
+- **R2-backed 虚拟文件系统 (VFS)**：提供 Agent 读写文件、管理工作区和归档的虚拟目录机制。
+- **定时与未来任务 (Scheduler)**：基于 Durable Object Alarms 和 Cron Triggers 的心跳、未来任务调度、失败重试等。
+- **权限与确认机制 (Permissions & Pending Actions)**：提供精细化策略控制，支持针对“发消息、调用高特权 API”等敏感操作的 Pending 确认流程。
+- **功能齐备的后台管理端 (Admin WebUI)**：React + Vite 构建的仪表盘，支持多语言 (i18n)、模型配置、三方平台对接、调试沙盒、Runs 运行日志查看、在线文件系统操作以及审批 Pending Actions。
+- **搜索服务对接 (Search Providers)**：集成了 **Tavily** 与 **Exa** 外部搜索提供商。
 
-QQ、GitHub 同步、邮件、搜索等能力作为独立工具逐步接入。
+### 2. 计划与建设中的能力 🚧
+- **Git 工具**：设计已归档，后续计划通过 GitHub/GitLab API 逐步接入完整的代码仓读取、Skills 同步、Commit 与 PR 创建工具。
+- **邮件服务对接**：入站邮件接收解析与出站邮件发送工具。
+- **RSS/URL 监控监控器**。
