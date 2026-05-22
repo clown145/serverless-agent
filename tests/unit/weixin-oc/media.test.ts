@@ -7,7 +7,8 @@ import {
 const uploaded = {
   filekey: "file-key",
   downloadEncryptedQueryParam: "download-param",
-  aesKeyBase64: "YWVzLWtleQ==",
+  aesKeyHex: "00112233445566778899aabbccddeeff",
+  aesKeyTransportBase64: "MDAxMTIyMzM0NDU1NjY3Nzg4OTlhYWJiY2NkZGVlZmY=",
   plainSize: 12,
   ciphertextSize: 16
 };
@@ -19,9 +20,10 @@ describe("Weixin OC media", () => {
       image_item: {
         media: {
           encrypt_query_param: "download-param",
-          aes_key: "YWVzLWtleQ==",
+          aes_key: "MDAxMTIyMzM0NDU1NjY3Nzg4OTlhYWJiY2NkZGVlZmY=",
           encrypt_type: 1
         },
+        aeskey: "00112233445566778899aabbccddeeff",
         mid_size: 16
       }
     });
@@ -38,7 +40,7 @@ describe("Weixin OC media", () => {
       file_item: {
         media: {
           encrypt_query_param: "download-param",
-          aes_key: "YWVzLWtleQ==",
+          aes_key: "MDAxMTIyMzM0NDU1NjY3Nzg4OTlhYWJiY2NkZGVlZmY=",
           encrypt_type: 1
         },
         file_name: "report.pdf",

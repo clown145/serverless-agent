@@ -27,6 +27,7 @@ export async function uploadWeixinOcMedia(input: {
   kind: WeixinOcMediaUploadKind;
 }): Promise<WeixinOcUploadedMedia> {
   const aesKey = randomBytes(16);
+  const aesKeyHex = bytesToHex(aesKey);
   const fileKey = randomBytesHex(16);
   const rawSize = input.file.bytes.length;
   const ciphertextSize = aes128EcbPaddedSize(rawSize);
@@ -39,7 +40,7 @@ export async function uploadWeixinOcMedia(input: {
     rawfilemd5: md5Hex(input.file.bytes),
     filesize: ciphertextSize,
     no_need_thumb: true,
-    aeskey: bytesToHex(aesKey)
+    aeskey: aesKeyHex
   });
 
   const downloadEncryptedQueryParam = await uploadBufferToWeixinOcCdn({
@@ -54,7 +55,8 @@ export async function uploadWeixinOcMedia(input: {
   return {
     filekey: fileKey,
     downloadEncryptedQueryParam,
-    aesKeyBase64: bytesToBase64(aesKey),
+    aesKeyHex,
+    aesKeyTransportBase64: bytesToBase64(new TextEncoder().encode(aesKeyHex)),
     plainSize: rawSize,
     ciphertextSize
   };
@@ -68,9 +70,10 @@ export function buildWeixinOcImageItem(
     image_item: {
       media: {
         encrypt_query_param: uploaded.downloadEncryptedQueryParam,
-        aes_key: uploaded.aesKeyBase64,
+        aes_key: uploaded.aesKeyTransportBase64,
         encrypt_type: 1
       },
+      aeskey: uploaded.aesKeyHex,
       mid_size: uploaded.ciphertextSize
     }
   };
@@ -85,7 +88,7 @@ export function buildWeixinOcFileItem(input: {
     file_item: {
       media: {
         encrypt_query_param: input.uploaded.downloadEncryptedQueryParam,
-        aes_key: input.uploaded.aesKeyBase64,
+        aes_key: input.uploaded.aesKeyTransportBase64,
         encrypt_type: 1
       },
       file_name: input.fileName,

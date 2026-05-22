@@ -87,6 +87,7 @@ export type WeixinOcImageItem = {
   type: 2;
   image_item: {
     media: WeixinOcMediaRef;
+    aeskey: string;
     mid_size: number;
   };
 };
@@ -111,7 +112,8 @@ export type WeixinOcMediaUploadKind = "image" | "file";
 export type WeixinOcUploadedMedia = {
   filekey: string;
   downloadEncryptedQueryParam: string;
-  aesKeyBase64: string;
+  aesKeyHex: string;
+  aesKeyTransportBase64: string;
   plainSize: number;
   ciphertextSize: number;
 };
