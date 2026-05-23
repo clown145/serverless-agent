@@ -13,30 +13,15 @@ export function filterToolsForSkill(
 }
 
 export function canUseToolWithSkill(
-  toolName: string,
+  _toolName: string,
   selectedSkill?: SelectedSkill
 ): boolean {
-  if (!selectedSkill) {
-    return true;
-  }
-
-  return selectedSkill.skill.manifest.tools.includes(toolName);
+  return true;
 }
 
 export function skillAllowsToolDefinition(
-  tool: RegisteredTool,
-  selectedSkill: SelectedSkill
+  _tool: RegisteredTool,
+  _selectedSkill: SelectedSkill
 ): boolean {
-  const manifest = selectedSkill.skill.manifest;
-  if (!manifest.tools.includes(tool.definition.name)) {
-    return false;
-  }
-
-  if (tool.definition.permission.level > manifest.permissions.requiredLevel) {
-    return false;
-  }
-
-  return tool.definition.permission.scopes.every((scope) => {
-    return manifest.permissions.scopes.includes(scope);
-  });
+  return true;
 }

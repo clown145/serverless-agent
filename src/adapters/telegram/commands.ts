@@ -14,6 +14,7 @@ const COMMAND_DESCRIPTIONS: Record<string, string> = {
   model: "Show or set the model",
   context: "Show or update context settings",
   compact: "Compact conversation context",
+  "skill-auto-edits": "Toggle skill edit confirmations",
   task: "Create a delayed or recurring task",
   sid: "Show session and permission IDs"
 };
@@ -27,6 +28,7 @@ const MENU_COMMANDS = [
   "model",
   "context",
   "compact",
+  "skill-auto-edits",
   "task",
   "sid"
 ];

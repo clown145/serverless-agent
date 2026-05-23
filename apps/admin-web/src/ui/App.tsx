@@ -13,6 +13,7 @@ import { RunsPanel } from "./panels/RunsPanel";
 import { SchedulesPanel } from "./panels/SchedulesPanel";
 import { SearchPanel } from "./panels/SearchPanel";
 import { SetupPanel } from "./panels/SetupPanel";
+import { SkillsPanel } from "./panels/SkillsPanel";
 import { SystemPanel } from "./panels/SystemPanel";
 import { ToolsPanel } from "./panels/ToolsPanel";
 import { VfsPanel } from "./panels/VfsPanel";
@@ -107,6 +108,7 @@ export function App() {
           {active === "diagnostics" && <DiagnosticsPanel client={client} notify={notify} />}
           {active === "debug" && <DebugPanel client={client} notify={notify} onRun={openRun} />}
           {active === "tools" && <ToolsPanel client={client} notify={notify} />}
+          {active === "skills" && <SkillsPanel client={client} notify={notify} />}
           {active === "search" && <SearchPanel client={client} notify={notify} />}
           {active === "runs" && (
             <RunsPanel client={client} notify={notify} selectedRunId={selectedRunId} />

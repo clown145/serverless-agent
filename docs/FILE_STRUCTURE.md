@@ -104,7 +104,7 @@ React + Vite 管理控制台。
 
 ### `specs/`
 
-内部协议草案。包括消息格式、工具调用格式、VFS 规则、skill manifest。这里的文档应该足够精确，后续可以直接转成 TypeScript 类型。
+内部协议草案。包括消息格式、工具调用格式、VFS 规则、Skill `SKILL.md` 规范。这里的文档应该足够精确，后续可以直接转成 TypeScript 类型。
 
 ### `infra/cloudflare/`
 
@@ -252,7 +252,7 @@ src/tools/git/
 
 ### `src/skills/`
 
-skill 加载器和 manifest 解析器。这里不放用户安装的 skill 内容；真实 skill 内容存 VFS。
+skill 加载器、`SKILL.md` frontmatter 解析器和管理服务。这里不放用户安装的 skill 内容；真实 skill 内容存 VFS。
 
 ### `src/observability/`
 
@@ -286,7 +286,7 @@ skill 加载器和 manifest 解析器。这里不放用户安装的 skill 内容
 - 处理权限策略、确认请求：放 `src/permissions`。
 - 处理可被 agent 调用的能力：放 `src/tools/{domain}`。
 - 处理未来任务和心跳：放 `src/scheduler`。
-- 处理 skill manifest 和加载：放 `src/skills`。
+- 处理 Skill frontmatter、加载和管理：放 `src/skills`。
 - 处理日志审计：放 `src/observability`。
 
 如果一个文件同时想放进两个目录，通常说明它需要拆分。

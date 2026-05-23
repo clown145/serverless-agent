@@ -2,6 +2,8 @@ import { createId } from "../shared/ids";
 import type { Env } from "../shared/types/env";
 import type { InternalMessage } from "../shared/types/internal-message";
 import { selectSkillForMessage } from "../skills/skill-selector";
+import { listSkillCatalog } from "../skills/skill-loader";
+import { ensureBuiltinSkills } from "../skills/builtin/provision";
 import { filterToolsForSkill } from "../skills/skill-tools";
 import { filterToolsForPlatform } from "../tools/platform-availability";
 import type { SelectedSkill } from "../skills/skill-selector";
@@ -44,7 +46,9 @@ export async function executeAgentToolLoop(
     providerId: message.modelProviderId,
     modelId: message.modelId
   });
+  await ensureBuiltinSkills(env, message.agentId);
   const selectedSkill = await selectSkillForMessage(env, message);
+  const skillCatalog = await listSkillCatalog(env, message.agentId);
   const context = await loadAgentContext(env, message);
   const modelConfig = await getAgentModelConfig(env.AGENT_DB, message.agentId);
   const history = modelConfig.imageCaptionEnabled
@@ -62,7 +66,8 @@ export async function executeAgentToolLoop(
   const messages = createInitialModelMessages(message, selectedSkill, history, {
     timeZone: env.AGENT_TIMEZONE,
     telegramParseMode: await resolveTelegramParseMode(env, message),
-    conversationSummary: context.summary
+    conversationSummary: context.summary,
+    skillCatalog
   });
   const tools = createModelTools(registryTools);
   let sentMessageTool = false;

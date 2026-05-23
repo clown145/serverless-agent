@@ -8,6 +8,7 @@ export type ViewId =
   | "diagnostics"
   | "debug"
   | "tools"
+  | "skills"
   | "search"
   | "runs"
   | "vfs"

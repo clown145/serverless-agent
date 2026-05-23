@@ -10,7 +10,7 @@ core         平台无关 agent 内核
 tools        agent 可调用工具
 storage      D1/R2/KV/DO storage 封装
 scheduler    未来任务、心跳、重试
-skills       skill loader 和 manifest 解析
+skills       Skill loader、frontmatter 解析和管理服务
 observability 日志、审计、metrics
 shared       小型共享类型和纯函数
 ```

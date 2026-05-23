@@ -1,5 +1,6 @@
 import type { ToolDefinition, ToolExecutionContext } from "../types";
 import { checkToolPolicy } from "../../permissions/policy-resolver";
+import { getSkillSettings } from "../../storage/repositories/skill-settings-repository";
 
 export type PermissionDecision = {
   allowed: boolean;
@@ -21,7 +22,7 @@ export async function evaluateToolPermission(
     };
   }
 
-  if (requiresConfirmation(tool, context)) {
+  if (await requiresConfirmation(tool, context)) {
     return {
       allowed: false,
       needsConfirmation: true,
@@ -33,12 +34,19 @@ export async function evaluateToolPermission(
   return { allowed: true, policySources: policy.resolved.sources };
 }
 
-function requiresConfirmation(
+async function requiresConfirmation(
   tool: ToolDefinition,
   context: ToolExecutionContext
-): boolean {
+): Promise<boolean> {
   if (context.allowDangerous) {
     return false;
+  }
+
+  if (tool.name === "skills.write_file") {
+    const settings = await getSkillSettings(context.env.AGENT_DB, context.agentId);
+    if (!settings.editConfirmationRequired) {
+      return false;
+    }
   }
 
   return (

@@ -38,6 +38,27 @@ describe("agent context", () => {
     expect(system.content).toContain("Telegram formatting");
     expect(system.content).toContain("parse_mode HTML");
   });
+
+  it("adds skill catalog after stable system instructions", () => {
+    const messages = createInitialModelMessages(message("msg-1", "hello"), undefined, [], {
+      skillCatalog: [
+        {
+          id: "skill-creator",
+          name: "skill-creator",
+          description: "Create or update skills."
+        }
+      ]
+    });
+
+    expect(messages[0].content).toContain("You are serverless-agent");
+    expect(messages[1]).toEqual({
+      role: "system",
+      content: [
+        "Available skills. Use `/skill <id> <task>` when one of these skills is relevant; the full SKILL.md is loaded only after the skill is active.",
+        "- skill-creator: Create or update skills."
+      ].join("\n")
+    });
+  });
 });
 
 function message(id: string, text: string): InternalMessage {

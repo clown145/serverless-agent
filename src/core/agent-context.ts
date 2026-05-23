@@ -1,6 +1,7 @@
 import type { RegisteredTool } from "../tools/types";
 import type { InternalMessage } from "../shared/types/internal-message";
 import type { SelectedSkill } from "../skills/skill-selector";
+import type { SkillCatalogItem } from "../skills/skill-loader";
 import type { ModelContentPart, ModelMessage, ModelTool } from "./model/types";
 import type { TelegramParseMode } from "../adapters/telegram/formatting";
 
@@ -15,6 +16,7 @@ export type AgentContextOptions = {
   timeZone?: string;
   telegramParseMode?: TelegramParseMode;
   conversationSummary?: string;
+  skillCatalog?: SkillCatalogItem[];
 };
 
 export function createInitialModelMessages(
@@ -29,6 +31,7 @@ export function createInitialModelMessages(
       content: createBaseInstructions(message, options)
     },
     ...createSummaryMessages(options.conversationSummary),
+    ...createSkillCatalogMessages(options.skillCatalog),
     ...createSkillMessages(selectedSkill),
     ...createConversationMessages(message, selectedSkill, history)
   ];
@@ -176,11 +179,30 @@ function createSkillMessages(selectedSkill?: SelectedSkill): ModelMessage[] {
     {
       role: "system",
       content: [
-        `Active skill: ${selectedSkill.skill.manifest.id}`,
-        `Skill name: ${selectedSkill.skill.manifest.name}`,
-        `Skill version: ${selectedSkill.skill.manifest.version}`,
+        `Active skill: ${selectedSkill.skill.metadata.id}`,
+        `Skill name: ${selectedSkill.skill.metadata.name}`,
+        `Skill version: ${selectedSkill.skill.metadata.version}`,
         "Skill instructions:",
         selectedSkill.skill.instructions
+      ].join("\n")
+    }
+  ];
+}
+
+function createSkillCatalogMessages(
+  skillCatalog: SkillCatalogItem[] | undefined
+): ModelMessage[] {
+  const items = (skillCatalog ?? []).slice(0, 40);
+  if (!items.length) {
+    return [];
+  }
+
+  return [
+    {
+      role: "system",
+      content: [
+        "Available skills. Use `/skill <id> <task>` when one of these skills is relevant; the full SKILL.md is loaded only after the skill is active.",
+        ...items.map((skill) => `- ${skill.id}: ${skill.description}`)
       ].join("\n")
     }
   ];

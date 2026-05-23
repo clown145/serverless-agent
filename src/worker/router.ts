@@ -31,6 +31,10 @@ import { handleAdminSchedules } from "./routes/admin-schedules";
 import { handleAdminSearchProviderDetail } from "./routes/admin-search-provider-detail";
 import { handleAdminSearchProviders } from "./routes/admin-search-providers";
 import { handleAdminSkillDetail } from "./routes/admin-skill-detail";
+import { handleAdminSkillFiles } from "./routes/admin-skill-files";
+import { handleAdminSkillRevisions } from "./routes/admin-skill-revisions";
+import { handleAdminSkillSettings } from "./routes/admin-skill-settings";
+import { handleAdminSkills } from "./routes/admin-skills";
 import { handleAdminSetupStatus } from "./routes/admin-setup-status";
 import { handleAdminTelegramIntegrationDetail } from "./routes/admin-telegram-integration-detail";
 import { handleAdminTelegramIntegrations } from "./routes/admin-telegram-integrations";
@@ -281,7 +285,36 @@ export async function routeRequest(
     );
   }
 
-  if (request.method === "GET" && url.pathname.startsWith("/admin/skills/")) {
+  if (url.pathname === "/admin/skills") {
+    return handleAdminSkills(request, env);
+  }
+
+  if (url.pathname === "/admin/skills/settings") {
+    return handleAdminSkillSettings(request, env);
+  }
+
+  const skillFilesMatch = url.pathname.match(/^\/admin\/skills\/([^/]+)\/files$/);
+  if (skillFilesMatch) {
+    return handleAdminSkillFiles(
+      request,
+      env,
+      decodeURIComponent(skillFilesMatch[1])
+    );
+  }
+
+  const skillRevisionMatch = url.pathname.match(
+    /^\/admin\/skills\/([^/]+)\/revisions(?:\/(\d+))?$/
+  );
+  if (skillRevisionMatch) {
+    return handleAdminSkillRevisions(
+      request,
+      env,
+      decodeURIComponent(skillRevisionMatch[1]),
+      skillRevisionMatch[2] ? Number(skillRevisionMatch[2]) : undefined
+    );
+  }
+
+  if (url.pathname.startsWith("/admin/skills/")) {
     return handleAdminSkillDetail(
       request,
       env,
@@ -349,7 +382,12 @@ export async function routeRequest(
         "/admin/heartbeats",
         "/admin/runs",
         "/admin/runs/:runId",
+        "/admin/skills",
+        "/admin/skills/settings",
         "/admin/skills/:skillId",
+        "/admin/skills/:skillId/files",
+        "/admin/skills/:skillId/revisions",
+        "/admin/skills/:skillId/revisions/:version",
         "/admin/vfs",
         "/ui"
       ]

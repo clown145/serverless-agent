@@ -26,6 +26,11 @@ import type {
   SearchSettings,
   SearchTestResult,
   SetupStatus,
+  SkillCatalogItem,
+  SkillFileRevision,
+  SkillFileRevisionDetail,
+  SkillSettings,
+  LoadedSkill,
   TelegramIntegration,
   WecomIntegration,
   WeixinOcGatewayStatus,
@@ -267,6 +272,93 @@ export function createAdminClient(getToken: () => string) {
         method: "POST",
         body: JSON.stringify({ action: "initialize" })
       });
+    },
+    listSkills: () => {
+      return request<ApiResult<{ skills: SkillCatalogItem[] }>>("/admin/skills");
+    },
+    createSkill: (body: {
+      skillId: string;
+      name?: string;
+      description?: string;
+      body?: string;
+      content?: string;
+    }) => {
+      return request<ApiResult<{ skill: LoadedSkill }>>("/admin/skills", {
+        method: "POST",
+        body: JSON.stringify(body)
+      });
+    },
+    getSkill: (skillId: string) => {
+      return request<ApiResult<{ skill: LoadedSkill }>>(
+        `/admin/skills/${encodeURIComponent(skillId)}`
+      );
+    },
+    deleteSkill: (skillId: string) => {
+      return request<ApiResult<{ ok: boolean }>>(
+        `/admin/skills/${encodeURIComponent(skillId)}`,
+        { method: "DELETE" }
+      );
+    },
+    getSkillSettings: () => {
+      return request<ApiResult<{ settings: SkillSettings }>>("/admin/skills/settings");
+    },
+    updateSkillSettings: (body: { editConfirmationRequired: boolean }) => {
+      return request<ApiResult<{ settings: SkillSettings }>>("/admin/skills/settings", {
+        method: "PUT",
+        body: JSON.stringify(body)
+      });
+    },
+    listSkillFiles: (skillId: string) => {
+      return request<ApiResult<{ entries: VfsEntry[] }>>(
+        `/admin/skills/${encodeURIComponent(skillId)}/files`
+      );
+    },
+    readSkillFile: (skillId: string, relativePath: string) => {
+      const params = new URLSearchParams({
+        mode: "file",
+        relativePath
+      });
+      return request<ApiResult<{ file: VfsFile }>>(
+        `/admin/skills/${encodeURIComponent(skillId)}/files?${params.toString()}`
+      );
+    },
+    writeSkillFile: (skillId: string, body: { relativePath: string; content: string }) => {
+      return request<ApiResult<{ skill: LoadedSkill }>>(
+        `/admin/skills/${encodeURIComponent(skillId)}/files`,
+        {
+          method: "PUT",
+          body: JSON.stringify(body)
+        }
+      );
+    },
+    deleteSkillFile: (skillId: string, relativePath: string, recursive = false) => {
+      const params = new URLSearchParams({ relativePath });
+      if (recursive) {
+        params.set("recursive", "true");
+      }
+      return request<ApiResult<{ result: { deleted: number } }>>(
+        `/admin/skills/${encodeURIComponent(skillId)}/files?${params.toString()}`,
+        { method: "DELETE" }
+      );
+    },
+    listSkillRevisions: (skillId: string, relativePath: string) => {
+      const params = new URLSearchParams({ relativePath });
+      return request<ApiResult<{ revisions: SkillFileRevision[] }>>(
+        `/admin/skills/${encodeURIComponent(skillId)}/revisions?${params.toString()}`
+      );
+    },
+    readSkillRevision: (skillId: string, relativePath: string, version: number) => {
+      const params = new URLSearchParams({ relativePath });
+      return request<ApiResult<{ revision: SkillFileRevisionDetail }>>(
+        `/admin/skills/${encodeURIComponent(skillId)}/revisions/${version}?${params.toString()}`
+      );
+    },
+    rollbackSkillRevision: (skillId: string, relativePath: string, version: number) => {
+      const params = new URLSearchParams({ relativePath });
+      return request<ApiResult<{ skill: LoadedSkill }>>(
+        `/admin/skills/${encodeURIComponent(skillId)}/revisions/${version}?${params.toString()}`,
+        { method: "POST" }
+      );
     },
     listSchedules: () => request<ApiResult<{ schedules: Schedule[] }>>("/admin/schedules"),
     createSchedule: (body: {

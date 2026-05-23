@@ -1,11 +1,6 @@
 import type { Env } from "../shared/types/env";
 import type { InternalMessage } from "../shared/types/internal-message";
-import {
-  listInstalledSkillIds,
-  loadSkill,
-  type LoadedSkill
-} from "./skill-loader";
-import type { SkillManifest } from "./skill-manifest-schema";
+import { loadSkill, type LoadedSkill } from "./skill-loader";
 
 export type SelectedSkill = {
   skill: LoadedSkill;
@@ -25,23 +20,6 @@ export async function selectSkillForMessage(
     };
   }
 
-  return selectTriggeredSkill(env, message);
-}
-
-export async function selectTriggeredSkill(
-  env: Env,
-  message: InternalMessage
-): Promise<SelectedSkill | undefined> {
-  const text = message.text ?? "";
-  const skillIds = await listInstalledSkillIds(env, message.agentId);
-
-  for (const skillId of skillIds) {
-    const skill = await loadOptionalSkill(env, message.agentId, skillId);
-    if (skill && matchesSkillTrigger(skill.manifest, text)) {
-      return { skill, userText: text };
-    }
-  }
-
   return undefined;
 }
 
@@ -57,25 +35,4 @@ export function parseExplicitSkillCommand(
     skillId: match[1],
     userText: match[2]?.trim() ?? ""
   };
-}
-
-export function matchesSkillTrigger(
-  manifest: SkillManifest,
-  text: string
-): boolean {
-  return manifest.triggers.some((trigger) => {
-    return trigger.type === "command" && text.startsWith(trigger.pattern);
-  });
-}
-
-async function loadOptionalSkill(
-  env: Env,
-  agentId: string,
-  skillId: string
-): Promise<LoadedSkill | undefined> {
-  try {
-    return await loadSkill(env, agentId, skillId);
-  } catch {
-    return undefined;
-  }
 }

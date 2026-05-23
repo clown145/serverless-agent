@@ -12,7 +12,7 @@
 | 未来任务 | Durable Object Alarms / Cron Triggers | 定时提醒、心跳、周期任务 |
 | 文件内容 | Object Storage | VFS 文件、skills、artifacts、attachments。默认 R2，可选 S3-compatible 或 D1 lite |
 | 结构化数据 | D1 | runs、messages、tool calls、permissions |
-| 缓存 | KV | 热配置、临时去重、manifest 缓存 |
+| 缓存 | KV | 热配置、临时去重、catalog 缓存 |
 | 入站邮件 | Email Workers / Email Routing | 邮件触发 agent |
 | 出站邮件 | Email Service 或第三方 API | 受权限控制的发信工具 |
 
@@ -94,7 +94,7 @@ KV 适合缓存，不适合核心一致性状态。
 
 可以保存：
 
-- manifest cache。
+- Skill catalog cache。
 - feature flag。
 - platform metadata cache。
 - short-lived dedupe key。

@@ -115,6 +115,45 @@ export type VfsFile = {
   version: number;
 };
 
+export type SkillCatalogItem = {
+  id: string;
+  name: string;
+  description: string;
+};
+
+export type LoadedSkill = {
+  id: string;
+  metadata: {
+    id: string;
+    name: string;
+    version: string;
+    description: string;
+  };
+  instructions: string;
+};
+
+export type SkillSettings = {
+  agentId: string;
+  editConfirmationRequired: boolean;
+  updatedAt?: string;
+};
+
+export type SkillFileRevision = {
+  id: string;
+  version: number;
+  path: string;
+  mimeType?: string;
+  size?: number;
+  checksum?: string;
+  createdAt: string;
+  createdBy: string;
+};
+
+export type SkillFileRevisionDetail = SkillFileRevision & {
+  content: string;
+  storageKind?: "d1_text" | "r2_blob" | "legacy_r2" | "directory";
+};
+
 export type VfsSearchMatch = {
   path: string;
   kind: "file" | "directory";

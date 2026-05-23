@@ -23,3 +23,9 @@ export {
   searchVfs,
   type SearchVfsInput
 } from "../../vfs/storage/search-store";
+export {
+  getFileRevision,
+  listFileRevisions,
+  readFileRevisionContent,
+  type VfsRevision
+} from "../../vfs/storage/revision-store";

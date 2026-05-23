@@ -129,19 +129,32 @@ curl -sS 'http://localhost:8787/admin/vfs?mode=file&path=/workspace/notes/hello.
 Create a minimal skill:
 
 ```bash
-curl -sS -X PUT http://localhost:8787/admin/vfs \
+curl -sS -X POST http://localhost:8787/admin/skills \
   -H 'content-type: application/json' \
-  -d '{"path":"/skills/demo/manifest.json","content":"{\"id\":\"demo\",\"name\":\"Demo\",\"version\":\"0.1.0\",\"description\":\"Demo skill\",\"entry\":\"SKILL.md\",\"tools\":[\"vfs.read_file\"],\"permissions\":{\"requiredLevel\":1,\"scopes\":[\"workspace:read\"]}}"}'
-
-curl -sS -X PUT http://localhost:8787/admin/vfs \
-  -H 'content-type: application/json' \
-  -d '{"path":"/skills/demo/SKILL.md","content":"Use this skill for demo reads."}'
+  -d '{"skillId":"demo","content":"---\nname: Demo\ndescription: Use this skill for demo reads.\n---\n\n# Demo\nUse this skill for demo reads."}'
 ```
 
 Load it:
 
 ```bash
 curl -sS http://localhost:8787/admin/skills/demo
+```
+
+List skills:
+
+```bash
+curl -sS http://localhost:8787/admin/skills
+```
+
+Read and edit files through Skill-scoped routes:
+
+```bash
+curl -sS 'http://localhost:8787/admin/skills/demo/files'
+curl -sS 'http://localhost:8787/admin/skills/demo/files?mode=file&relativePath=SKILL.md'
+curl -sS -X PUT http://localhost:8787/admin/skills/demo/files \
+  -H 'content-type: application/json' \
+  -d '{"relativePath":"references/notes.md","content":"# Notes\n"}'
+curl -sS 'http://localhost:8787/admin/skills/demo/revisions?relativePath=SKILL.md'
 ```
 
 Run it explicitly:
@@ -152,17 +165,12 @@ curl -sS http://localhost:8787/admin/messages \
   -d '{"text":"/skill demo /read /workspace/notes/hello.md","mode":"sync"}'
 ```
 
-Trigger it automatically by command by adding this to the manifest:
+Toggle model skill edits:
 
-```json
-{
-  "triggers": [
-    {
-      "type": "command",
-      "pattern": "/read"
-    }
-  ]
-}
+```bash
+curl -sS http://localhost:8787/admin/messages \
+  -H 'content-type: application/json' \
+  -d '{"text":"/skill-auto-edits on","mode":"sync"}'
 ```
 
 Then:
@@ -170,7 +178,7 @@ Then:
 ```bash
 curl -sS http://localhost:8787/admin/messages \
   -H 'content-type: application/json' \
-  -d '{"text":"/read /workspace/notes/hello.md","mode":"sync"}'
+  -d '{"text":"/skill demo /read /workspace/notes/hello.md","mode":"sync"}'
 ```
 
 ## Queue Mode

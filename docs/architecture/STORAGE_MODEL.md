@@ -48,7 +48,7 @@ attachments/{platform}/{message_id}/{name}
 KV 只用于缓存和小配置：
 
 - 平台 token 缓存引用。
-- 热门 skill manifest。
+- 热门 Skill catalog。
 - 临时去重键。
 - 低风险 feature flag。
 

@@ -2,6 +2,7 @@ import { createMessagingTools } from "../messaging/tools";
 import { createHttpTools } from "../http/tools";
 import { createScheduleTools } from "../schedule/tools";
 import { createSearchTools } from "../search/tools";
+import { createSkillTools } from "../skills/tools";
 import type { RegisteredTool } from "../types";
 import { createVfsTools } from "../vfs/tools";
 import { createWebTools } from "../web/tools";
@@ -11,6 +12,7 @@ export function createBuiltinTools(): RegisteredTool[] {
     ...createMessagingTools(),
     ...createScheduleTools(),
     ...createVfsTools(),
+    ...createSkillTools(),
     ...createSearchTools(),
     ...createHttpTools(),
     ...createWebTools()

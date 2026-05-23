@@ -15,50 +15,23 @@ const selectedSkill: SelectedSkill = {
   skill: {
     id: "reader",
     instructions: "Read files only.",
-    manifest: {
+    metadata: {
       id: "reader",
       name: "Reader",
       version: "0.1.0",
-      description: "Read-only skill",
-      entry: "SKILL.md",
-      triggers: [],
-      tools: ["vfs.read_file"],
-      permissions: {
-        requiredLevel: 1,
-        scopes: ["workspace:read"]
-      }
+      description: "Read-only skill"
     }
   }
 };
 
 describe("skill tool filtering", () => {
-  it("only exposes manifest-declared tools", () => {
-    expect(filterToolsForSkill(tools, selectedSkill).map((item) => item.definition.name)).toEqual([
-      "vfs.read_file"
-    ]);
+  it("does not restrict tools from standard skills", () => {
+    expect(filterToolsForSkill(tools, selectedSkill)).toEqual(tools);
   });
 
-  it("checks tool execution against the active skill", () => {
+  it("allows tool execution checks to fall through to normal permissions", () => {
     expect(canUseToolWithSkill("vfs.read_file", selectedSkill)).toBe(true);
-    expect(canUseToolWithSkill("vfs.write_file", selectedSkill)).toBe(false);
-  });
-
-  it("requires enough permission level and scopes", () => {
-    const underScoped: SelectedSkill = {
-      ...selectedSkill,
-      skill: {
-        ...selectedSkill.skill,
-        manifest: {
-          ...selectedSkill.skill.manifest,
-          permissions: {
-            requiredLevel: 0,
-            scopes: []
-          }
-        }
-      }
-    };
-
-    expect(filterToolsForSkill(tools, underScoped)).toEqual([]);
+    expect(canUseToolWithSkill("vfs.write_file", selectedSkill)).toBe(true);
   });
 });
 

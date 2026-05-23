@@ -7,7 +7,7 @@
 - `[x]` 建立仓库。
 - `[x]` 固定目录结构。
 - `[x]` 划分模块边界。
-- `[x]` 定义内部消息、VFS、tool、skill manifest 规范草案。
+- `[x]` 定义内部消息、VFS、tool、Skill `SKILL.md` 规范草案。
 - `[x]` 明确 Cloudflare 平台映射。
 
 ## Phase 1: 最小可运行内核 🟢 [已完成]
@@ -22,7 +22,7 @@
 
 ## Phase 2: Skills 和工具系统 🟢 [已完成]
 
-- `[x]` skill manifest 解析。
+- `[x]` Skill `SKILL.md` frontmatter 解析。
 - `[x]` skill loader 运行时选择与加载。
 - `[x]` tool registry 动态工具注册表。
 - `[x]` VFS 工具（ls, cat, write, rm 等）。
