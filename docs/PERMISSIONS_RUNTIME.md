@@ -34,7 +34,7 @@
 - `agent`: 针对某个 agent。
 - `user`: 针对触发者 ID。
 - `role`: 针对 `owner`、`admin`、`member` 等角色。
-- `platform`: 针对 `telegram`、`qq`、`admin` 等入口。
+- `platform`: 针对 `telegram`、`qq`、`wecom`、`weixin_oc`、`webui`、`admin` 等入口。
 - `conversation`: 针对私聊、群聊或线程。
 
 ## Admin APIs
@@ -104,7 +104,8 @@ curl -sS -X POST http://localhost:8787/admin/pending-actions/act_.../confirm
 
 ## Current Limits
 
-- 现在的确认入口只支持 admin API；Telegram/QQ 内联确认按钮还没有接入。
+- Admin API 和 WebUI 可以查看、确认 pending action。
+- Telegram 已支持 inline button 确认/拒绝。QQ、WeCom、Weixin OC 目前没有平台内确认按钮，仍需走 Admin/WebUI。
 - pending action 默认 10 分钟过期。
 - 工具级 allow/deny list 还没独立建表，目前用权限等级、scope 和 high-risk 标记控制。
 - 尚未实现 rate limit 和 time window。

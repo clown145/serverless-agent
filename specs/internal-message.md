@@ -1,13 +1,13 @@
 # Internal Message Spec
 
-内部消息用于消除 Telegram、QQ、Webhook 等平台差异。
+内部消息用于消除 Telegram、QQ、WeCom、Weixin OC、Webhook、WebUI/Admin 等平台差异。
 
 ## InternalMessage
 
 ```ts
 type InternalMessage = {
   id: string
-  platform: "telegram" | "qq" | "webhook" | "admin"
+  platform: "telegram" | "qq" | "wecom" | "weixin_oc" | "webhook" | "admin" | "webui"
   platformMessageId: string
   agentId: string
   conversationId: string
@@ -16,6 +16,9 @@ type InternalMessage = {
   text?: string
   attachments: MessageAttachment[]
   rawRef?: string
+  scheduleId?: string
+  modelProviderId?: string
+  modelId?: string
   receivedAt: string
 }
 ```
@@ -39,8 +42,14 @@ type MessageAttachment = {
   name?: string
   mimeType?: string
   size?: number
+  // Historical name. The value is an object-storage key, not necessarily R2.
   r2Key?: string
   sourceUrl?: string
+  captionText?: string
+  captionModelProviderId?: string
+  captionModelId?: string
+  captionUpdatedAt?: string
+  dataBase64?: string
 }
 ```
 
@@ -49,4 +58,5 @@ type MessageAttachment = {
 - `rawRef` 指向原始 payload 的存储位置，不直接塞大对象。
 - adapter 必须保证 `conversationId` 稳定。
 - 入队消息必须有 `agentId`。
-- 附件大内容放 R2。
+- 附件大内容放对象存储。字段名仍叫 `r2Key` 是历史兼容，实际后端可能是 R2、S3-compatible 或 D1 lite。
+- `dataBase64` 只用于小型内联内容或平台发送所需的临时载荷，不作为大附件长期存储。

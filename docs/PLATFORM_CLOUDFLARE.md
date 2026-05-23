@@ -6,11 +6,11 @@
 
 | 能力 | Cloudflare 组件 | 用途 |
 | --- | --- | --- |
-| HTTP 入口 | Workers | Telegram、QQ、Webhook、Admin API |
+| HTTP 入口 | Workers | Telegram、QQ 官方 Webhook、企业微信、Admin/WebUI API |
 | 后台队列 | Queues | 入站消息、异步任务、重试 |
 | Agent 状态 | Durable Objects / Agents | 每个 agent 的状态协调器 |
 | 未来任务 | Durable Object Alarms / Cron Triggers | 定时提醒、心跳、周期任务 |
-| 文件内容 | R2 | VFS 文件、skills、artifacts、attachments |
+| 文件内容 | Object Storage | VFS 文件、skills、artifacts、attachments。默认 R2，可选 S3-compatible 或 D1 lite |
 | 结构化数据 | D1 | runs、messages、tool calls、permissions |
 | 缓存 | KV | 热配置、临时去重、manifest 缓存 |
 | 入站邮件 | Email Workers / Email Routing | 邮件触发 agent |
@@ -21,7 +21,7 @@
 Worker 作为入口层，负责：
 
 - 路由请求。
-- 校验平台签名。
+- 校验平台签名或 webhook secret。
 - 标准化事件。
 - 投递 Queue。
 - 返回平台需要的响应。
@@ -37,7 +37,7 @@ Queue 用于：
 - 失败重试。
 - dead-letter 分析。
 
-队列消息应该尽量小，只包含事件 ID 和必要索引；大 payload 存 D1/R2。
+队列消息应该尽量小，只包含事件 ID 和必要索引；大 payload 存 D1 或对象存储。
 
 ## Durable Object / Agents
 
@@ -61,11 +61,17 @@ user:{platform}:{user_id}
 
 第一版建议按 `agent:{agent_id}` 分片。
 
-## R2
+QQ 官方机器人 Gateway 模式和 Weixin OC 长轮询模式也会使用各自的 Gateway Durable Object。它们只负责平台会话维持和消息入队，不运行完整 agent loop。QQ 官方机器人选择 Webhook 模式时，不需要维护 QQ Gateway 长连接。
 
-R2 是虚拟文件系统的内容层。
+## Object Storage
 
-不要直接把 R2 当数据库用。文件 metadata、目录索引、权限状态应该写 D1。
+对象存储是虚拟文件系统的内容层。
+
+默认后端是 R2。部署 workflow 会尝试查找或创建 R2 bucket；如果账号没有 R2 权限或 R2 创建失败，会自动回退到 `d1_lite`，确保 Worker 仍能部署和保存小对象。
+
+也可以通过 `OBJECT_STORAGE_BACKEND=s3` 使用 S3-compatible 存储。该模式需要配置 S3 endpoint、bucket 和访问密钥，不会创建 R2 bucket。
+
+不要直接把对象存储当数据库用。文件 metadata、目录索引、权限状态应该写 D1。`d1_lite` 只是无 R2/S3 时的最低可用后备，单对象上限 256KB。
 
 ## D1
 

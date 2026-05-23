@@ -1,7 +1,7 @@
 # VFS Spec
 
 VFS 是 agent 的虚拟文件系统。它不是 Worker 的真实文件系统，而是
-D1 metadata + D1 小文本内容 + R2 blob 的 workspace 抽象。
+D1 metadata + D1 小文本内容 + 对象存储 blob 的 workspace 抽象。
 
 ## 路径空间
 
@@ -32,6 +32,7 @@ type VfsEntry = {
   path: string
   kind: "file" | "directory"
   storageKind: "d1_text" | "r2_blob" | "legacy_r2" | "directory"
+  // Historical field name. The value is an object-storage key, not necessarily R2.
   r2Key?: string
   mimeType?: string
   size?: number
@@ -71,10 +72,11 @@ initializeWorkspace(): Promise<VfsWorkspaceBootstrapStatus>
 
 - D1 保存 entry metadata。
 - 小文本/JSON 内容直接保存到 `vfs_contents`。
-- 大文件和二进制内容保存到 R2 content-addressed blob。
+- 大文件和二进制内容保存到对象存储 content-addressed blob。
 - 写入会递增 `version` 并记录 `vfs_revisions`。
-- directory 没有 R2 object。
-- R2 blob 不按路径覆盖，避免高频重写同一个对象 key。
+- directory 没有对象存储 object。
+- 对象存储 blob 不按路径覆盖，避免高频重写同一个对象 key。
+- 当前对象存储后端可以是 R2、S3-compatible 或 D1 lite；`d1_lite` 只适合小对象。
 
 ## 审计
 

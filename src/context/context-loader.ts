@@ -5,6 +5,7 @@ import type { Env } from "../shared/types/env";
 import type { InternalMessage } from "../shared/types/internal-message";
 import type { ConversationMessage } from "../storage/repositories/message-types";
 import { listConversationMessages } from "../storage/repositories/messages-repository";
+import { createBlobStorage } from "../storage/blob";
 import {
   ensureConversationSettings,
   updateConversationSummary
@@ -177,6 +178,7 @@ async function hydrateHistoryAttachments(
   messages: ConversationMessage[]
 ): Promise<ConversationContextMessage[]> {
   const history: ConversationContextMessage[] = [];
+  let blobStorage: ReturnType<typeof createBlobStorage> | undefined;
 
   for (const message of messages) {
     const attachments: ModelContentPart[] = [];
@@ -185,7 +187,8 @@ async function hydrateHistoryAttachments(
         continue;
       }
 
-      const object = await env.AGENT_BUCKET.get(attachment.r2Key);
+      blobStorage ??= createBlobStorage(env);
+      const object = await blobStorage.get(attachment.r2Key);
       if (!object || (object.size ?? 0) > MAX_INLINE_IMAGE_BYTES) {
         continue;
       }

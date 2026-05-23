@@ -3,6 +3,7 @@ import { base64ToBytes } from "../../security/base64";
 import type { Env } from "../../shared/types/env";
 import type { InternalMessage, MessageAttachment } from "../../shared/types/internal-message";
 import { buildAttachmentObjectKey } from "../../media/object-keys";
+import { createBlobStorage } from "../../storage/blob";
 import type { WeixinOcBotConfig } from "./config";
 import type { WeixinOcMediaRef } from "./types";
 
@@ -55,10 +56,8 @@ async function persistWeixinOcImageAttachment(
       messageId: message.id,
       attachmentId: attachment.id
     });
-    await env.AGENT_BUCKET.put(r2Key, bytes, {
-      httpMetadata: {
-        contentType: attachment.mimeType ?? "image/jpeg"
-      }
+    await createBlobStorage(env).put(r2Key, bytes, {
+      contentType: attachment.mimeType ?? "image/jpeg"
     });
 
     return {

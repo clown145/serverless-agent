@@ -61,6 +61,8 @@ serverless-agent/
     adapters/
       telegram/
       qq/
+      wecom/
+      weixin-oc/
     core/
     tools/
       vfs/
@@ -97,7 +99,7 @@ React + Vite 管理控制台。
 不放：
 
 - Worker route。
-- D1/R2 访问逻辑。
+- D1/对象存储访问逻辑。
 - agent 内核逻辑。
 
 ### `specs/`
@@ -106,7 +108,7 @@ React + Vite 管理控制台。
 
 ### `infra/cloudflare/`
 
-Cloudflare 部署配置、D1 migration、Queue/DO/R2 绑定说明。后续可以放：
+Cloudflare 部署配置、D1 migration、Queue/DO/对象存储绑定说明。后续可以放：
 
 ```text
 infra/cloudflare/wrangler.toml
@@ -150,8 +152,8 @@ Durable Object 或 Cloudflare Agent 实例实现。
 
 不放：
 
-- Telegram/QQ payload 细节。
-- R2 key 拼接。
+- Telegram/QQ/WeCom/Weixin OC payload 细节。
+- 对象存储 key 拼接。
 - 具体工具 HTTP API 细节。
 
 ### `src/adapters/`
@@ -161,6 +163,8 @@ Durable Object 或 Cloudflare Agent 实例实现。
 ```text
 src/adapters/telegram/
 src/adapters/qq/
+src/adapters/wecom/
+src/adapters/weixin-oc/
 ```
 
 adapter 只做平台协议和内部协议转换。
@@ -181,7 +185,7 @@ agent 内核。这里是平台无关的核心逻辑。
 
 - Cloudflare binding。
 - 平台 token。
-- D1/R2 细节。
+- D1/对象存储细节。
 
 ### `src/tools/`
 
@@ -211,12 +215,12 @@ src/tools/git/
 可以放：
 
 - D1 repositories。
-- R2 object store。
+- object storage store。
 - KV cache。
 - DO storage helpers。
 - key/path builders。
 
-业务模块不能直接散落 SQL 或 R2 key 拼接。
+业务模块不能直接散落 SQL 或对象存储 key 拼接。
 
 ### `src/permissions/`
 
@@ -248,7 +252,7 @@ src/tools/git/
 
 ### `src/skills/`
 
-skill 加载器和 manifest 解析器。这里不放用户安装的 skill 内容；真实 skill 内容存 R2 VFS。
+skill 加载器和 manifest 解析器。这里不放用户安装的 skill 内容；真实 skill 内容存 VFS。
 
 ### `src/observability/`
 
@@ -278,7 +282,7 @@ skill 加载器和 manifest 解析器。这里不放用户安装的 skill 内容
 - 处理 HTTP 路由：放 `src/worker`。
 - 处理 agent run 状态：放 `src/core`。
 - 处理 Durable Object 生命周期：放 `src/agents`。
-- 处理 R2/D1/KV：放 `src/storage`。
+- 处理对象存储/D1/KV：放 `src/storage`。
 - 处理权限策略、确认请求：放 `src/permissions`。
 - 处理可被 agent 调用的能力：放 `src/tools/{domain}`。
 - 处理未来任务和心跳：放 `src/scheduler`。

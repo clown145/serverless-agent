@@ -11,7 +11,7 @@
 - Cloudflare Queues
 - Durable Objects 或 Cloudflare Agents
 - D1
-- R2
+- 对象存储（默认 R2，可选 S3-compatible 或 D1 lite）
 - KV
 - Vitest
 - Wrangler
@@ -22,7 +22,7 @@
    Worker HTTP handler 只负责接入、校验、入队、返回。
 
 2. 状态外置。
-   不依赖内存保存业务状态。任何需要恢复的数据都写入 D1、R2 或 DO storage。
+   不依赖内存保存业务状态。任何需要恢复的数据都写入 D1、对象存储或 DO storage。
 
 3. 工具受控。
    模型不能直接执行动作，只能请求 tool call。tool call 必须经过权限检查和审计。
@@ -40,6 +40,7 @@
 ```text
 src/tools/git-sync/
 src/adapters/telegram/
+src/adapters/weixin-oc/
 ```
 
 文件名使用 kebab-case：
@@ -86,8 +87,8 @@ observability -> storage
 
 禁止：
 
-- `core` 直接依赖 Telegram/QQ。
-- `core` 直接拼 SQL 或 R2 key。
+- `core` 直接依赖 Telegram、QQ、WeCom、Weixin OC 等具体平台协议。
+- `core` 直接拼 SQL 或对象存储 key。
 - `adapters` 调用模型。
 - `tools` 直接修改 agent state，必须通过明确接口返回结果。
 - `shared` 反向依赖业务模块。
@@ -130,7 +131,7 @@ src/tools/{domain}/
 
 ## Storage 规范
 
-不要在业务模块散落 SQL、R2 key 或 KV key。
+不要在业务模块散落 SQL、对象存储 key 或 KV key。
 
 应当通过 repository 访问：
 
@@ -140,7 +141,7 @@ vfsRepository.writeFile(...)
 auditRepository.append(...)
 ```
 
-R2 key 必须由统一 builder 生成：
+对象存储 key 必须由统一 builder 生成：
 
 ```ts
 buildAgentWorkspaceKey(agentId, path)

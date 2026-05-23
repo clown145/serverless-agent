@@ -24,7 +24,7 @@ level 2: write_workspace
   写入 notes、tasks、artifacts、memory。
 
 level 3: communicate
-  向 Telegram、QQ、Webhook 发送消息或创建提醒。
+  向 Telegram、QQ、WeCom、Weixin OC、Webhook、WebUI/Admin 发送消息或创建提醒。
 
 level 4: external_api
   调用外部 API，例如邮件、GitHub、搜索、第三方服务。
@@ -56,7 +56,7 @@ model proposes tool call
 
 - `actor`: 谁触发了操作。
 - `agent_id`: 哪个 agent 执行。
-- `platform`: Telegram、QQ、Webhook、Admin。
+- `platform`: Telegram、QQ、WeCom、Weixin OC、Webhook、WebUI、Admin。
 - `conversation_id`: 私聊、群聊或线程。
 - `tool_name`: 请求的工具。
 - `permission_level`: 工具所需等级。
@@ -88,7 +88,7 @@ model proposes tool call
 禁止：
 
 - 提交到 git。
-- 写入 R2 明文文件。
+- 写入对象存储明文文件。
 - 写入普通日志。
 - 交给模型上下文。
 
@@ -121,7 +121,7 @@ idempotency_key
 外部内容进入模型前必须标注来源：
 
 ```text
-source: user_message | web_page | email | qq_group | telegram | vfs | tool_result
+source: user_message | web_page | email | telegram | qq | wecom | weixin_oc | webui | vfs | tool_result
 trust_level: trusted | user_controlled | external_untrusted
 ```
 
@@ -161,5 +161,6 @@ VFS 路径规则：
 - `pending_actions` 高风险工具确认记录。
 - admin API 创建、查看、删除策略。
 - admin API 查看并确认 pending action。
+- Telegram inline button 确认/拒绝 pending action。
 
 具体接口和本地调试方式见 [PERMISSIONS_RUNTIME.md](PERMISSIONS_RUNTIME.md)。

@@ -6,6 +6,7 @@ import {
   diagnosticWarn
 } from "./check-result";
 import type { DiagnosticCheck } from "./types";
+import { createBlobStorage } from "../storage/blob";
 
 export async function runBindingDiagnostics(env: Env): Promise<DiagnosticCheck[]> {
   return [
@@ -49,14 +50,25 @@ async function checkKv(env: Env): Promise<DiagnosticCheck> {
 async function checkR2(env: Env): Promise<DiagnosticCheck> {
   const key = `diagnostics/${crypto.randomUUID()}.txt`;
   try {
-    await env.AGENT_BUCKET.put(key, "ok");
-    const object = await env.AGENT_BUCKET.head(key);
-    await env.AGENT_BUCKET.delete(key);
+    const storage = createBlobStorage(env);
+    await storage.put(key, "ok", { contentType: "text/plain; charset=utf-8" });
+    const object = await storage.head(key);
+    await storage.delete(key);
     return object
-      ? diagnosticOk("runtime", "r2", "R2", "Put/head/delete succeeded")
-      : diagnosticWarn("runtime", "r2", "R2", "Put completed but object head was empty");
+      ? diagnosticOk(
+          "runtime",
+          "object_storage",
+          "Object storage",
+          `${storage.backend} put/head/delete succeeded`
+        )
+      : diagnosticWarn(
+          "runtime",
+          "object_storage",
+          "Object storage",
+          `${storage.backend} put completed but object head was empty`
+        );
   } catch (error) {
-    return diagnosticErrorFromUnknown("runtime", "r2", "R2", error);
+    return diagnosticErrorFromUnknown("runtime", "object_storage", "Object storage", error);
   }
 }
 

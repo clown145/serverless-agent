@@ -4,6 +4,7 @@ import type { InternalMessage, MessageAttachment } from "../shared/types/interna
 import { buildAttachmentObjectKey } from "./object-keys";
 import { resolveTelegramBotForAgent } from "../adapters/telegram/config";
 import { getTelegramFileDownload } from "../adapters/telegram/file";
+import { createBlobStorage } from "../storage/blob";
 
 const MAX_ATTACHMENT_BYTES = 8 * 1024 * 1024;
 
@@ -37,7 +38,10 @@ async function persistAttachment(
     if (bytes.byteLength > MAX_ATTACHMENT_BYTES) {
       return withoutInlineData(attachment);
     }
-    const r2Key = await putBytes(env, message, attachment, bytes);
+    const r2Key = await tryPutBytes(env, message, attachment, bytes);
+    if (!r2Key) {
+      return withoutInlineData(attachment);
+    }
     return withoutInlineData({ ...attachment, r2Key, size: bytes.byteLength });
   }
 
@@ -53,7 +57,10 @@ async function persistAttachment(
       return attachment;
     }
 
-    const r2Key = await putBytes(env, message, attachment, file.bytes, file.mimeType);
+    const r2Key = await tryPutBytes(env, message, attachment, file.bytes, file.mimeType);
+    if (!r2Key) {
+      return attachment;
+    }
     return {
       ...withoutInlineData(attachment),
       r2Key,
@@ -63,6 +70,21 @@ async function persistAttachment(
   }
 
   return withoutInlineData(attachment);
+}
+
+async function tryPutBytes(
+  env: Env,
+  message: InternalMessage,
+  attachment: MessageAttachment,
+  bytes: Uint8Array,
+  detectedMimeType?: string
+): Promise<string | undefined> {
+  try {
+    return await putBytes(env, message, attachment, bytes, detectedMimeType);
+  } catch (error) {
+    console.error("Failed to persist inbound attachment:", error);
+    return undefined;
+  }
 }
 
 async function putBytes(
@@ -79,9 +101,7 @@ async function putBytes(
   });
   const mimeType = attachment.mimeType ?? detectedMimeType ?? "application/octet-stream";
 
-  await env.AGENT_BUCKET.put(key, bytes, {
-    httpMetadata: { contentType: mimeType }
-  });
+  await createBlobStorage(env).put(key, bytes, { contentType: mimeType });
 
   return key;
 }

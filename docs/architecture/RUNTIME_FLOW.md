@@ -2,7 +2,7 @@
 
 ## 1. 平台消息进入
 
-平台 adapter 接收 Telegram、QQ 或 webhook 请求，把不同平台的 payload 转成统一内部消息。
+平台 adapter 接收 Telegram、QQ、WeCom、Weixin OC、WebUI/Admin 等入口请求，把不同平台的 payload 转成统一内部消息。
 
 ```text
 platform payload
@@ -63,13 +63,13 @@ model output
 run_id + step_id + tool_name + operation_hash
 ```
 
-## 当前 MVP 流程
+## 当前运行流程
 
-当前实现先跑通最小路径：
+当前实现的入口已经覆盖外部 webhook、Gateway DO、WebUI/Admin；所有入口都会进入同一条 agent 执行链路：
 
 ```text
-Telegram/Admin message
--> Worker route
+platform message
+-> Worker route or Platform Gateway DO
 -> Queue
 -> Durable Object
 -> persist message
@@ -77,5 +77,3 @@ Telegram/Admin message
 -> messaging.send_message
 -> complete run
 ```
-
-后续再接入模型调用、skill selection 和多步 tool loop。

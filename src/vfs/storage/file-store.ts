@@ -9,6 +9,7 @@ import { shouldStoreTextInD1 } from "../core/limits";
 import { isRootPath, normalizeVfsPath } from "../core/path";
 import { vfsConflict, vfsInvalid, vfsNotFound } from "../core/errors";
 import { ensureParentDirectories, findVfsEntry, getVfsEntry } from "./entry-store";
+import { createBlobStorage } from "../../storage/blob";
 import type { VfsEntry, VfsFile, VfsStorageKind } from "./types";
 
 export type PutVfsFileInput = {
@@ -53,9 +54,7 @@ export async function putVfsFile(
   }
 
   if (r2Key) {
-    await env.AGENT_BUCKET.put(r2Key, input.content, {
-      httpMetadata: { contentType: mimeType }
-    });
+    await createBlobStorage(env).put(r2Key, input.content, { contentType: mimeType });
   }
 
   const version = existing ? existing.version + 1 : 1;
@@ -132,7 +131,7 @@ export async function getVfsFile(
     throw vfsNotFound(normalized);
   }
 
-  const object = await env.AGENT_BUCKET.get(entry.r2Key);
+  const object = await createBlobStorage(env).get(entry.r2Key);
   if (!object) {
     throw new Error(`VFS object not found: ${normalized}`);
   }

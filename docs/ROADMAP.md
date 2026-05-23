@@ -16,7 +16,7 @@
 - `[x]` Queue consumer 异步任务处理。
 - `[x]` Agent Durable Object 实例管理与消息串行化。
 - `[x]` D1 关系型数据库 schema 迁移与存储。
-- `[x]` R2 虚拟文件系统 (VFS) 物理层实现。
+- `[x]` 对象存储虚拟文件系统 (VFS) 物理层实现。
 - `[x]` 基础 audit log 审计。
 - `[x]` Telegram Webhook 收发与格式化退回。
 
@@ -41,7 +41,8 @@
 
 - `[x]` Telegram 适配器。
 - `[x]` QQ 官方机器人长连接网关 (QQ Official Gateway DO)。
-- `[x]` 微信公众号与个人微信网关 (Weixin OC DO) 及扫码登录流程 *(注：未经真实环境测试)*。
+- `[x]` QQ 官方机器人 Webhook 模式。
+- `[x]` 个人微信 / Weixin OC 网关及扫码登录流程。
 - `[x]` 企业微信 Webhook 收发适配。
 - `[x]` 多平台 identity 绑定与解析映射。
 - `[x]` 平台消息限流与安全沙箱。

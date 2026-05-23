@@ -32,7 +32,7 @@ Cloudflare Worker 不负责执行真实 `git pull`。Git 能力通过 GitHub/Git
 
 - 拉取 repo tree。
 - 读取文件内容。
-- 同步 skills 到 R2 VFS。
+- 同步 skills 到 VFS。
 - 对比 commit sha。
 - 创建 commit 或 PR。
 
@@ -57,7 +57,7 @@ Cloudflare Worker 不负责执行真实 `git pull`。Git 能力通过 GitHub/Git
 
 搜索分三类：
 
-- 本地搜索：D1/R2/VFS/消息记录。
+- 本地搜索：D1/对象存储/VFS/消息记录。
 - 指定源搜索：RSS、指定 URL、指定 API。
 - 通用 Web 搜索：外部搜索 API。
 

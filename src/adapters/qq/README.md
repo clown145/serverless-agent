@@ -1,15 +1,10 @@
 # QQ Adapter
 
-负责 QQ 平台消息、事件、心跳和出站消息的适配。
+负责 QQ 平台消息、事件和出站消息的适配。
 
-QQ 接入方式可能是 webhook/callback，也可能是 gateway/WebSocket。这里不直接处理 agent 逻辑，只把平台事件转成内部事件。
+当前实现面向 QQ 官方机器人，核心代码在 `official/`：
 
-后续文件建议：
+- `connectionMode=gateway`: 使用 `QQOfficialGatewayDurableObject` 维护 QQ Gateway WebSocket、心跳和 resume。
+- `connectionMode=webhook`: 使用 `/webhooks/qq-official/:webhookSecret` 接收 QQ 官方 webhook。出站走 direct sender，不维护 Gateway WebSocket。
 
-```text
-normalize.ts
-verify.ts
-outbound.ts
-heartbeat.ts
-types.ts
-```
+这里不直接处理 agent 逻辑，只把平台事件转成内部事件，并把平台出站能力封装为统一 outbound adapter。

@@ -3,6 +3,7 @@ import { createVfsWorkspace } from "../../vfs/services/workspace-service";
 import type { OutboundFile } from "../../platforms/outbound/types";
 import type { ToolExecutionContext } from "../types";
 import type { FileSourceInput } from "./schema";
+import { createBlobStorage } from "../../storage/blob";
 
 const MAX_OUTBOUND_FILE_BYTES = 20 * 1024 * 1024;
 
@@ -35,7 +36,7 @@ export async function resolveOutboundFile(
       throw new Error("Attachment not found");
     }
 
-    const object = await context.env.AGENT_BUCKET.get(attachment.r2Key);
+    const object = await createBlobStorage(context.env).get(attachment.r2Key);
     if (!object) {
       throw new Error("Attachment object not found");
     }
@@ -48,7 +49,7 @@ export async function resolveOutboundFile(
       mimeType:
         options.mimeType ??
         attachment.mimeType ??
-        object.httpMetadata?.contentType ??
+        object.contentType ??
         "application/octet-stream"
     };
   }

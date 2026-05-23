@@ -6,6 +6,7 @@ import type { ConversationContextMessage } from "../core/agent-context";
 import type { ModelContentPart } from "../core/model/types";
 import { resolveRoleModelConfig, type ResolvedModelConfig } from "../core/model/provider-config";
 import { createModelProviderFromConfig } from "../core/model/provider-factory";
+import type { BlobObject } from "../storage/blob/types";
 
 const CAPTION_PROMPT = [
   "Describe this image for a downstream text-only agent.",
@@ -134,11 +135,11 @@ async function generateAndCacheCaption(
 
 export function imagePartFromAttachment(
   attachment: MessageAttachment,
-  object: R2ObjectBody
+  object: BlobObject
 ): Promise<ModelContentPart & { type: "image" }> {
   return object.arrayBuffer().then((buffer) => ({
     type: "image",
-    mimeType: attachment.mimeType ?? object.httpMetadata?.contentType ?? "image/jpeg",
+    mimeType: attachment.mimeType ?? object.contentType ?? "image/jpeg",
     dataBase64: bytesToBase64(new Uint8Array(buffer)),
     sourceAttachment: attachment
   }));

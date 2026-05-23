@@ -4,9 +4,9 @@
 
 ## 目标
 
-- 运行在 Cloudflare Workers / Queues / Durable Objects / R2 / D1 上。
-- 已支持 Telegram、QQ 官方机器人、微信公众号/个人微信、企业微信、Web UI 等多平台入口。
-- 使用 R2 + D1 实现虚拟文件系统 (VFS)，存放 skills、workspace、artifacts、memory。
+- 运行在 Cloudflare Workers / Queues / Durable Objects / D1 / 对象存储上。
+- 已支持 Telegram、QQ 官方机器人、个人微信 / Weixin OC、企业微信、Web UI 等多平台入口。
+- 使用 D1 + 对象存储实现虚拟文件系统 (VFS)，存放 skills、workspace、artifacts、memory；对象存储默认 R2，可选 S3-compatible，R2 不可用时可回退 D1 lite。
 - 用 Durable Object 维护每个 agent 的长期状态和串行执行（保证同一会话请求串行化）。
 - 用工具权限系统控制“高特权”操作，例如发送平台消息、读写文件系统等，支持 Pending 确认逻辑。
 - 支持心跳、未来任务、定时任务、失败重试和审计日志。
@@ -32,7 +32,7 @@ Agent Durable Object / Cloudflare Agent
         |
 Tool Registry / Permission Engine / Skill Loader
         |
-D1 / R2 / KV / External APIs
+D1 / Object Storage / KV / External APIs
 ```
 
 ## 目录入口
@@ -60,11 +60,12 @@ D1 / R2 / KV / External APIs
 ### 1. 已实现的核心功能 ✅
 - **多平台收发与网关适配**：
   - **Telegram Webhook**：完备的收发消息及富文本格式化回退（HTML/Markdown 转纯文本）容错机制。
-  - **QQ 官方机器人 (QQ Official)**：利用 Durable Object 进行网关长连接维护和会话维持。
-  - **微信公众号 / 个人微信 (Weixin OC)**：基于腾讯 `iLink` 接口实现扫码登录、状态轮询与长连接保持。*(注：未经真实环境测试，仅通过 Mock 单元测试验证)*
-  - **企业微信 (Wecom)**：支持 Webhook 接收。
+  - **QQ 官方机器人 (QQ Official)**：支持 Gateway Durable Object 长连接模式，也支持 QQ 官方 Webhook 模式；Webhook 模式可减少 DO duration 消耗。
+  - **个人微信 / Weixin OC**：基于腾讯 `iLink` 风格接口实现扫码登录、状态轮询与收发消息，运行游标和会话上下文保存在 DO storage。
+  - **企业微信 (WeCom)**：支持客服回调 Webhook、URL 验证和下行消息。
+  - **WebUI / Admin**：通过 `/admin/messages` 进入同一套 agent pipeline。
 - **Agent 运行循环与上下文**：基于 LLM 决策、具备可选技能（Skills）过滤与运行时工具注册机制的 `agent-tool-loop`。
-- **R2-backed 虚拟文件系统 (VFS)**：提供 Agent 读写文件、管理工作区和归档的虚拟目录机制。
+- **D1-first 虚拟文件系统 (VFS)**：提供 Agent 读写文件、管理工作区和归档的虚拟目录机制；较大对象走 R2/S3，最低可用模式可写入 D1 lite。
 - **定时与未来任务 (Scheduler)**：基于 Durable Object Alarms 和 Cron Triggers 的心跳、未来任务调度、失败重试等。
 - **权限与确认机制 (Permissions & Pending Actions)**：提供精细化策略控制，支持针对“发消息、调用高特权 API”等敏感操作的 Pending 确认流程。
 - **功能齐备的后台管理端 (Admin WebUI)**：React + Vite 构建的仪表盘，支持多语言 (i18n)、模型配置、三方平台对接、调试沙盒、Runs 运行日志查看、在线文件系统操作以及审批 Pending Actions。

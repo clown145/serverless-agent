@@ -7,15 +7,15 @@
 ## 文档拆分
 
 - [architecture/RUNTIME_FLOW.md](architecture/RUNTIME_FLOW.md): 请求、队列、Durable Object 和 agent run 流程。
-- [architecture/STORAGE_MODEL.md](architecture/STORAGE_MODEL.md): D1、R2、KV、DO storage 的职责。
+- [architecture/STORAGE_MODEL.md](architecture/STORAGE_MODEL.md): D1、对象存储、KV、DO storage 的职责。
 - [architecture/TOOLS_AND_BOUNDARIES.md](architecture/TOOLS_AND_BOUNDARIES.md): 工具系统、VFS、Git、邮件、搜索边界。
 - [architecture/FAILURE_AND_CONCURRENCY.md](architecture/FAILURE_AND_CONCURRENCY.md): 失败恢复、重试、幂等和并发模型。
-- [architecture/PLATFORM_INTEGRATIONS.md](architecture/PLATFORM_INTEGRATIONS.md): Telegram、微信、企业微信及 QQ 官方机器人的网关集成与会话维持原理。
+- [architecture/PLATFORM_INTEGRATIONS.md](architecture/PLATFORM_INTEGRATIONS.md): Telegram、QQ 官方机器人、企业微信、Weixin OC、WebUI/Admin 的平台适配和网关集成。
 
 ## 总体拓扑
 
 ```text
-Telegram / QQ / Webhook / Admin UI
+Telegram / QQ / WeCom / Weixin OC / WebUI / Admin
         |
         v
 Cloudflare Worker
@@ -47,7 +47,7 @@ Tools / Storage / Scheduler
   - search
   - email
   - git sync
-  - D1 / R2 / KV
+  - D1 / Object Storage / KV
 ```
 
 ## 模块职责
@@ -59,7 +59,7 @@ Tools / Storage / Scheduler
 职责：
 
 - 暴露 HTTP API。
-- 接收 Telegram、QQ、Webhook。
+- 接收 Telegram、QQ、WeCom、WebUI/Admin 等入口请求。
 - 做认证和签名校验。
 - 转换 payload 为内部消息。
 - 写入 Queue。
@@ -105,7 +105,7 @@ adapter 只负责平台协议和内部协议互转，不做 agent 决策。
 - tool call 协议。
 - run 恢复逻辑。
 
-Core 不依赖 Telegram/QQ、Cloudflare binding 或 D1/R2 细节。
+Core 不依赖 Telegram/QQ、Cloudflare binding 或 D1/object-storage 细节。
 
 ### Tools
 
@@ -126,11 +126,11 @@ Core 不依赖 Telegram/QQ、Cloudflare binding 或 D1/R2 细节。
 
 职责：
 
-- 封装 D1、R2、KV、DO storage。
+- 封装 D1、对象存储、KV、DO storage。
 - 提供 repository 接口。
 - 管理事务、索引、分页、对象 key 规范。
 
-业务层不直接拼 R2 key 或 SQL。
+业务层不直接拼对象 key 或 SQL。
 
 ### Scheduler
 

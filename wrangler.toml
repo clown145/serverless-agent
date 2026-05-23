@@ -19,6 +19,7 @@ run_worker_first = [
 DEFAULT_AGENT_ID = "default"
 MODEL_PROVIDER = "mock"
 AGENT_TIMEZONE = "Asia/Shanghai"
+OBJECT_STORAGE_BACKEND = "r2"
 
 [triggers]
 crons = ["*/5 * * * *"]

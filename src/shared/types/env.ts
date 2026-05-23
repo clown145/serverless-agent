@@ -5,7 +5,7 @@ export interface Env {
   AGENT_OBJECT: DurableObjectNamespace;
   QQ_OFFICIAL_GATEWAY: DurableObjectNamespace;
   WEIXIN_OC_GATEWAY: DurableObjectNamespace;
-  AGENT_BUCKET: R2Bucket;
+  AGENT_BUCKET?: R2Bucket;
   AGENT_DB: D1Database;
   AGENT_KV: KVNamespace;
   ASSETS?: Fetcher;
@@ -34,4 +34,11 @@ export interface Env {
   TAVILY_BASE_URL?: string;
   EXA_API_KEY?: string;
   EXA_BASE_URL?: string;
+  OBJECT_STORAGE_BACKEND?: "r2" | "s3" | "d1_lite";
+  S3_ENDPOINT?: string;
+  S3_BUCKET?: string;
+  S3_REGION?: string;
+  S3_ACCESS_KEY_ID?: string;
+  S3_SECRET_ACCESS_KEY?: string;
+  S3_FORCE_PATH_STYLE?: string;
 }

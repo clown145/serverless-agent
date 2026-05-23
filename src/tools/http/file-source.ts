@@ -2,6 +2,7 @@ import { getMessageAttachmentRecord } from "../../storage/repositories/message-a
 import { createVfsWorkspace } from "../../vfs/services/workspace-service";
 import type { Env } from "../../shared/types/env";
 import { validateFetchUrl } from "./url-safety";
+import { createBlobStorage } from "../../storage/blob";
 
 export const MAX_HTTP_FILE_BYTES = 20 * 1024 * 1024;
 
@@ -65,7 +66,7 @@ export async function resolveHttpFile(
       throw new Error("Attachment not found");
     }
 
-    const object = await context.env.AGENT_BUCKET.get(attachment.r2Key);
+    const object = await createBlobStorage(context.env).get(attachment.r2Key);
     if (!object) {
       throw new Error("Attachment object not found");
     }
@@ -78,7 +79,7 @@ export async function resolveHttpFile(
       mimeType:
         options.mimeType ??
         attachment.mimeType ??
-        object.httpMetadata?.contentType ??
+        object.contentType ??
         "application/octet-stream"
     };
   }

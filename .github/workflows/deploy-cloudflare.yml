@@ -20,6 +20,11 @@ jobs:
       KV_NAMESPACE_ID: ${{ secrets.KV_NAMESPACE_ID || vars.KV_NAMESPACE_ID }}
       R2_BUCKET_NAME: ${{ vars.R2_BUCKET_NAME || vars.WORKER_NAME || 'serverless-agent' }}
       R2_ATTACHMENT_RETENTION_DAYS: ${{ vars.R2_ATTACHMENT_RETENTION_DAYS || '30' }}
+      OBJECT_STORAGE_BACKEND: ${{ vars.OBJECT_STORAGE_BACKEND || 'r2' }}
+      S3_ENDPOINT: ${{ vars.S3_ENDPOINT }}
+      S3_BUCKET: ${{ vars.S3_BUCKET }}
+      S3_REGION: ${{ vars.S3_REGION || 'auto' }}
+      S3_FORCE_PATH_STYLE: ${{ vars.S3_FORCE_PATH_STYLE || 'false' }}
       QUEUE_NAME: ${{ vars.QUEUE_NAME || 'serverless-agent-events' }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -28,6 +33,8 @@ jobs:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+      S3_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID }}
+      S3_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TELEGRAM_WEBHOOK_SECRET: ${{ secrets.TELEGRAM_WEBHOOK_SECRET }}
       GENERATED_CONFIG: wrangler.generated.toml
@@ -106,28 +113,74 @@ jobs:
             exit 1
           fi
 
-          npx wrangler r2 bucket create "$R2_BUCKET_NAME" || true
+          case "$OBJECT_STORAGE_BACKEND" in
+            r2|s3|d1_lite) ;;
+            *)
+              echo "OBJECT_STORAGE_BACKEND must be one of: r2, s3, d1_lite."
+              exit 1
+              ;;
+          esac
 
-          if ! [[ "$R2_ATTACHMENT_RETENTION_DAYS" =~ ^[0-9]+$ ]]; then
-            echo "R2_ATTACHMENT_RETENTION_DAYS must be a non-negative integer."
-            exit 1
+          if [ "$OBJECT_STORAGE_BACKEND" = "r2" ]; then
+            R2_BUCKET_EXISTS="false"
+            if R2_BUCKET_LIST=$(npx wrangler r2 bucket list --json); then
+              if echo "$R2_BUCKET_LIST" | jq -e ".[] | select(.name == \"$R2_BUCKET_NAME\")" >/dev/null; then
+                R2_BUCKET_EXISTS="true"
+              fi
+            else
+              echo "R2 bucket list failed; falling back to OBJECT_STORAGE_BACKEND=d1_lite."
+              OBJECT_STORAGE_BACKEND="d1_lite"
+            fi
+
+            if [ "$OBJECT_STORAGE_BACKEND" = "r2" ] && [ "$R2_BUCKET_EXISTS" != "true" ]; then
+              if ! npx wrangler r2 bucket create "$R2_BUCKET_NAME"; then
+                echo "R2 bucket create failed; falling back to OBJECT_STORAGE_BACKEND=d1_lite."
+                OBJECT_STORAGE_BACKEND="d1_lite"
+              fi
+            fi
           fi
 
-          npx wrangler r2 bucket lifecycle remove "$R2_BUCKET_NAME" \
-            --name expire-agent-attachments || true
+          if [ "$OBJECT_STORAGE_BACKEND" = "r2" ]; then
+            if ! [[ "$R2_ATTACHMENT_RETENTION_DAYS" =~ ^[0-9]+$ ]]; then
+              echo "R2_ATTACHMENT_RETENTION_DAYS must be a non-negative integer."
+              exit 1
+            fi
 
-          if [ "$R2_ATTACHMENT_RETENTION_DAYS" != "0" ]; then
-            npx wrangler r2 bucket lifecycle add "$R2_BUCKET_NAME" \
-              expire-agent-attachments \
-              attachments/ \
-              --expire-days "$R2_ATTACHMENT_RETENTION_DAYS" \
-              --force
+            npx wrangler r2 bucket lifecycle remove "$R2_BUCKET_NAME" \
+              --name expire-agent-attachments || true
+
+            if [ "$R2_ATTACHMENT_RETENTION_DAYS" != "0" ]; then
+              npx wrangler r2 bucket lifecycle add "$R2_BUCKET_NAME" \
+                expire-agent-attachments \
+                attachments/ \
+                --expire-days "$R2_ATTACHMENT_RETENTION_DAYS" \
+                --force
+            fi
           fi
 
-          npx wrangler queues create "$QUEUE_NAME" || true
+          if [ "$OBJECT_STORAGE_BACKEND" = "s3" ]; then
+            if [ -z "$S3_ENDPOINT" ] || [ -z "$S3_BUCKET" ] || [ -z "$S3_ACCESS_KEY_ID" ] || [ -z "$S3_SECRET_ACCESS_KEY" ]; then
+              echo "S3_ENDPOINT, S3_BUCKET, S3_ACCESS_KEY_ID, and S3_SECRET_ACCESS_KEY are required for OBJECT_STORAGE_BACKEND=s3."
+              exit 1
+            fi
+          fi
+
+          QUEUE_EXISTS="false"
+          if QUEUE_LIST=$(npx wrangler queues list --json); then
+            if echo "$QUEUE_LIST" | jq -e ".[] | select(.queue_name == \"$QUEUE_NAME\" or .name == \"$QUEUE_NAME\")" >/dev/null; then
+              QUEUE_EXISTS="true"
+            fi
+          else
+            echo "Queue list failed; falling back to create-if-needed."
+          fi
+
+          if [ "$QUEUE_EXISTS" != "true" ]; then
+            npx wrangler queues create "$QUEUE_NAME" || true
+          fi
 
           echo "D1_DATABASE_ID=$D1_DATABASE_ID" >> "$GITHUB_ENV"
           echo "KV_NAMESPACE_ID=$KV_NAMESPACE_ID" >> "$GITHUB_ENV"
+          echo "OBJECT_STORAGE_BACKEND=$OBJECT_STORAGE_BACKEND" >> "$GITHUB_ENV"
 
       - name: Generate Wrangler config
         run: |
@@ -145,11 +198,22 @@ jobs:
           replace DEFAULT_AGENT_ID "$DEFAULT_AGENT_ID"
           replace MODEL_PROVIDER "$MODEL_PROVIDER"
           replace AGENT_TIMEZONE "$AGENT_TIMEZONE"
+          replace OBJECT_STORAGE_BACKEND "$OBJECT_STORAGE_BACKEND"
+          replace S3_ENDPOINT "$S3_ENDPOINT"
+          replace S3_BUCKET "$S3_BUCKET"
+          replace S3_REGION "$S3_REGION"
+          replace S3_FORCE_PATH_STYLE "$S3_FORCE_PATH_STYLE"
           replace D1_DATABASE_NAME "$D1_DATABASE_NAME"
           replace D1_DATABASE_ID "$D1_DATABASE_ID"
           replace KV_NAMESPACE_ID "$KV_NAMESPACE_ID"
           replace R2_BUCKET_NAME "$R2_BUCKET_NAME"
           replace QUEUE_NAME "$QUEUE_NAME"
+
+          replace R2_BUCKET_BINDING ""
+
+          if [ "$OBJECT_STORAGE_BACKEND" = "r2" ]; then
+            printf '\n[[r2_buckets]]\nbinding = "AGENT_BUCKET"\nbucket_name = "%s"\n' "$R2_BUCKET_NAME" >> "$GENERATED_CONFIG"
+          fi
 
       - name: Apply D1 migrations
         run: npx wrangler d1 migrations apply "$D1_DATABASE_NAME" --remote --config "$GENERATED_CONFIG"
@@ -174,6 +238,8 @@ jobs:
           put_secret OPENAI_API_KEY "$OPENAI_API_KEY"
           put_secret GEMINI_API_KEY "$GEMINI_API_KEY"
           put_secret TAVILY_API_KEY "$TAVILY_API_KEY"
+          put_secret S3_ACCESS_KEY_ID "$S3_ACCESS_KEY_ID"
+          put_secret S3_SECRET_ACCESS_KEY "$S3_SECRET_ACCESS_KEY"
           put_secret TELEGRAM_BOT_TOKEN "$TELEGRAM_BOT_TOKEN"
           put_secret TELEGRAM_WEBHOOK_SECRET "$TELEGRAM_WEBHOOK_SECRET"
 
