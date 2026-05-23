@@ -19,7 +19,7 @@ import {
   buildWeixinOcImageItem,
   uploadWeixinOcMedia
 } from "../../adapters/weixin-oc/media";
-import { getWeixinOcAccountState, withWeixinOcAccountState } from "../../adapters/weixin-oc/state";
+import { normalizeContextTokens } from "../../adapters/weixin-oc/state";
 import type { WeixinOcBotConfig } from "../../adapters/weixin-oc/config";
 import type {
   WeixinOcAccountState,
@@ -34,14 +34,14 @@ import type { InternalMessage } from "../../shared/types/internal-message";
 import type { QueueMessageBody } from "../../shared/types/queue";
 import {
   clearPlatformIntegrationCredential,
-  getPlatformIntegrationRecord,
-  updatePlatformIntegrationCheck,
-  updatePlatformIntegrationConfig
+  updatePlatformIntegrationCheck
 } from "../../storage/repositories/platform-integrations-repository";
 
 const SESSION_TIMEOUT_ERRCODE = -14;
 const LOGIN_SESSION_TTL_MS = 5 * 60 * 1000;
 const LOGIN_SESSION_KEY = "login_session";
+const ACCOUNT_STATE_KEY = "account_state";
+const RUNTIME_STATUS_KEY = "runtime_status";
 const AGENT_ID_KEY = "agent_id";
 const INTEGRATION_ID_KEY = "integration_id";
 const QR_EXPIRED_COUNT_KEY = "qr_expired_count";
@@ -138,7 +138,7 @@ export class WeixinOcGatewayDurableObject {
     }
 
     await this.schedulePoll(1_000);
-    await updatePlatformIntegrationCheck(this.env.AGENT_DB, config.integrationId, {});
+    await this.clearRuntimeError();
     return this.status(agentId, integrationId);
   }
 
@@ -175,6 +175,7 @@ export class WeixinOcGatewayDurableObject {
     await this.state.storage.put(LOGIN_SESSION_KEY, loginSession);
     await this.state.storage.put(QR_EXPIRED_COUNT_KEY, 0);
     await updatePlatformIntegrationCheck(this.env.AGENT_DB, config.integrationId, {});
+    await this.clearRuntimeError();
     await this.schedulePoll(config.qrPollIntervalMs);
     return this.status(agentId, integrationId);
   }
@@ -199,9 +200,7 @@ export class WeixinOcGatewayDurableObject {
       await this.schedulePoll(1_000);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Weixin OC poll failed";
-      await updatePlatformIntegrationCheck(this.env.AGENT_DB, config.integrationId, {
-        lastError: message
-      });
+      await this.recordRuntimeError(message);
       await this.schedulePoll(5_000);
     }
     return this.status(agentId, integrationId);
@@ -317,8 +316,6 @@ export class WeixinOcGatewayDurableObject {
 
     if (dirty) {
       await this.persistAccountState(config, nextState);
-    } else {
-      await updatePlatformIntegrationCheck(this.env.AGENT_DB, config.integrationId, {});
     }
   }
 
@@ -458,6 +455,9 @@ export class WeixinOcGatewayDurableObject {
   ): Promise<WeixinOcGatewayStatus> {
     const config = await this.requireConfig(agentId, integrationId);
     const loginSession = await this.state.storage.get<WeixinOcLoginSession>(LOGIN_SESSION_KEY);
+    const runtimeStatus = await this.state.storage.get<WeixinOcRuntimeStatus>(
+      RUNTIME_STATUS_KEY
+    );
 
     return {
       agentId: config.agentId,
@@ -479,7 +479,7 @@ export class WeixinOcGatewayDurableObject {
           }
         : undefined,
       updatedAt: nowIso(),
-      lastError: config.integration.lastError
+      lastError: runtimeStatus?.lastError ?? config.integration.lastError
     };
   }
 
@@ -514,27 +514,16 @@ export class WeixinOcGatewayDurableObject {
     config: WeixinOcBotConfig,
     state: Partial<WeixinOcAccountState>
   ): Promise<void> {
-    const integration = await getPlatformIntegrationRecord(
-      this.env.AGENT_DB,
-      config.integrationId
-    );
-    if (!integration) {
-      throw new Error("Weixin OC integration not found while saving state");
-    }
-
-    const nextConfig = withWeixinOcAccountState(
-      {
-        ...integration.config,
-        token: ""
-      },
-      {
-        ...getWeixinOcAccountState(integration.config),
+    const current = await this.getStoredAccountState(config);
+    await this.state.storage.put(
+      ACCOUNT_STATE_KEY,
+      normalizeRuntimeAccountState({
+        ...current,
         ...state,
-        token: ""
-      }
+        token: undefined
+      })
     );
-    await updatePlatformIntegrationConfig(this.env.AGENT_DB, config.integrationId, nextConfig);
-    await updatePlatformIntegrationCheck(this.env.AGENT_DB, config.integrationId, {});
+    await this.clearRuntimeError();
   }
 
   private async requireConfig(agentId: string, integrationId?: string) {
@@ -544,7 +533,56 @@ export class WeixinOcGatewayDurableObject {
     if (!config) {
       throw new Error("Weixin OC integration is not configured");
     }
-    return config;
+    return this.withRuntimeAccountState(config);
+  }
+
+  private async withRuntimeAccountState(
+    config: WeixinOcBotConfig
+  ): Promise<WeixinOcBotConfig> {
+    const accountState = await this.getStoredAccountState(config);
+    return {
+      ...config,
+      accountId: accountState.accountId ?? config.accountId,
+      syncBuf: accountState.syncBuf ?? config.syncBuf,
+      baseUrl: accountState.baseUrl ?? config.baseUrl,
+      contextTokens: {
+        ...config.contextTokens,
+        ...accountState.contextTokens
+      }
+    };
+  }
+
+  private async getStoredAccountState(
+    config: WeixinOcBotConfig
+  ): Promise<WeixinOcAccountState> {
+    const stored = await this.state.storage.get<Partial<WeixinOcAccountState>>(
+      ACCOUNT_STATE_KEY
+    );
+    if (stored) {
+      return normalizeRuntimeAccountState(stored);
+    }
+
+    const legacyState = normalizeRuntimeAccountState({
+      accountId: config.accountId,
+      syncBuf: config.syncBuf,
+      baseUrl: config.baseUrl,
+      contextTokens: config.contextTokens
+    });
+    if (hasRuntimeAccountState(legacyState)) {
+      await this.state.storage.put(ACCOUNT_STATE_KEY, legacyState);
+    }
+    return legacyState;
+  }
+
+  private async recordRuntimeError(message: string): Promise<void> {
+    await this.state.storage.put(RUNTIME_STATUS_KEY, {
+      lastError: message,
+      updatedAt: nowIso()
+    } satisfies WeixinOcRuntimeStatus);
+  }
+
+  private async clearRuntimeError(): Promise<void> {
+    await this.state.storage.delete(RUNTIME_STATUS_KEY);
   }
 
   private async dispatchInbound(agentId: string, message: InternalMessage): Promise<void> {
@@ -584,6 +622,11 @@ export type WeixinOcGatewayStatus = {
   lastError?: string;
 };
 
+type WeixinOcRuntimeStatus = {
+  lastError?: string;
+  updatedAt: string;
+};
+
 function isLoginSessionValid(
   loginSession: WeixinOcLoginSession | undefined
 ): loginSession is WeixinOcLoginSession {
@@ -602,6 +645,26 @@ function qrImageUrl(qrcodeImgContent: string): string {
 
 function stringFromUnknown(value: unknown): string | undefined {
   return typeof value === "string" && value.trim() ? value.trim() : undefined;
+}
+
+function normalizeRuntimeAccountState(
+  state: Partial<WeixinOcAccountState>
+): WeixinOcAccountState {
+  return {
+    accountId: stringFromUnknown(state.accountId),
+    syncBuf: stringFromUnknown(state.syncBuf) ?? "",
+    baseUrl: stringFromUnknown(state.baseUrl),
+    contextTokens: normalizeContextTokens(state.contextTokens)
+  };
+}
+
+function hasRuntimeAccountState(state: WeixinOcAccountState): boolean {
+  return Boolean(
+    state.accountId ||
+      state.syncBuf ||
+      state.baseUrl ||
+      Object.keys(state.contextTokens).length > 0
+  );
 }
 
 function parseGatewayFile(input: {
