@@ -9,6 +9,14 @@ export async function connectConfiguredQqOfficialGateways(
   const results = [];
 
   for (const bot of bots) {
+    if (bot.connectionMode === "webhook") {
+      results.push({
+        agentId: bot.agentId,
+        ok: true
+      });
+      continue;
+    }
+
     if (!bot.appId || !bot.secret) {
       results.push({
         agentId: bot.agentId,

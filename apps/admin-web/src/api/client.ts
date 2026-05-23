@@ -516,6 +516,7 @@ export function createAdminClient(getToken: () => string) {
       name: string;
       appId: string;
       secret?: string;
+      connectionMode?: QqOfficialIntegration["connectionMode"];
       isSandbox?: boolean;
       enableGroupC2c?: boolean;
       enableGuildDirectMessage?: boolean;
@@ -534,6 +535,7 @@ export function createAdminClient(getToken: () => string) {
       body: {
         appId?: string;
         secret?: string;
+        connectionMode?: QqOfficialIntegration["connectionMode"];
         isSandbox?: boolean;
         enableGroupC2c?: boolean;
         enableGuildDirectMessage?: boolean;

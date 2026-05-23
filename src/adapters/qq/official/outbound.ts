@@ -4,6 +4,8 @@ import type {
   PlatformSendResult
 } from "../../../platforms/outbound/types";
 import type { Env } from "../../../shared/types/env";
+import { resolveQqOfficialBotForAgent } from "./config";
+import { sendQqOfficialDirect } from "./direct-sender";
 import { fetchQqOfficialGateway } from "./gateway-object";
 
 export function createQqOfficialOutboundAdapter(env: Env): PlatformOutboundAdapter {
@@ -28,6 +30,10 @@ export async function sendQqOfficialText(
   conversationId: string,
   text: string
 ): Promise<PlatformSendResult> {
+  if (await shouldUseDirectSender(env, agentId)) {
+    return sendQqOfficialDirect(env, agentId, { conversationId, text });
+  }
+
   const response = await fetchQqOfficialGateway(env, agentId, "/send", {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -58,6 +64,14 @@ export async function sendQqOfficialFile(
   file: OutboundFile,
   options: { caption?: string } = {}
 ): Promise<PlatformSendResult> {
+  if (await shouldUseDirectSender(env, agentId)) {
+    return sendQqOfficialDirect(env, agentId, {
+      conversationId,
+      text: options.caption || undefined,
+      file
+    });
+  }
+
   const response = await fetchQqOfficialGateway(env, agentId, "/send", {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -87,4 +101,9 @@ export async function sendQqOfficialFile(
   }
 
   return payload?.result ?? { ok: false, error: "QQ official file send returned no result" };
+}
+
+async function shouldUseDirectSender(env: Env, agentId: string): Promise<boolean> {
+  const config = await resolveQqOfficialBotForAgent(env, agentId);
+  return config.connectionMode === "webhook";
 }

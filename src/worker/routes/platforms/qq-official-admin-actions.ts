@@ -39,6 +39,19 @@ export async function connectQqOfficialIntegration(
   env: Env,
   integration: QqOfficialIntegration
 ): Promise<Response> {
+  if (connectionMode(integration) === "webhook") {
+    await updatePlatformIntegrationCheck(env.AGENT_DB, integration.id, {});
+    return jsonResponse({
+      ok: true,
+      integration: toQqOfficialIntegrationDto(integration),
+      gateway: {
+        ok: true,
+        status: "webhook",
+        webhookPath: `/webhooks/qq-official/${integration.webhookSecret ?? integration.id}`
+      }
+    });
+  }
+
   try {
     const response = await fetchQqOfficialGateway(
       env,
@@ -70,6 +83,17 @@ export async function disconnectQqOfficialIntegration(
   env: Env,
   integration: QqOfficialIntegration
 ): Promise<Response> {
+  if (connectionMode(integration) === "webhook") {
+    return jsonResponse({
+      ok: true,
+      gateway: {
+        ok: true,
+        status: "webhook",
+        webhookPath: `/webhooks/qq-official/${integration.webhookSecret ?? integration.id}`
+      }
+    });
+  }
+
   try {
     const response = await fetchQqOfficialGateway(
       env,
@@ -97,6 +121,18 @@ export async function getQqOfficialIntegrationStatus(
   env: Env,
   integration: QqOfficialIntegration
 ): Promise<Response> {
+  if (connectionMode(integration) === "webhook") {
+    return jsonResponse({
+      ok: true,
+      integration: toQqOfficialIntegrationDto(integration),
+      gateway: {
+        ok: true,
+        status: "webhook",
+        webhookPath: `/webhooks/qq-official/${integration.webhookSecret ?? integration.id}`
+      }
+    });
+  }
+
   const response = await fetchQqOfficialGateway(env, integration.agentId, "/status", {
     method: "GET"
   });
@@ -142,4 +178,8 @@ async function recordQqOfficialActionError(
 
 function stringConfig(value: unknown): string | undefined {
   return typeof value === "string" && value.trim() ? value.trim() : undefined;
+}
+
+function connectionMode(integration: QqOfficialIntegration): "gateway" | "webhook" {
+  return stringConfig(integration.config.connectionMode) === "webhook" ? "webhook" : "gateway";
 }

@@ -6,6 +6,7 @@ import { ToolbarButton } from "../../ToolbarButton";
 
 type QqOfficialIntegrationListProps = {
   integrations: QqOfficialIntegration[];
+  origin: string;
   onTest: (integrationId: string) => void;
   onConnect: (integrationId: string) => void;
   onDisconnect: (integrationId: string) => void;
@@ -15,6 +16,7 @@ type QqOfficialIntegrationListProps = {
 
 export function QqOfficialIntegrationList({
   integrations,
+  origin,
   onTest,
   onConnect,
   onDisconnect,
@@ -31,6 +33,11 @@ export function QqOfficialIntegrationList({
             <strong>{integration.name}</strong>
             <span>{integration.agentId}</span>
             <span>{integration.appId ? `AppID ${integration.appId}` : t("platforms.noAppId")}</span>
+            <span>
+              {integration.connectionMode === "webhook"
+                ? t("platforms.qqWebhookMode")
+                : t("platforms.qqGatewayMode")}
+            </span>
             <span>{integration.hasCredential ? t("platforms.encryptedSecret") : t("platforms.noSecret")}</span>
             <span>
               {[
@@ -41,6 +48,12 @@ export function QqOfficialIntegrationList({
                 .filter(Boolean)
                 .join(" / ")}
             </span>
+            {integration.connectionMode === "webhook" && (
+              <span>
+                {t("platforms.qqWebhookUrl")}: {origin}
+                {integration.webhookPath}
+              </span>
+            )}
             {integration.lastError && <span>{integration.lastError}</span>}
           </div>
           <StatusBadge value={integration.status} />

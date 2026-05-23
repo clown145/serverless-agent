@@ -45,7 +45,7 @@ describe("QqOfficialApiClient", () => {
     );
   });
 
-  it("sends c2c messages to the v2 endpoint", async () => {
+  it("sends c2c text messages as markdown to the v2 endpoint", async () => {
     const fetcher = vi.fn(async (url: string, init?: RequestInit) => {
       if (url.endsWith("/app/getAppAccessToken")) {
         return jsonResponse({ access_token: "token", expires_in: 7200 });
@@ -53,8 +53,8 @@ describe("QqOfficialApiClient", () => {
       if (url.endsWith("/v2/users/open-id/messages")) {
         expect(init?.method).toBe("POST");
         expect(JSON.parse(String(init?.body))).toMatchObject({
-          content: "hello",
-          msg_type: 0,
+          markdown: { content: "**hello**" },
+          msg_type: 2,
           msg_id: "source-msg"
         });
         return jsonResponse({ id: "sent-msg" });
@@ -69,12 +69,58 @@ describe("QqOfficialApiClient", () => {
     });
 
     await expect(
-      api.sendC2cMessage({
+      api.sendC2cText({
         openId: "open-id",
-        content: "hello",
+        content: "**hello**",
         msgId: "source-msg"
       })
     ).resolves.toEqual({ id: "sent-msg" });
+  });
+
+  it("falls back to plain content when QQ rejects native markdown", async () => {
+    const requestBodies: unknown[] = [];
+    const fetcher = vi.fn(async (url: string, init?: RequestInit) => {
+      if (url.endsWith("/app/getAppAccessToken")) {
+        return jsonResponse({ access_token: "token", expires_in: 7200 });
+      }
+      if (url.endsWith("/v2/groups/group-openid/messages")) {
+        requestBodies.push(JSON.parse(String(init?.body)));
+        if (requestBodies.length === 1) {
+          return jsonResponse(
+            { code: 40054001, message: "不允许发送原生 markdown" },
+            { status: 400 }
+          );
+        }
+        return jsonResponse({ id: "sent-plain" });
+      }
+      throw new Error(`unexpected url ${url}`);
+    });
+
+    const api = new QqOfficialApiClient({
+      appId: "app-id",
+      secret: "secret",
+      fetcher: fetcher as unknown as typeof fetch
+    });
+
+    await expect(
+      api.sendGroupText({
+        groupOpenId: "group-openid",
+        content: "**hello**",
+        msgId: "source-msg"
+      })
+    ).resolves.toEqual({ id: "sent-plain" });
+    expect(requestBodies).toEqual([
+      expect.objectContaining({
+        markdown: { content: "**hello**" },
+        msg_type: 2,
+        msg_id: "source-msg"
+      }),
+      expect.objectContaining({
+        content: "**hello**",
+        msg_type: 0,
+        msg_id: "source-msg"
+      })
+    ]);
   });
 
   it("uploads and sends group media messages", async () => {
@@ -132,9 +178,9 @@ describe("QqOfficialApiClient", () => {
   });
 });
 
-function jsonResponse(body: unknown): Response {
+function jsonResponse(body: unknown, init: ResponseInit = {}): Response {
   return new Response(JSON.stringify(body), {
-    status: 200,
+    status: init.status ?? 200,
     headers: { "content-type": "application/json" }
   });
 }

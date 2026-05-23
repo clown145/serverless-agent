@@ -52,6 +52,7 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
     name: "QQ Official",
     appId: "",
     secret: "",
+    connectionMode: "webhook",
     isSandbox: false,
     enableGroupC2c: true,
     enableGuildDirectMessage: true,
@@ -139,6 +140,7 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
         name: qqDraft.name,
         appId: qqDraft.appId,
         secret: qqDraft.secret || undefined,
+        connectionMode: qqDraft.connectionMode,
         isSandbox: qqDraft.isSandbox,
         enableGroupC2c: qqDraft.enableGroupC2c,
         enableGuildDirectMessage: qqDraft.enableGuildDirectMessage,
@@ -426,6 +428,7 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
       <h2 className="section-heading">QQ Official</h2>
       <QqOfficialIntegrationList
         integrations={qqIntegrations}
+        origin={window.location.origin}
         onTest={(id) => void testQqIntegration(id)}
         onConnect={(id) => void connectQqIntegration(id)}
         onDisconnect={(id) => void disconnectQqIntegration(id)}

@@ -124,6 +124,10 @@ export type QqOfficialMessageSendResponse = {
   id?: string;
 };
 
+export type QqOfficialMarkdownPayload = {
+  content: string;
+};
+
 export type QqOfficialFileUploadResponse = {
   file_uuid: string;
   file_info: string;

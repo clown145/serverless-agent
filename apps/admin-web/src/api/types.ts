@@ -463,6 +463,8 @@ export type QqOfficialIntegration = {
   name: string;
   status: string;
   appId?: string;
+  connectionMode: "gateway" | "webhook";
+  webhookPath: string;
   isSandbox: boolean;
   enableGroupC2c: boolean;
   enableGuildDirectMessage: boolean;

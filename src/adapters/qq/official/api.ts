@@ -5,6 +5,7 @@ import {
   type QqOfficialAccessToken,
   type QqOfficialFileUploadResponse,
   type QqOfficialGatewayInfo,
+  type QqOfficialMarkdownPayload,
   type QqOfficialMedia,
   type QqOfficialMessageSendResponse
 } from "./types";
@@ -36,6 +37,7 @@ export class QqOfficialApiClient {
   async sendGroupMessage(input: {
     groupOpenId: string;
     content?: string;
+    markdown?: QqOfficialMarkdownPayload;
     media?: QqOfficialMedia;
     msgType?: number;
     msgId?: string;
@@ -48,8 +50,9 @@ export class QqOfficialApiClient {
         method: "POST",
         body: {
           content: input.content,
+          markdown: input.markdown,
           media: input.media,
-          msg_type: input.msgType ?? 0,
+          msg_type: input.msgType ?? (input.markdown ? 2 : 0),
           msg_id: input.msgId,
           msg_seq: input.msgSeq ?? randomMessageSeq(),
           event_id: input.eventId
@@ -61,6 +64,7 @@ export class QqOfficialApiClient {
   async sendC2cMessage(input: {
     openId: string;
     content?: string;
+    markdown?: QqOfficialMarkdownPayload;
     media?: QqOfficialMedia;
     msgType?: number;
     msgId?: string;
@@ -73,8 +77,9 @@ export class QqOfficialApiClient {
         method: "POST",
         body: {
           content: input.content,
+          markdown: input.markdown,
           media: input.media,
-          msg_type: input.msgType ?? 0,
+          msg_type: input.msgType ?? (input.markdown ? 2 : 0),
           msg_id: input.msgId,
           msg_seq: input.msgSeq ?? randomMessageSeq(),
           event_id: input.eventId
@@ -83,9 +88,68 @@ export class QqOfficialApiClient {
     );
   }
 
+  async sendGroupText(input: {
+    groupOpenId: string;
+    content: string;
+    msgId?: string;
+    msgSeq?: number;
+    eventId?: string;
+  }): Promise<QqOfficialMessageSendResponse> {
+    return sendWithMarkdownFallback(
+      () =>
+        this.sendGroupMessage({
+          groupOpenId: input.groupOpenId,
+          markdown: { content: input.content },
+          msgType: 2,
+          msgId: input.msgId,
+          msgSeq: input.msgSeq,
+          eventId: input.eventId
+        }),
+      () =>
+        this.sendGroupMessage({
+          groupOpenId: input.groupOpenId,
+          content: input.content,
+          msgType: 0,
+          msgId: input.msgId,
+          msgSeq: input.msgSeq,
+          eventId: input.eventId
+        })
+    );
+  }
+
+  async sendC2cText(input: {
+    openId: string;
+    content: string;
+    msgId?: string;
+    msgSeq?: number;
+    eventId?: string;
+  }): Promise<QqOfficialMessageSendResponse> {
+    return sendWithMarkdownFallback(
+      () =>
+        this.sendC2cMessage({
+          openId: input.openId,
+          markdown: { content: input.content },
+          msgType: 2,
+          msgId: input.msgId,
+          msgSeq: input.msgSeq,
+          eventId: input.eventId
+        }),
+      () =>
+        this.sendC2cMessage({
+          openId: input.openId,
+          content: input.content,
+          msgType: 0,
+          msgId: input.msgId,
+          msgSeq: input.msgSeq,
+          eventId: input.eventId
+        })
+    );
+  }
+
   async sendChannelMessage(input: {
     channelId: string;
-    content: string;
+    content?: string;
+    markdown?: QqOfficialMarkdownPayload;
     msgId?: string;
     eventId?: string;
   }): Promise<QqOfficialMessageSendResponse> {
@@ -95,6 +159,7 @@ export class QqOfficialApiClient {
         method: "POST",
         body: {
           content: input.content,
+          markdown: input.markdown,
           msg_id: input.msgId,
           event_id: input.eventId
         }
@@ -104,7 +169,8 @@ export class QqOfficialApiClient {
 
   async sendDirectMessage(input: {
     guildId: string;
-    content: string;
+    content?: string;
+    markdown?: QqOfficialMarkdownPayload;
     msgId?: string;
     eventId?: string;
   }): Promise<QqOfficialMessageSendResponse> {
@@ -114,10 +180,59 @@ export class QqOfficialApiClient {
         method: "POST",
         body: {
           content: input.content,
+          markdown: input.markdown,
           msg_id: input.msgId,
           event_id: input.eventId
         }
       }
+    );
+  }
+
+  async sendChannelText(input: {
+    channelId: string;
+    content: string;
+    msgId?: string;
+    eventId?: string;
+  }): Promise<QqOfficialMessageSendResponse> {
+    return sendWithMarkdownFallback(
+      () =>
+        this.sendChannelMessage({
+          channelId: input.channelId,
+          markdown: { content: input.content },
+          msgId: input.msgId,
+          eventId: input.eventId
+        }),
+      () =>
+        this.sendChannelMessage({
+          channelId: input.channelId,
+          content: input.content,
+          msgId: input.msgId,
+          eventId: input.eventId
+        })
+    );
+  }
+
+  async sendDirectText(input: {
+    guildId: string;
+    content: string;
+    msgId?: string;
+    eventId?: string;
+  }): Promise<QqOfficialMessageSendResponse> {
+    return sendWithMarkdownFallback(
+      () =>
+        this.sendDirectMessage({
+          guildId: input.guildId,
+          markdown: { content: input.content },
+          msgId: input.msgId,
+          eventId: input.eventId
+        }),
+      () =>
+        this.sendDirectMessage({
+          guildId: input.guildId,
+          content: input.content,
+          msgId: input.msgId,
+          eventId: input.eventId
+        })
     );
   }
 
@@ -274,6 +389,37 @@ function pruneUndefined(input: Record<string, unknown>): Record<string, unknown>
 
 function randomMessageSeq(): number {
   return Math.floor(Math.random() * 10_000) + 1;
+}
+
+async function sendWithMarkdownFallback<T>(
+  sendMarkdown: () => Promise<T>,
+  sendPlain: () => Promise<T>
+): Promise<T> {
+  try {
+    return await sendMarkdown();
+  } catch (error) {
+    if (!isMarkdownRejectedError(error)) {
+      throw error;
+    }
+    return sendPlain();
+  }
+}
+
+function isMarkdownRejectedError(error: unknown): boolean {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  const message = error.message.toLowerCase();
+  return (
+    message.includes("不允许发送原生 markdown") ||
+    (message.includes("markdown") &&
+      (message.includes("不允许") ||
+        message.includes("不支持") ||
+        message.includes("not allowed") ||
+        message.includes("not support") ||
+        message.includes("unsupported")))
+  );
 }
 
 function qqOfficialApiError(

@@ -48,6 +48,7 @@ import {
   handleQqOfficialGatewayAdmin,
   handleQqOfficialGatewayConnectAll
 } from "./routes/qq-official-gateway";
+import { handleQqOfficialWebhook } from "./routes/qq-official-webhook";
 import { handleTelegramWebhook } from "./routes/telegram-webhook";
 import { handleWecomWebhook } from "./routes/wecom-webhook";
 
@@ -69,6 +70,11 @@ export async function routeRequest(
   if (url.pathname.startsWith("/webhooks/wecom/")) {
     const webhookSecret = decodeURIComponent(url.pathname.replace("/webhooks/wecom/", ""));
     return handleWecomWebhook(request, env, ctx, webhookSecret);
+  }
+
+  if (url.pathname.startsWith("/webhooks/qq-official/")) {
+    const webhookSecret = decodeURIComponent(url.pathname.replace("/webhooks/qq-official/", ""));
+    return handleQqOfficialWebhook(request, env, webhookSecret);
   }
 
   if (url.pathname === "/admin/messages") {

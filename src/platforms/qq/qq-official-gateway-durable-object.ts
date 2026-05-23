@@ -126,14 +126,22 @@ export class QQOfficialGatewayDurableObject {
     };
 
     if (target.kind === "group") {
-      if (input.file) {
-        common.media = await api.uploadGroupFile({
+      if (!input.file) {
+        const response = await api.sendGroupText({
           groupOpenId: target.groupOpenId,
-          fileDataBase64: qqOfficialFileDataBase64(input.file),
-          fileType: qqOfficialFileType(input.file)
+          content: input.text ?? "",
+          msgId: common.msgId,
+          eventId: common.eventId
         });
-        common.msgType = 7;
+        return { ok: true, providerMessageId: response.id };
       }
+
+      common.media = await api.uploadGroupFile({
+        groupOpenId: target.groupOpenId,
+        fileDataBase64: qqOfficialFileDataBase64(input.file),
+        fileType: qqOfficialFileType(input.file)
+      });
+      common.msgType = 7;
       const response = await api.sendGroupMessage({
         groupOpenId: target.groupOpenId,
         ...common
@@ -141,14 +149,22 @@ export class QQOfficialGatewayDurableObject {
       return { ok: true, providerMessageId: response.id };
     }
     if (target.kind === "c2c") {
-      if (input.file) {
-        common.media = await api.uploadC2cFile({
+      if (!input.file) {
+        const response = await api.sendC2cText({
           openId: target.openId,
-          fileDataBase64: qqOfficialFileDataBase64(input.file),
-          fileType: qqOfficialFileType(input.file)
+          content: input.text ?? "",
+          msgId: common.msgId,
+          eventId: common.eventId
         });
-        common.msgType = 7;
+        return { ok: true, providerMessageId: response.id };
       }
+
+      common.media = await api.uploadC2cFile({
+        openId: target.openId,
+        fileDataBase64: qqOfficialFileDataBase64(input.file),
+        fileType: qqOfficialFileType(input.file)
+      });
+      common.msgType = 7;
       const response = await api.sendC2cMessage({
         openId: target.openId,
         ...common
@@ -162,14 +178,14 @@ export class QQOfficialGatewayDurableObject {
       };
     }
     if (target.kind === "direct") {
-      const response = await api.sendDirectMessage({
+      const response = await api.sendDirectText({
         guildId: target.guildId,
         ...textOnlyCommon(common)
       });
       return { ok: true, providerMessageId: response.id };
     }
 
-    const response = await api.sendChannelMessage({
+    const response = await api.sendChannelText({
       channelId: target.channelId,
       ...textOnlyCommon(common)
     });

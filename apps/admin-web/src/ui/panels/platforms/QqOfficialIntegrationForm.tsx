@@ -6,6 +6,7 @@ export type QqOfficialIntegrationDraft = {
   name: string;
   appId: string;
   secret: string;
+  connectionMode: "gateway" | "webhook";
   isSandbox: boolean;
   enableGroupC2c: boolean;
   enableGuildDirectMessage: boolean;
@@ -56,6 +57,21 @@ export function QqOfficialIntegrationForm({
           value={draft.secret}
           onChange={(event) => onDraftChange({ ...draft, secret: event.target.value })}
         />
+      </label>
+      <label>
+        {t("platforms.qqConnectionMode")}
+        <select
+          value={draft.connectionMode}
+          onChange={(event) =>
+            onDraftChange({
+              ...draft,
+              connectionMode: event.target.value as QqOfficialIntegrationDraft["connectionMode"]
+            })
+          }
+        >
+          <option value="gateway">{t("platforms.qqGatewayMode")}</option>
+          <option value="webhook">{t("platforms.qqWebhookMode")}</option>
+        </select>
       </label>
       <label className="checkbox-label">
         <input

@@ -14,6 +14,7 @@ describe("QQ official integration schemas", () => {
     ).toMatchObject({
       name: "QQ Official",
       appId: "12345",
+      connectionMode: "gateway",
       isSandbox: false,
       enableGroupC2c: true,
       enableGuildDirectMessage: true,
@@ -24,10 +25,12 @@ describe("QQ official integration schemas", () => {
   it("validates updates without requiring a secret", () => {
     expect(
       updateQqOfficialIntegrationSchema.parse({
+        connectionMode: "webhook",
         isSandbox: true,
         enableGroupC2c: false
       })
     ).toEqual({
+      connectionMode: "webhook",
       isSandbox: true,
       enableGroupC2c: false
     });

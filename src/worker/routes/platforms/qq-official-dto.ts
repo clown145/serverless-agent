@@ -6,6 +6,8 @@ export type QqOfficialIntegrationDto = {
   name: string;
   status: string;
   appId?: string;
+  connectionMode: "gateway" | "webhook";
+  webhookPath: string;
   isSandbox: boolean;
   enableGroupC2c: boolean;
   enableGuildDirectMessage: boolean;
@@ -26,6 +28,9 @@ export function toQqOfficialIntegrationDto(
     name: integration.name,
     status: integration.status,
     appId: stringConfig(integration.config.appId) ?? stringConfig(integration.config.appid),
+    connectionMode:
+      stringConfig(integration.config.connectionMode) === "webhook" ? "webhook" : "gateway",
+    webhookPath: `/webhooks/qq-official/${integration.webhookSecret ?? integration.id}`,
     isSandbox:
       booleanConfig(integration.config.isSandbox) ??
       booleanConfig(integration.config.is_sandbox) ??

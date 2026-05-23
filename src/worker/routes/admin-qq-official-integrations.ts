@@ -50,11 +50,13 @@ export async function handleAdminQqOfficialIntegrations(
     name: parsed.data.name,
     config: {
       appId: parsed.data.appId,
+      connectionMode: parsed.data.connectionMode,
       isSandbox: parsed.data.isSandbox,
       enableGroupC2c: parsed.data.enableGroupC2c,
       enableGuildDirectMessage: parsed.data.enableGuildDirectMessage,
       enablePublicGuildMessages: parsed.data.enablePublicGuildMessages
-    }
+    },
+    webhookSecret: crypto.randomUUID()
   });
 
   const saved = parsed.data.secret

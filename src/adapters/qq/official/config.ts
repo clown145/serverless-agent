@@ -14,6 +14,7 @@ export type QqOfficialBotConfig = {
   secret?: string;
   integrationId?: string;
   isSandbox: boolean;
+  connectionMode: "gateway" | "webhook";
   intent: QqOfficialGatewayIntent;
   source: "platform_integration" | "env";
   integration?: PlatformIntegrationRecord;
@@ -33,6 +34,17 @@ export async function resolveQqOfficialBotForAgent(
   }
 
   return envQqOfficialConfig(env, agentId);
+}
+
+export async function resolveQqOfficialBotByIntegrationId(
+  env: Env,
+  integrationId: string
+): Promise<QqOfficialBotConfig | undefined> {
+  const integrations = await listPlatformIntegrationRecords(env.AGENT_DB, {
+    platform: "qq"
+  });
+  const integration = integrations.find((item) => item.id === integrationId);
+  return integration ? integrationQqOfficialConfig(env, integration) : undefined;
 }
 
 export async function listQqOfficialBots(
@@ -79,6 +91,8 @@ async function integrationQqOfficialConfig(
     secret,
     integrationId: integration.id,
     isSandbox: booleanConfig(config.isSandbox) ?? booleanConfig(config.is_sandbox) ?? false,
+    connectionMode:
+      stringConfig(config.connectionMode) === "webhook" ? "webhook" : "gateway",
     intent: qqOfficialIntentMask({
       enableGroupC2c:
         booleanConfig(config.enableGroupC2c) ??
@@ -104,6 +118,7 @@ function envQqOfficialConfig(env: Env, agentId: string): QqOfficialBotConfig {
     appId: env.QQ_OFFICIAL_APP_ID,
     secret: env.QQ_OFFICIAL_SECRET,
     isSandbox: env.QQ_OFFICIAL_SANDBOX === "true",
+    connectionMode: "gateway",
     intent: qqOfficialIntentMask({
       enableGroupC2c: env.QQ_OFFICIAL_ENABLE_GROUP_C2C !== "false",
       enableGuildDirectMessage:

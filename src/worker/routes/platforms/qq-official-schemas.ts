@@ -5,6 +5,7 @@ export const createQqOfficialIntegrationSchema = z.object({
   name: z.string().min(1).max(80).default("QQ Official"),
   appId: z.string().min(1),
   secret: z.string().min(1).optional(),
+  connectionMode: z.enum(["gateway", "webhook"]).default("gateway"),
   isSandbox: z.boolean().default(false),
   enableGroupC2c: z.boolean().default(true),
   enableGuildDirectMessage: z.boolean().default(true),
@@ -14,6 +15,7 @@ export const createQqOfficialIntegrationSchema = z.object({
 export const updateQqOfficialIntegrationSchema = z.object({
   appId: z.string().min(1).optional(),
   secret: z.string().min(1).optional(),
+  connectionMode: z.enum(["gateway", "webhook"]).optional(),
   isSandbox: z.boolean().optional(),
   enableGroupC2c: z.boolean().optional(),
   enableGuildDirectMessage: z.boolean().optional(),
