@@ -23,12 +23,11 @@ import { MobileNavigation, Sidebar } from "./Sidebar";
 import type { ViewId } from "./views";
 
 const tokenKey = "serverless-agent:admin-token";
+const viewKey = "serverless-agent:active-view";
 
 export function App() {
   const { t } = useI18n();
-  const [active, setActive] = useState<ViewId>(() =>
-    localStorage.getItem(tokenKey) ? "setup" : "system"
-  );
+  const [active, setActive] = useState<ViewId>(() => initialView());
   const [selectedRunId, setSelectedRunId] = useState("");
   const [selectedConversationId, setSelectedConversationId] = useState("webui:default");
   const [token, setToken] = useState(() => localStorage.getItem(tokenKey) ?? "");
@@ -45,14 +44,19 @@ export function App() {
     window.setTimeout(() => setNotice(undefined), 3200);
   }
 
+  function setActiveView(view: ViewId) {
+    setActive(view);
+    localStorage.setItem(viewKey, view);
+  }
+
   function openRun(runId: string) {
     setSelectedRunId(runId);
-    setActive("runs");
+    setActiveView("runs");
   }
 
   function openConversation(conversationId: string) {
     setSelectedConversationId(conversationId);
-    setActive("chat");
+    setActiveView("chat");
   }
 
   const activeItem = NAV_ITEMS.find((item) => item.id === active);
@@ -60,11 +64,11 @@ export function App() {
 
   return (
     <div className="app-shell">
-      <Sidebar active={active} onChange={setActive} />
+      <Sidebar active={active} onChange={setActiveView} />
       <div className="workspace-shell">
         <header className="topbar">
           <div className="topbar-left">
-            <MobileNavigation active={active} onChange={setActive} />
+            <MobileNavigation active={active} onChange={setActiveView} />
             <div>
               <span className="topbar-kicker">serverless-agent</span>
               <h1>{activeLabel}</h1>
@@ -76,7 +80,7 @@ export function App() {
         <main className="main-surface">
           {notice && <div className={`notice ${notice.tone}`}>{notice.message}</div>}
           {active === "setup" && (
-            <SetupPanel client={client} notify={notify} onNavigate={setActive} />
+            <SetupPanel client={client} notify={notify} onNavigate={setActiveView} />
           )}
           {active === "chat" && (
             <ChatPanel
@@ -91,13 +95,13 @@ export function App() {
             <ConversationsPanel
               client={client}
               notify={notify}
-              onNavigate={setActive}
+              onNavigate={setActiveView}
               onOpenConversation={openConversation}
             />
           )}
           {active === "model_config" && <ModelConfigPanel client={client} notify={notify} />}
           {active === "models" && (
-            <ModelsPanel client={client} notify={notify} onNavigate={setActive} />
+            <ModelsPanel client={client} notify={notify} onNavigate={setActiveView} />
           )}
           {active === "platforms" && <PlatformsPanel client={client} notify={notify} />}
           {active === "diagnostics" && <DiagnosticsPanel client={client} notify={notify} />}
@@ -109,7 +113,7 @@ export function App() {
           )}
           {active === "vfs" && <VfsPanel client={client} notify={notify} />}
           {active === "schedules" && (
-            <SchedulesPanel client={client} notify={notify} onNavigate={setActive} />
+            <SchedulesPanel client={client} notify={notify} onNavigate={setActiveView} />
           )}
           {active === "pending" && <PendingPanel client={client} notify={notify} />}
           {active === "permissions" && <PermissionsPanel client={client} notify={notify} />}
@@ -118,4 +122,17 @@ export function App() {
       </div>
     </div>
   );
+}
+
+function initialView(): ViewId {
+  const savedView = localStorage.getItem(viewKey);
+  if (isViewId(savedView)) {
+    return savedView;
+  }
+
+  return localStorage.getItem(tokenKey) ? "setup" : "system";
+}
+
+function isViewId(value: string | null): value is ViewId {
+  return Boolean(value && NAV_ITEMS.some((item) => item.id === value));
 }
