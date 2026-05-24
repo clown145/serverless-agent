@@ -224,6 +224,8 @@ src/prompts/overrides/agent/base.md
 常规代码变更至少运行：
 
 ```bash
+npm run lint
+npm run format:check
 npm run typecheck
 npm test
 ```
@@ -235,6 +237,20 @@ npm run dry-run
 ```
 
 如果某个检查无法运行，需要在 PR 描述或提交说明里写清楚原因。
+
+## 发版
+
+Release workflow 只发布源码快照，不构建、不部署。GitHub 会自动在 release 中提供 source zip 和 tar.gz，适合 fork 用户固定版本和回退。
+
+发版通过 `v*` tag 触发，tag 版本必须和 `package.json` 的 `version` 一致。常用命令：
+
+```bash
+npm version patch
+git push origin main
+git push origin v0.1.1
+```
+
+较明显的新功能用 `npm version minor`，破坏性变更用 `npm version major`。D1 migrations 通常只前进不自动回滚，发版说明需要写清楚是否包含 schema 变化。
 
 ## 相关文档
 
