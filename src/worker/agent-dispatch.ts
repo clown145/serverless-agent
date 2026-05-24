@@ -1,9 +1,11 @@
 import type { Env } from "../shared/types/env";
 import type { QueueMessageBody } from "../shared/types/queue";
+import type { EnqueueMailboxResult } from "../agents/agent-mailbox";
 
 export type AgentDispatchResult = {
-  handled: boolean;
-  runId?: string;
+  queued: boolean;
+  eventId: string;
+  result?: EnqueueMailboxResult;
 };
 
 export async function enqueueAgentJob(
@@ -31,8 +33,12 @@ export async function dispatchAgentJob(
   }
 
   const payload = (await response.json()) as {
-    result?: AgentDispatchResult;
+    result?: EnqueueMailboxResult;
   };
 
-  return payload.result ?? { handled: true };
+  return {
+    queued: true,
+    eventId: job.eventId,
+    result: payload.result
+  };
 }

@@ -95,7 +95,12 @@ export function createAdminClient(getToken: () => string) {
       conversationId?: string;
       attachments?: Array<MessageAttachment & { dataBase64?: string }>;
     }) => {
-      return request<ApiResult<{ eventId: string; result?: { runId?: string } }>>(
+      return request<
+        ApiResult<{
+          eventId: string;
+          result?: { queued?: boolean; status?: string; runId?: string };
+        }>
+      >(
         "/admin/messages",
         {
           method: "POST",

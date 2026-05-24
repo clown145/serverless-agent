@@ -22,8 +22,9 @@ internal_error: 程序错误
 
 ## 并发模型
 
-- 同一个 agent 的关键状态由 Durable Object 串行处理。
+- 同一个 agent 的入站事件先写入 Durable Object mailbox，再由单个 drain loop 串行处理。
 - 不同 agent 可以并行。
+- Queue 负责入口缓冲、重试和削峰；同 agent 的顺序性不依赖 Queue consumer 并发配置。
 - 同一个 run 内的危险工具不并行执行。
 - 只读搜索类工具可以并发，但必须受限流控制。
 
