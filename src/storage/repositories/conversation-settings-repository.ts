@@ -42,7 +42,8 @@ export async function ensureConversationSettings(
       `INSERT INTO conversation_settings (
         id, agent_id, conversation_id, platform, root_conversation_id,
         title, history_limit, summary_enabled, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, 16, 1, ?, ?)`
+      ) VALUES (?, ?, ?, ?, ?, ?, 16, 1, ?, ?)
+      ON CONFLICT(agent_id, conversation_id) DO NOTHING`
     )
     .bind(
       id,
@@ -56,18 +57,12 @@ export async function ensureConversationSettings(
     )
     .run();
 
-  return {
-    id,
-    agentId: input.agentId,
-    conversationId: input.conversationId,
-    platform: input.platform,
-    rootConversationId: input.rootConversationId,
-    title: input.title,
-    historyLimit: 16,
-    summaryEnabled: true,
-    createdAt: now,
-    updatedAt: now
-  };
+  const ensured = await getConversationSettings(db, input.agentId, input.conversationId);
+  if (!ensured) {
+    throw new Error("Failed to ensure conversation settings");
+  }
+
+  return ensured;
 }
 
 export async function getConversationSettings(
