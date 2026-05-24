@@ -2,6 +2,7 @@ import { createId } from "../shared/ids";
 import type { Env } from "../shared/types/env";
 import type { InternalMessage } from "../shared/types/internal-message";
 import type { SelectedSkill } from "../skills/skill-selector";
+import { validateSkillToolCall } from "../skills/skill-tools";
 import type { ToolRegistry } from "../tools/registry/tool-registry";
 import type { ToolResult } from "../tools/types";
 import type { ModelMessage, ModelToolCall } from "./model/types";
@@ -64,6 +65,19 @@ async function executeToolCall(
     });
 
     return { result, sentMessage: false };
+  }
+
+  const skillGuardResult = validateSkillToolCall(toolCall.name, toolCall.arguments, selectedSkill);
+  if (skillGuardResult) {
+    await recordToolCompletedStep(env, {
+      runId,
+      agentId: message.agentId,
+      status: "failed",
+      toolName: toolCall.name,
+      summaryStatus: "skill_denied"
+    });
+
+    return { result: skillGuardResult, sentMessage: false };
   }
 
   const result = await registry.execute(toolCall.name, {

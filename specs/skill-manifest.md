@@ -45,8 +45,8 @@ Use this skill when...
 - 每次 run 注入短 skill catalog。
 - 显式 `/skill {skill_id} {task}` 会加载完整 `SKILL.md` body。
 - 没有显式选择时，不自动加载任何 skill body。
-- Skill 不定义独立 tool allowlist。
-- 工具权限统一由 runtime permission system、平台可用性和 pending confirmation 控制。
+- Active skill 会额外收窄 VFS 工具边界，只允许只读 VFS 工具访问 `/skills/{skill_id}`。
+- 非 VFS 工具权限统一由 runtime permission system、平台可用性和 pending confirmation 控制。
 
 ## 安装和更新
 

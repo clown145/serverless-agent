@@ -73,9 +73,13 @@ Skill instructions:
 
 ## 工具权限
 
-Skills 不定义单独的 tool allowlist。工具暴露和执行统一走 runtime permission system、platform availability checks 和 pending confirmation flow。
+Skill 激活后，运行时会额外收窄 VFS 工具边界：
 
-这样可以避免在 Skill 文件里再维护一套策略格式。
+- 暴露给模型的 VFS 工具只保留 `vfs.read_file`、`vfs.list_dir` 和 `vfs.search`。
+- 这些只读 VFS 工具只能访问 `/skills/{skill_id}` 下的文件。
+- `vfs.command` 和 VFS 写入/移动/删除类工具不会在 active skill 中暴露。
+
+非 VFS 工具仍统一走 runtime permission system、platform availability checks 和 pending confirmation flow。
 
 ## Skill 编辑
 

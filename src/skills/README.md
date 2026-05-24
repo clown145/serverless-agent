@@ -31,7 +31,9 @@
 
 ## 边界
 
-Skill 不定义独立 tool allowlist。工具暴露和执行统一走权限系统、platform availability checks 和 pending confirmation flow。
+Skill 激活后会额外收窄 VFS 工具边界：只暴露只读 VFS 工具，并且只能访问
+`/skills/{skill_id}` 下的文件。其他工具仍统一走权限系统、platform availability checks
+和 pending confirmation flow。
 
 ## 相关文档
 
