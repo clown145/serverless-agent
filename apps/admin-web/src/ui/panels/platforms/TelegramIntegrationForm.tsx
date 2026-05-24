@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { Plus, Save } from "lucide-react";
 import type { TelegramIntegration } from "../../../api/types";
 import { useI18n } from "../../i18n/I18nProvider";
 
@@ -12,12 +12,14 @@ export type TelegramIntegrationDraft = {
 
 type TelegramIntegrationFormProps = {
   draft: TelegramIntegrationDraft;
+  editing?: boolean;
   onDraftChange: (draft: TelegramIntegrationDraft) => void;
   onSubmit: () => void;
 };
 
 export function TelegramIntegrationForm({
   draft,
+  editing = false,
   onDraftChange,
   onSubmit
 }: TelegramIntegrationFormProps) {
@@ -73,8 +75,8 @@ export function TelegramIntegrationForm({
         </select>
       </label>
       <button className="primary-button" type="button" onClick={onSubmit}>
-        <Plus size={16} />
-        {t("common.add")}
+        {editing ? <Save size={16} /> : <Plus size={16} />}
+        {editing ? t("common.save") : t("common.add")}
       </button>
     </div>
   );

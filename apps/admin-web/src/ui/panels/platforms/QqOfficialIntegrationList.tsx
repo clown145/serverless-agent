@@ -1,4 +1,4 @@
-import { PlugZap, Radio, Trash2, Unplug, UserCheck, Wifi } from "lucide-react";
+import { Pencil, PlugZap, Radio, Trash2, Unplug, UserCheck, Wifi } from "lucide-react";
 import type { QqOfficialIntegration } from "../../../api/types";
 import { useI18n } from "../../i18n/I18nProvider";
 import { StatusBadge } from "../../StatusBadge";
@@ -11,6 +11,7 @@ type QqOfficialIntegrationListProps = {
   onConnect: (integrationId: string) => void;
   onDisconnect: (integrationId: string) => void;
   onStatus: (integrationId: string) => void;
+  onEdit: (integration: QqOfficialIntegration) => void;
   onDelete: (integrationId: string) => void;
 };
 
@@ -21,6 +22,7 @@ export function QqOfficialIntegrationList({
   onConnect,
   onDisconnect,
   onStatus,
+  onEdit,
   onDelete
 }: QqOfficialIntegrationListProps) {
   const { t } = useI18n();
@@ -59,6 +61,11 @@ export function QqOfficialIntegrationList({
             {integration.lastError && <span>{integration.lastError}</span>}
           </div>
           <StatusBadge value={integration.status} />
+          <ToolbarButton
+            label={t("common.edit")}
+            icon={Pencil}
+            onClick={() => onEdit(integration)}
+          />
           <ToolbarButton
             label={t("platforms.testBot")}
             icon={UserCheck}

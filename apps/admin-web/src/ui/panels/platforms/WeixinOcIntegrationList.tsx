@@ -1,4 +1,4 @@
-import { ExternalLink, LogIn, PlugZap, Radio, Trash2, Unplug, Wifi } from "lucide-react";
+import { ExternalLink, LogIn, Pencil, PlugZap, Radio, Trash2, Unplug, Wifi } from "lucide-react";
 import type { WeixinOcGatewayStatus, WeixinOcIntegration } from "../../../api/types";
 import { useI18n } from "../../i18n/I18nProvider";
 import { StatusBadge } from "../../StatusBadge";
@@ -11,6 +11,7 @@ type WeixinOcIntegrationListProps = {
   onConnect: (integrationId: string) => void;
   onStatus: (integrationId: string) => void;
   onDisconnect: (integrationId: string) => void;
+  onEdit: (integration: WeixinOcIntegration) => void;
   onDelete: (integrationId: string) => void;
 };
 
@@ -21,6 +22,7 @@ export function WeixinOcIntegrationList({
   onConnect,
   onStatus,
   onDisconnect,
+  onEdit,
   onDelete
 }: WeixinOcIntegrationListProps) {
   const { t } = useI18n();
@@ -63,6 +65,11 @@ export function WeixinOcIntegrationList({
               {integration.lastError && <span>{integration.lastError}</span>}
             </div>
             <StatusBadge value={integration.status} />
+            <ToolbarButton
+              label={t("common.edit")}
+              icon={Pencil}
+              onClick={() => onEdit(integration)}
+            />
             <ToolbarButton
               label={t("platforms.weixinOcLogin")}
               icon={LogIn}

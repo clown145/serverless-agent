@@ -10,17 +10,25 @@ import type {
 import { useI18n } from "../i18n/I18nProvider";
 import { JsonBlock } from "../JsonBlock";
 import { ToolbarButton } from "../ToolbarButton";
+import { PlatformAdapterDialog } from "./platforms/PlatformAdapterDialog";
 import {
-  PlatformAdapterDialog,
-  type PlatformAdapterDialogState
-} from "./platforms/PlatformAdapterDialog";
-import type { QqOfficialIntegrationDraft } from "./platforms/QqOfficialIntegrationForm";
+  defaultQqDraft,
+  defaultTelegramDraft,
+  defaultWecomDraft
+} from "./platforms/platformDrafts";
+import {
+  qqCreatePayload,
+  qqUpdatePayload,
+  telegramCreatePayload,
+  telegramUpdatePayload,
+  wecomCreatePayload,
+  wecomUpdatePayload,
+  weixinOcPayload
+} from "./platforms/platformPayloads";
 import { QqOfficialIntegrationList } from "./platforms/QqOfficialIntegrationList";
-import type { TelegramIntegrationDraft } from "./platforms/TelegramIntegrationForm";
 import { TelegramIntegrationList } from "./platforms/TelegramIntegrationList";
-import type { WecomIntegrationDraft } from "./platforms/WecomIntegrationForm";
 import { WecomIntegrationList } from "./platforms/WecomIntegrationList";
-import type { WeixinOcIntegrationDraft } from "./platforms/WeixinOcIntegrationForm";
+import { usePlatformAdapterDrafts } from "./platforms/usePlatformAdapterDrafts";
 import { WeixinOcIntegrationList } from "./platforms/WeixinOcIntegrationList";
 import type { PanelProps } from "./types";
 
@@ -33,55 +41,27 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
   const [weixinOcStatuses, setWeixinOcStatuses] = useState<
     Record<string, WeixinOcGatewayStatus | undefined>
   >({});
-  const [adapterDialog, setAdapterDialog] = useState<PlatformAdapterDialogState>({
-    open: false,
-    selectedAdapter: "weixin_oc"
-  });
   const [weixinOcSubmitting, setWeixinOcSubmitting] = useState(false);
   const [webhookUrl, setWebhookUrl] = useState("");
   const [result, setResult] = useState<unknown>();
-  const [draft, setDraft] = useState<TelegramIntegrationDraft>({
-    agentId: "default",
-    name: "Telegram",
-    botToken: "",
-    webhookSecret: "",
-    parseMode: "HTML"
-  });
-  const [qqDraft, setQqDraft] = useState<QqOfficialIntegrationDraft>({
-    agentId: "default",
-    name: "QQ Official",
-    appId: "",
-    secret: "",
-    connectionMode: "gateway",
-    isSandbox: false,
-    enableGroupC2c: true,
-    enableGuildDirectMessage: true,
-    enablePublicGuildMessages: true
-  });
-  const [wecomDraft, setWecomDraft] = useState<WecomIntegrationDraft>({
-    agentId: "default",
-    name: "WeCom Customer Service",
-    corpId: "",
-    secret: "",
-    token: "",
-    encodingAesKey: "",
-    apiBaseUrl: "https://qyapi.weixin.qq.com/cgi-bin/",
-    customerServiceName: "",
-    openKfId: "",
-    webhookSecret: ""
-  });
-  const [weixinOcDraft, setWeixinOcDraft] = useState<WeixinOcIntegrationDraft>({
-    agentId: "default",
-    name: "WeChat Personal",
-    baseUrl: "https://ilinkai.weixin.qq.com",
-    cdnBaseUrl: "https://novac2c.cdn.weixin.qq.com/c2c",
-    botType: "3",
-    qrPollIntervalMs: 1000,
-    longPollTimeoutMs: 35000,
-    apiTimeoutMs: 15000,
-    token: "",
-    accountId: ""
-  });
+  const {
+    adapterDialog,
+    setAdapterDialog,
+    telegramDraft,
+    setTelegramDraft,
+    qqDraft,
+    setQqDraft,
+    wecomDraft,
+    setWecomDraft,
+    weixinOcDraft,
+    setWeixinOcDraft,
+    openNewAdapterDialog,
+    closeAdapterDialog,
+    editTelegramIntegration,
+    editQqIntegration,
+    editWecomIntegration,
+    editWeixinOcIntegration
+  } = usePlatformAdapterDrafts();
 
   async function load() {
     try {
@@ -103,23 +83,29 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
 
   async function createIntegration() {
     try {
-      const created = await client.createTelegramIntegration({
-        agentId: draft.agentId || undefined,
-        name: draft.name,
-        botToken: draft.botToken || undefined,
-        webhookSecret: draft.webhookSecret || undefined,
-        parseMode: draft.parseMode
-      });
-      if (draft.botToken) {
+      if (adapterDialog.editingIntegrationId) {
+        const updated = await client.updateTelegramIntegration(
+          adapterDialog.editingIntegrationId,
+          telegramUpdatePayload(telegramDraft)
+        );
+        setResult(updated);
+        closeAdapterDialog();
+        notify(t("platforms.integrationUpdated"), "ok");
+        await load();
+        return;
+      }
+
+      const created = await client.createTelegramIntegration(telegramCreatePayload(telegramDraft));
+      if (telegramDraft.botToken) {
         const webhook = await client.setTelegramWebhook(created.integration.id, webhookUrl);
         setResult(webhook);
       } else {
         setResult(created);
       }
-      setDraft({ ...draft, botToken: "", webhookSecret: "" });
-      setAdapterDialog((current) => ({ ...current, open: false }));
+      setTelegramDraft(defaultTelegramDraft());
+      closeAdapterDialog();
       notify(
-        draft.botToken ? t("platforms.telegramSavedWebhook") : t("platforms.telegramSaved"),
+        telegramDraft.botToken ? t("platforms.telegramSavedWebhook") : t("platforms.telegramSaved"),
         "ok"
       );
       await load();
@@ -130,20 +116,22 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
 
   async function createQqIntegration() {
     try {
-      const created = await client.createQqOfficialIntegration({
-        agentId: qqDraft.agentId || undefined,
-        name: qqDraft.name,
-        appId: qqDraft.appId,
-        secret: qqDraft.secret || undefined,
-        connectionMode: qqDraft.connectionMode,
-        isSandbox: qqDraft.isSandbox,
-        enableGroupC2c: qqDraft.enableGroupC2c,
-        enableGuildDirectMessage: qqDraft.enableGuildDirectMessage,
-        enablePublicGuildMessages: qqDraft.enablePublicGuildMessages
-      });
+      if (adapterDialog.editingIntegrationId) {
+        const updated = await client.updateQqOfficialIntegration(
+          adapterDialog.editingIntegrationId,
+          qqUpdatePayload(qqDraft)
+        );
+        setResult(updated);
+        closeAdapterDialog();
+        notify(t("platforms.qqOfficialUpdated"), "ok");
+        await load();
+        return;
+      }
+
+      const created = await client.createQqOfficialIntegration(qqCreatePayload(qqDraft));
       setResult(created);
-      setQqDraft({ ...qqDraft, secret: "" });
-      setAdapterDialog((current) => ({ ...current, open: false }));
+      setQqDraft(defaultQqDraft());
+      closeAdapterDialog();
       notify(t("platforms.qqOfficialSaved"), "ok");
       await load();
     } catch (error) {
@@ -153,21 +141,22 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
 
   async function createWecomIntegration() {
     try {
-      const created = await client.createWecomIntegration({
-        agentId: wecomDraft.agentId || undefined,
-        name: wecomDraft.name,
-        corpId: wecomDraft.corpId,
-        secret: wecomDraft.secret || undefined,
-        token: wecomDraft.token || undefined,
-        encodingAesKey: wecomDraft.encodingAesKey || undefined,
-        apiBaseUrl: wecomDraft.apiBaseUrl || undefined,
-        customerServiceName: wecomDraft.customerServiceName || undefined,
-        openKfId: wecomDraft.openKfId || undefined,
-        webhookSecret: wecomDraft.webhookSecret || undefined
-      });
+      if (adapterDialog.editingIntegrationId) {
+        const updated = await client.updateWecomIntegration(
+          adapterDialog.editingIntegrationId,
+          wecomUpdatePayload(wecomDraft)
+        );
+        setResult(updated);
+        closeAdapterDialog();
+        notify(t("platforms.wecomUpdated"), "ok");
+        await load();
+        return;
+      }
+
+      const created = await client.createWecomIntegration(wecomCreatePayload(wecomDraft));
       setResult(created);
-      setWecomDraft({ ...wecomDraft, secret: "", encodingAesKey: "", webhookSecret: "" });
-      setAdapterDialog((current) => ({ ...current, open: false }));
+      setWecomDraft(defaultWecomDraft());
+      closeAdapterDialog();
       notify(t("platforms.wecomSaved"), "ok");
       await load();
     } catch (error) {
@@ -183,18 +172,19 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
     setWeixinOcSubmitting(true);
     let createdIntegrationId: string | undefined;
     try {
-      const created = await client.createWeixinOcIntegration({
-        agentId: weixinOcDraft.agentId || undefined,
-        name: weixinOcDraft.name,
-        baseUrl: weixinOcDraft.baseUrl || undefined,
-        cdnBaseUrl: weixinOcDraft.cdnBaseUrl || undefined,
-        botType: weixinOcDraft.botType || undefined,
-        qrPollIntervalMs: weixinOcDraft.qrPollIntervalMs,
-        longPollTimeoutMs: weixinOcDraft.longPollTimeoutMs,
-        apiTimeoutMs: weixinOcDraft.apiTimeoutMs,
-        token: weixinOcDraft.token || undefined,
-        accountId: weixinOcDraft.accountId || undefined
-      });
+      if (adapterDialog.editingIntegrationId) {
+        const updated = await client.updateWeixinOcIntegration(
+          adapterDialog.editingIntegrationId,
+          weixinOcPayload(weixinOcDraft)
+        );
+        setResult(updated);
+        closeAdapterDialog();
+        notify(t("platforms.weixinOcUpdated"), "ok");
+        await load();
+        return;
+      }
+
+      const created = await client.createWeixinOcIntegration(weixinOcPayload(weixinOcDraft));
       createdIntegrationId = created.integration.id;
       const login = await client.startWeixinOcLogin(created.integration.id);
       const loginSession = login.gateway.status?.loginSession;
@@ -379,20 +369,7 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
           <p>Telegram / QQ Official / WeChat Personal / WeCom</p>
         </div>
         <div className="panel-header-actions">
-          <button
-            className="primary-button"
-            type="button"
-            onClick={() =>
-              setAdapterDialog((current) => ({
-                ...current,
-                open: true,
-                selectedAdapter: "weixin_oc",
-                weixinOcQrImageUrl: undefined,
-                weixinOcQrContent: undefined,
-                weixinOcQrStatus: undefined
-              }))
-            }
-          >
+          <button className="primary-button" type="button" onClick={openNewAdapterDialog}>
             <Plus size={16} />
             {t("platforms.addAdapter")}
           </button>
@@ -402,14 +379,15 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
 
       <PlatformAdapterDialog
         state={adapterDialog}
-        telegramDraft={draft}
+        telegramDraft={telegramDraft}
         qqDraft={qqDraft}
         wecomDraft={wecomDraft}
         weixinOcDraft={weixinOcDraft}
         weixinOcSubmitting={weixinOcSubmitting}
         telegramWebhookUrl={webhookUrl}
         onStateChange={setAdapterDialog}
-        onTelegramDraftChange={setDraft}
+        onClose={closeAdapterDialog}
+        onTelegramDraftChange={setTelegramDraft}
         onQqDraftChange={setQqDraft}
         onWecomDraftChange={setWecomDraft}
         onWeixinOcDraftChange={setWeixinOcDraft}
@@ -428,6 +406,7 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
         onConnect={(id) => void connectQqIntegration(id)}
         onDisconnect={(id) => void disconnectQqIntegration(id)}
         onStatus={(id) => void getQqStatus(id)}
+        onEdit={editQqIntegration}
         onDelete={(id) => void deleteQqIntegration(id)}
       />
 
@@ -437,6 +416,7 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
         origin={window.location.origin}
         onTest={(id) => void testWecomIntegration(id)}
         onCreateContactWay={(id) => void createWecomContactWay(id)}
+        onEdit={editWecomIntegration}
         onDelete={(id) => void deleteWecomIntegration(id)}
       />
 
@@ -448,6 +428,7 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
         onConnect={(id) => void connectWeixinOcIntegration(id)}
         onStatus={(id) => void getWeixinOcStatus(id)}
         onDisconnect={(id) => void disconnectWeixinOcIntegration(id)}
+        onEdit={editWeixinOcIntegration}
         onDelete={(id) => void deleteWeixinOcIntegration(id)}
       />
 
@@ -459,6 +440,7 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
         onSyncCommands={(id) => void syncCommands(id)}
         onSetWebhook={(id) => void setWebhook(id)}
         onDeleteWebhook={(id) => void deleteWebhook(id)}
+        onEdit={editTelegramIntegration}
         onDelete={(id) => void deleteIntegration(id)}
       />
 

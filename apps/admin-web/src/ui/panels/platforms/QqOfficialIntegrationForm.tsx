@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { Plus, Save } from "lucide-react";
 import { useI18n } from "../../i18n/I18nProvider";
 
 export type QqOfficialIntegrationDraft = {
@@ -15,12 +15,14 @@ export type QqOfficialIntegrationDraft = {
 
 type QqOfficialIntegrationFormProps = {
   draft: QqOfficialIntegrationDraft;
+  editing?: boolean;
   onDraftChange: (draft: QqOfficialIntegrationDraft) => void;
   onSubmit: () => void;
 };
 
 export function QqOfficialIntegrationForm({
   draft,
+  editing = false,
   onDraftChange,
   onSubmit
 }: QqOfficialIntegrationFormProps) {
@@ -103,8 +105,8 @@ export function QqOfficialIntegrationForm({
         {t("platforms.qqGuildDm")}
       </label>
       <button className="primary-button" type="button" onClick={onSubmit}>
-        <Plus size={16} />
-        {t("common.add")}
+        {editing ? <Save size={16} /> : <Plus size={16} />}
+        {editing ? t("common.save") : t("common.add")}
       </button>
     </div>
   );

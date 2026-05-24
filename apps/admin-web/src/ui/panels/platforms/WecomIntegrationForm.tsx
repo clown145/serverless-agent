@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { Plus, Save } from "lucide-react";
 import { useI18n } from "../../i18n/I18nProvider";
 
 export type WecomIntegrationDraft = {
@@ -16,12 +16,14 @@ export type WecomIntegrationDraft = {
 
 type WecomIntegrationFormProps = {
   draft: WecomIntegrationDraft;
+  editing?: boolean;
   onDraftChange: (draft: WecomIntegrationDraft) => void;
   onSubmit: () => void;
 };
 
 export function WecomIntegrationForm({
   draft,
+  editing = false,
   onDraftChange,
   onSubmit
 }: WecomIntegrationFormProps) {
@@ -104,8 +106,8 @@ export function WecomIntegrationForm({
         />
       </label>
       <button className="primary-button" type="button" onClick={onSubmit}>
-        <Plus size={16} />
-        {t("common.add")}
+        {editing ? <Save size={16} /> : <Plus size={16} />}
+        {editing ? t("common.save") : t("common.add")}
       </button>
     </div>
   );

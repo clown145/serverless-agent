@@ -32,6 +32,7 @@ export const createWeixinOcIntegrationSchema = z.object({
 });
 
 export const updateWeixinOcIntegrationSchema = z.object({
+  agentId: z.string().min(1).optional(),
   name: z.string().min(1).max(80).optional(),
   baseUrl: z.url().optional(),
   cdnBaseUrl: z.url().optional(),

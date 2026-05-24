@@ -1,7 +1,7 @@
 import {
   deletePlatformIntegrationRecord,
   getPlatformIntegrationRecord,
-  updatePlatformIntegrationConfig
+  updatePlatformIntegrationDetails
 } from "../../storage/repositories/platform-integrations-repository";
 import { errorResponse, jsonResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
@@ -11,6 +11,7 @@ import {
   syncTelegramIntegrationCommands,
   testTelegramIntegration
 } from "./platforms/telegram-admin-actions";
+import { saveBotToken } from "./admin-telegram-integrations";
 import { toTelegramIntegrationDto } from "./platforms/telegram-dto";
 import { updateTelegramIntegrationSchema, zodMessage } from "./platforms/telegram-schemas";
 
@@ -45,10 +46,19 @@ export async function handleAdminTelegramIntegrationDetail(
       return errorResponse(400, "invalid_payload", zodMessage(parsed.error));
     }
 
-    const updated = await updatePlatformIntegrationConfig(env.AGENT_DB, integration.id, {
-      ...integration.config,
-      ...parsed.data
+    const { agentId, botToken, name, webhookSecret, ...configUpdate } = parsed.data;
+    let updated = await updatePlatformIntegrationDetails(env.AGENT_DB, integration.id, {
+      agentId,
+      name,
+      webhookSecret,
+      config: {
+        ...integration.config,
+        ...configUpdate
+      }
     });
+    if (botToken) {
+      updated = await saveBotToken(env, integration.id, botToken);
+    }
 
     return jsonResponse({
       ok: true,

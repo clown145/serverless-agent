@@ -27,7 +27,10 @@
 | role `member`          |         2 | `workspace:read`, `workspace:write`                                                                                                                                     |
 | unknown                |         1 | `workspace:read`                                                                                                                                                        |
 
-显式策略会与默认策略合并：`maxLevel` 取最高值，`scopes` 取并集。
+显式策略会与默认策略合并：`maxLevel` 取最高值，`scopes` 取并集。每个
+`agent_id + subject_type + subject_id` 只允许一条 active 显式策略；再次保存同一 subject
+会更新现有策略，删除策略会从 D1 物理删除。迁移前遗留的重复 active 策略会保留最新一条用于解析，避免同一 subject
+的多条旧记录叠加成更宽松权限。
 
 ## Policy Subjects
 
@@ -65,6 +68,14 @@ curl -sS 'http://localhost:8787/admin/permission-policies?agentId=default'
 
 ```bash
 curl -sS -X DELETE http://localhost:8787/admin/permission-policies/pol_...
+```
+
+更新策略：
+
+```bash
+curl -sS -X PUT http://localhost:8787/admin/permission-policies/pol_... \
+  -H 'content-type: application/json' \
+  -d '{"subjectType":"conversation","subjectId":"chat-1","maxLevel":2,"scopes":["workspace:read"]}'
 ```
 
 查看等待确认的动作：

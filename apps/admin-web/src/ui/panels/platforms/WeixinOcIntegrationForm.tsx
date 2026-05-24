@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { Plus, Save } from "lucide-react";
 import { useState } from "react";
 import { useI18n } from "../../i18n/I18nProvider";
 import { WeixinOcAdvancedFields } from "./WeixinOcAdvancedFields";
@@ -18,6 +18,7 @@ export type WeixinOcIntegrationDraft = {
 
 type WeixinOcIntegrationFormProps = {
   draft: WeixinOcIntegrationDraft;
+  editing?: boolean;
   submitting?: boolean;
   onDraftChange: (draft: WeixinOcIntegrationDraft) => void;
   onSubmit: () => void;
@@ -25,6 +26,7 @@ type WeixinOcIntegrationFormProps = {
 
 export function WeixinOcIntegrationForm({
   draft,
+  editing = false,
   submitting = false,
   onDraftChange,
   onSubmit
@@ -58,8 +60,14 @@ export function WeixinOcIntegrationForm({
       </button>
       {advancedOpen && <WeixinOcAdvancedFields draft={draft} onDraftChange={onDraftChange} />}
       <button className="primary-button" type="button" onClick={onSubmit} disabled={submitting}>
-        <Plus size={16} />
-        {submitting ? t("platforms.weixinOcCreatingLogin") : t("platforms.weixinOcCreateAndLogin")}
+        {editing ? <Save size={16} /> : <Plus size={16} />}
+        {submitting
+          ? editing
+            ? t("common.saving")
+            : t("platforms.weixinOcCreatingLogin")
+          : editing
+            ? t("common.save")
+            : t("platforms.weixinOcCreateAndLogin")}
       </button>
     </div>
   );

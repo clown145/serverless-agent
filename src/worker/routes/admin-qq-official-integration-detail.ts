@@ -1,7 +1,7 @@
 import {
   deletePlatformIntegrationRecord,
   getPlatformIntegrationRecord,
-  updatePlatformIntegrationConfig
+  updatePlatformIntegrationNameAndConfig
 } from "../../storage/repositories/platform-integrations-repository";
 import { errorResponse, jsonResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
@@ -58,9 +58,14 @@ export async function handleAdminQqOfficialIntegrationDetail(
       return errorResponse(400, "invalid_payload", zodMessage(parsed.error));
     }
 
-    let updated = await updatePlatformIntegrationConfig(env.AGENT_DB, integration.id, {
-      ...integration.config,
-      ...withoutSecret(parsed.data)
+    const { agentId, name, ...configUpdate } = withoutSecret(parsed.data);
+    let updated = await updatePlatformIntegrationNameAndConfig(env.AGENT_DB, integration.id, {
+      agentId: typeof agentId === "string" ? agentId : undefined,
+      name: typeof name === "string" ? name : undefined,
+      config: {
+        ...integration.config,
+        ...configUpdate
+      }
     });
     if (parsed.data.secret) {
       updated = await saveQqOfficialSecret(env, integration.id, parsed.data.secret);

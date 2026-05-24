@@ -13,6 +13,10 @@ export const setTelegramWebhookSchema = z.object({
 });
 
 export const updateTelegramIntegrationSchema = z.object({
+  agentId: z.string().min(1).optional(),
+  name: z.string().min(1).max(80).optional(),
+  botToken: z.string().min(1).optional(),
+  webhookSecret: z.string().min(16).max(256).optional(),
   parseMode: z.enum(["none", "HTML", "MarkdownV2"]).optional()
 });
 

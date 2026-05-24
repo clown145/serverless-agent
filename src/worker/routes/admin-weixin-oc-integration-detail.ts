@@ -54,8 +54,9 @@ export async function handleAdminWeixinOcIntegrationDetail(
       return errorResponse(400, "invalid_payload", zodMessage(parsed.error));
     }
 
-    const { token, name, ...configUpdate } = parsed.data;
+    const { agentId, token, name, ...configUpdate } = parsed.data;
     let updated = await updatePlatformIntegrationNameAndConfig(env.AGENT_DB, integration.id, {
+      agentId,
       name,
       config: {
         ...integration.config,

@@ -1,4 +1,4 @@
-import { Link, PlugZap, QrCode, Trash2, UserCheck } from "lucide-react";
+import { Link, Pencil, PlugZap, QrCode, Trash2, UserCheck } from "lucide-react";
 import type { WecomIntegration } from "../../../api/types";
 import { useI18n } from "../../i18n/I18nProvider";
 import { StatusBadge } from "../../StatusBadge";
@@ -9,6 +9,7 @@ type WecomIntegrationListProps = {
   origin: string;
   onTest: (integrationId: string) => void;
   onCreateContactWay: (integrationId: string) => void;
+  onEdit: (integration: WecomIntegration) => void;
   onDelete: (integrationId: string) => void;
 };
 
@@ -17,6 +18,7 @@ export function WecomIntegrationList({
   origin,
   onTest,
   onCreateContactWay,
+  onEdit,
   onDelete
 }: WecomIntegrationListProps) {
   const { t } = useI18n();
@@ -63,6 +65,11 @@ export function WecomIntegrationList({
               {integration.lastError && <span>{integration.lastError}</span>}
             </div>
             <StatusBadge value={integration.status} />
+            <ToolbarButton
+              label={t("common.edit")}
+              icon={Pencil}
+              onClick={() => onEdit(integration)}
+            />
             <ToolbarButton
               label={t("platforms.testBot")}
               icon={UserCheck}

@@ -1,4 +1,4 @@
-import { Plus, RefreshCw, Trash2 } from "lucide-react";
+import { Pencil, Plus, RefreshCw, Save, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { PermissionPolicy, ToolCatalogItem } from "../../api/types";
 import { EmptyState } from "../EmptyState";
@@ -20,6 +20,8 @@ export function PermissionsPanel({ client, notify }: PanelProps) {
   const { t } = useI18n();
   const [policies, setPolicies] = useState<PermissionPolicy[]>([]);
   const [tools, setTools] = useState<ToolCatalogItem[]>([]);
+  const [editingPolicyId, setEditingPolicyId] = useState<string>();
+  const [agentId, setAgentId] = useState("default");
   const [subjectType, setSubjectType] = useState<PermissionPolicy["subjectType"]>("platform");
   const [subjectId, setSubjectId] = useState("webui");
   const [maxLevel, setMaxLevel] = useState(4);
@@ -46,19 +48,27 @@ export function PermissionsPanel({ client, notify }: PanelProps) {
     }
   }
 
-  async function create() {
+  async function save() {
     try {
       const scopes = mergeScopes(selectedScopes, parseScopes(manualScopes));
-      await client.createPolicy({
+      const payload = {
+        agentId: agentId || undefined,
         subjectType,
         subjectId,
         maxLevel,
         scopes
-      });
-      notify(t("permissions.created"), "ok");
+      };
+      if (editingPolicyId) {
+        await client.updatePolicy(editingPolicyId, payload);
+        notify(t("permissions.updated"), "ok");
+      } else {
+        await client.createPolicy(payload);
+        notify(t("permissions.created"), "ok");
+      }
+      resetDraft();
       await load();
     } catch (error) {
-      notify(error instanceof Error ? error.message : "Failed to create policy", "error");
+      notify(error instanceof Error ? error.message : "Failed to save policy", "error");
     }
   }
 
@@ -76,6 +86,33 @@ export function PermissionsPanel({ client, notify }: PanelProps) {
     void load();
   }, []);
 
+  function edit(policy: PermissionPolicy) {
+    setEditingPolicyId(policy.id);
+    setAgentId(policy.agentId);
+    setSubjectType(policy.subjectType);
+    setSubjectId(policy.subjectId);
+    setMaxLevel(policy.maxLevel);
+    setSelectedScopes(policy.scopes);
+    setManualScopes("");
+  }
+
+  function resetDraft() {
+    setEditingPolicyId(undefined);
+    setAgentId("default");
+    setSubjectType("platform");
+    setSubjectId("webui");
+    setMaxLevel(4);
+    setSelectedScopes([
+      "workspace:read",
+      "workspace:write",
+      "message:send",
+      "message:send_file",
+      "message:send_image",
+      "message:send_buttons"
+    ]);
+    setManualScopes("");
+  }
+
   return (
     <section className="panel">
       <header className="panel-header">
@@ -83,6 +120,10 @@ export function PermissionsPanel({ client, notify }: PanelProps) {
         <ToolbarButton label={t("common.refresh")} icon={RefreshCw} onClick={() => void load()} />
       </header>
       <div className="form-grid policy-form">
+        <label>
+          {t("permissions.agent")}
+          <input value={agentId} onChange={(event) => setAgentId(event.target.value)} />
+        </label>
         <label>
           {t("permissions.subject")}
           <select
@@ -112,10 +153,15 @@ export function PermissionsPanel({ client, notify }: PanelProps) {
             onChange={(event) => setMaxLevel(Number(event.target.value))}
           />
         </label>
-        <button className="primary-button" type="button" onClick={() => void create()}>
-          <Plus size={16} />
-          {t("common.add")}
+        <button className="primary-button" type="button" onClick={() => void save()}>
+          {editingPolicyId ? <Save size={16} /> : <Plus size={16} />}
+          {editingPolicyId ? t("common.save") : t("common.add")}
         </button>
+        {editingPolicyId && (
+          <button className="secondary-button" type="button" onClick={resetDraft}>
+            {t("common.cancel")}
+          </button>
+        )}
       </div>
       <PermissionScopePicker
         tools={tools}
@@ -133,10 +179,12 @@ export function PermissionsPanel({ client, notify }: PanelProps) {
               <strong>
                 {policy.subjectType}:{policy.subjectId}
               </strong>
+              <span>{policy.agentId}</span>
               <span>{policy.scopes.join(", ") || t("permissions.noScopes")}</span>
             </div>
             <StatusBadge value={policy.status} />
             <span className="level-pill">L{policy.maxLevel}</span>
+            <ToolbarButton label={t("common.edit")} icon={Pencil} onClick={() => edit(policy)} />
             <ToolbarButton
               label={t("common.delete")}
               icon={Trash2}

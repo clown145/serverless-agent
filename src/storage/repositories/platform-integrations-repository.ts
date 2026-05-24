@@ -164,6 +164,7 @@ export async function updatePlatformIntegrationNameAndConfig(
   db: D1Database,
   id: string,
   input: {
+    agentId?: string;
     name?: string;
     config: Record<string, unknown>;
   }
@@ -171,10 +172,46 @@ export async function updatePlatformIntegrationNameAndConfig(
   await db
     .prepare(
       `UPDATE platform_integrations
-       SET name = COALESCE(?, name), config_json = ?, updated_at = ?
+       SET agent_id = COALESCE(?, agent_id),
+           name = COALESCE(?, name),
+           config_json = ?,
+           updated_at = ?
        WHERE id = ?`
     )
-    .bind(input.name ?? null, JSON.stringify(input.config), nowIso(), id)
+    .bind(input.agentId ?? null, input.name ?? null, JSON.stringify(input.config), nowIso(), id)
+    .run();
+
+  return getPlatformIntegrationRecord(db, id);
+}
+
+export async function updatePlatformIntegrationDetails(
+  db: D1Database,
+  id: string,
+  input: {
+    agentId?: string;
+    name?: string;
+    config: Record<string, unknown>;
+    webhookSecret?: string;
+  }
+): Promise<PlatformIntegrationRecord | undefined> {
+  await db
+    .prepare(
+      `UPDATE platform_integrations
+       SET agent_id = COALESCE(?, agent_id),
+           name = COALESCE(?, name),
+           config_json = ?,
+           webhook_secret = COALESCE(?, webhook_secret),
+           updated_at = ?
+       WHERE id = ?`
+    )
+    .bind(
+      input.agentId ?? null,
+      input.name ?? null,
+      JSON.stringify(input.config),
+      input.webhookSecret ?? null,
+      nowIso(),
+      id
+    )
     .run();
 
   return getPlatformIntegrationRecord(db, id);

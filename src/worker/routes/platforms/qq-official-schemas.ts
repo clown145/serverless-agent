@@ -13,6 +13,8 @@ export const createQqOfficialIntegrationSchema = z.object({
 });
 
 export const updateQqOfficialIntegrationSchema = z.object({
+  agentId: z.string().min(1).optional(),
+  name: z.string().min(1).max(80).optional(),
   appId: z.string().min(1).optional(),
   secret: z.string().min(1).optional(),
   connectionMode: z.enum(["gateway", "webhook"]).optional(),

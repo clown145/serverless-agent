@@ -416,9 +416,25 @@ export function createAdminClient(getToken: () => string) {
       subjectId: string;
       maxLevel: number;
       scopes: string[];
+      agentId?: string;
     }) => {
       return request<ApiResult<{ policy: PermissionPolicy }>>("/admin/permission-policies", {
         method: "POST",
+        body: JSON.stringify(body)
+      });
+    },
+    updatePolicy: (
+      id: string,
+      body: {
+        subjectType: PermissionPolicy["subjectType"];
+        subjectId: string;
+        maxLevel: number;
+        scopes: string[];
+        agentId?: string;
+      }
+    ) => {
+      return request<ApiResult<{ policy: PermissionPolicy }>>(`/admin/permission-policies/${id}`, {
+        method: "PUT",
         body: JSON.stringify(body)
       });
     },
@@ -489,6 +505,8 @@ export function createAdminClient(getToken: () => string) {
     updateWecomIntegration: (
       integrationId: string,
       body: {
+        agentId?: string;
+        name?: string;
         corpId?: string;
         secret?: string;
         token?: string;
@@ -496,6 +514,7 @@ export function createAdminClient(getToken: () => string) {
         apiBaseUrl?: string;
         customerServiceName?: string;
         openKfId?: string;
+        webhookSecret?: string;
       }
     ) => {
       return request<ApiResult<{ integration: WecomIntegration }>>(
@@ -549,6 +568,29 @@ export function createAdminClient(getToken: () => string) {
         "/admin/platforms/weixin-oc",
         {
           method: "POST",
+          body: JSON.stringify(body)
+        }
+      );
+    },
+    updateWeixinOcIntegration: (
+      integrationId: string,
+      body: {
+        agentId?: string;
+        name?: string;
+        baseUrl?: string;
+        cdnBaseUrl?: string;
+        botType?: string;
+        qrPollIntervalMs?: number;
+        longPollTimeoutMs?: number;
+        apiTimeoutMs?: number;
+        token?: string;
+        accountId?: string;
+      }
+    ) => {
+      return request<ApiResult<{ integration: WeixinOcIntegration }>>(
+        `/admin/platforms/weixin-oc-integrations/${integrationId}`,
+        {
+          method: "PUT",
           body: JSON.stringify(body)
         }
       );
@@ -615,6 +657,8 @@ export function createAdminClient(getToken: () => string) {
     updateQqOfficialIntegration: (
       integrationId: string,
       body: {
+        agentId?: string;
+        name?: string;
         appId?: string;
         secret?: string;
         connectionMode?: QqOfficialIntegration["connectionMode"];
@@ -675,7 +719,13 @@ export function createAdminClient(getToken: () => string) {
     },
     updateTelegramIntegration: (
       integrationId: string,
-      body: { parseMode?: TelegramIntegration["parseMode"] }
+      body: {
+        agentId?: string;
+        name?: string;
+        botToken?: string;
+        webhookSecret?: string;
+        parseMode?: TelegramIntegration["parseMode"];
+      }
     ) => {
       return request<ApiResult<{ integration: TelegramIntegration }>>(
         `/admin/platforms/telegram/${integrationId}`,

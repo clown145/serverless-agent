@@ -21,6 +21,8 @@ const createPolicySchema = z.object({
   scopes: z.array(z.string().min(1)).default([])
 });
 
+export const policyPayloadSchema = createPolicySchema;
+
 export async function handleAdminPermissionPolicies(request: Request, env: Env): Promise<Response> {
   if (request.method === "GET") {
     const agentId = new URL(request.url).searchParams.get("agentId") ?? undefined;
@@ -29,7 +31,7 @@ export async function handleAdminPermissionPolicies(request: Request, env: Env):
   }
 
   if (request.method === "POST") {
-    const parsed = createPolicySchema.safeParse(await request.json());
+    const parsed = createPolicySchema.safeParse(await request.json().catch(() => ({})));
     if (!parsed.success) {
       return errorResponse(400, "invalid_payload", parsed.error.message);
     }

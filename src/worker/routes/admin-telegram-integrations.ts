@@ -54,7 +54,7 @@ export async function handleAdminTelegramIntegrations(
   });
 }
 
-async function saveBotToken(env: Env, integrationId: string, token: string) {
+export async function saveBotToken(env: Env, integrationId: string, token: string) {
   const encrypted = await encryptTelegramCredential(env, token);
   const credential = await createPlatformCredentialRecord(env.AGENT_DB, {
     integrationId,

@@ -25,7 +25,7 @@
 }
 
 .form-grid.policy-form {
-  grid-template-columns: 160px minmax(160px, 1fr) 110px auto;
+  grid-template-columns: 160px 160px minmax(160px, 1fr) 110px auto auto;
 }
 
 .model-provider-form {

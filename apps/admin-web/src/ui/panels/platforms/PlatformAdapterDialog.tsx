@@ -13,6 +13,7 @@ export type PlatformAdapterKind = "weixin_oc" | "qq" | "telegram" | "wecom";
 export type PlatformAdapterDialogState = {
   open: boolean;
   selectedAdapter: PlatformAdapterKind;
+  editingIntegrationId?: string;
   weixinOcQrImageUrl?: string;
   weixinOcQrContent?: string;
   weixinOcQrStatus?: string;
@@ -27,6 +28,7 @@ type PlatformAdapterDialogProps = {
   weixinOcSubmitting?: boolean;
   telegramWebhookUrl: string;
   onStateChange: (state: PlatformAdapterDialogState) => void;
+  onClose: () => void;
   onTelegramDraftChange: (draft: TelegramIntegrationDraft) => void;
   onQqDraftChange: (draft: QqOfficialIntegrationDraft) => void;
   onWecomDraftChange: (draft: WecomIntegrationDraft) => void;
@@ -74,6 +76,7 @@ export function PlatformAdapterDialog({
   weixinOcSubmitting = false,
   telegramWebhookUrl,
   onStateChange,
+  onClose,
   onTelegramDraftChange,
   onQqDraftChange,
   onWecomDraftChange,
@@ -85,6 +88,7 @@ export function PlatformAdapterDialog({
   onTelegramWebhookUrlChange
 }: PlatformAdapterDialogProps) {
   const { t } = useI18n();
+  const editing = Boolean(state.editingIntegrationId);
 
   function selectAdapter(kind: PlatformAdapterKind) {
     onStateChange({
@@ -96,42 +100,48 @@ export function PlatformAdapterDialog({
   return (
     <FormDialog
       open={state.open}
-      title={t("platforms.addAdapter")}
-      description={t("platforms.addAdapterHint")}
+      title={editing ? t("platforms.editAdapter") : t("platforms.addAdapter")}
+      description={editing ? undefined : t("platforms.addAdapterHint")}
       contentClassName="platform-adapter-modal"
-      onOpenChange={(open) =>
-        onStateChange({
-          ...state,
-          open,
-          weixinOcQrImageUrl: open ? state.weixinOcQrImageUrl : undefined,
-          weixinOcQrContent: open ? state.weixinOcQrContent : undefined,
-          weixinOcQrStatus: open ? state.weixinOcQrStatus : undefined
-        })
-      }
+      onOpenChange={(open) => {
+        if (!open) {
+          onClose();
+          return;
+        }
+
+        onStateChange({ ...state, open });
+      }}
     >
       <div className="platform-adapter-dialog">
-        <div className="adapter-choice-list" role="tablist" aria-label={t("platforms.addAdapter")}>
-          {adapterOptions.map((option) => {
-            const active = option.kind === state.selectedAdapter;
-            return (
-              <button
-                key={option.kind}
-                className={`adapter-choice${active ? " selected" : ""}`}
-                type="button"
-                onClick={() => selectAdapter(option.kind)}
-              >
-                <strong>{t(option.titleKey)}</strong>
-                <span>{t(option.descriptionKey)}</span>
-              </button>
-            );
-          })}
-        </div>
+        {!editing && (
+          <div
+            className="adapter-choice-list"
+            role="tablist"
+            aria-label={t("platforms.addAdapter")}
+          >
+            {adapterOptions.map((option) => {
+              const active = option.kind === state.selectedAdapter;
+              return (
+                <button
+                  key={option.kind}
+                  className={`adapter-choice${active ? " selected" : ""}`}
+                  type="button"
+                  onClick={() => selectAdapter(option.kind)}
+                >
+                  <strong>{t(option.titleKey)}</strong>
+                  <span>{t(option.descriptionKey)}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         <div className="adapter-form-shell">
           {state.selectedAdapter === "weixin_oc" && (
             <div className="adapter-form-stack">
               <WeixinOcIntegrationForm
                 draft={weixinOcDraft}
+                editing={editing}
                 submitting={weixinOcSubmitting}
                 onDraftChange={onWeixinOcDraftChange}
                 onSubmit={onWeixinOcSubmit}
@@ -166,6 +176,7 @@ export function PlatformAdapterDialog({
           {state.selectedAdapter === "qq" && (
             <QqOfficialIntegrationForm
               draft={qqDraft}
+              editing={editing}
               onDraftChange={onQqDraftChange}
               onSubmit={onQqSubmit}
             />
@@ -173,17 +184,20 @@ export function PlatformAdapterDialog({
 
           {state.selectedAdapter === "telegram" && (
             <div className="adapter-form-stack">
-              <div className="field-row">
-                <label>
-                  {t("platforms.telegramWebhookUrl")}
-                  <input
-                    value={telegramWebhookUrl}
-                    onChange={(event) => onTelegramWebhookUrlChange(event.target.value)}
-                  />
-                </label>
-              </div>
+              {!editing && (
+                <div className="field-row">
+                  <label>
+                    {t("platforms.telegramWebhookUrl")}
+                    <input
+                      value={telegramWebhookUrl}
+                      onChange={(event) => onTelegramWebhookUrlChange(event.target.value)}
+                    />
+                  </label>
+                </div>
+              )}
               <TelegramIntegrationForm
                 draft={telegramDraft}
+                editing={editing}
                 onDraftChange={onTelegramDraftChange}
                 onSubmit={onTelegramSubmit}
               />
@@ -193,6 +207,7 @@ export function PlatformAdapterDialog({
           {state.selectedAdapter === "wecom" && (
             <WecomIntegrationForm
               draft={wecomDraft}
+              editing={editing}
               onDraftChange={onWecomDraftChange}
               onSubmit={onWecomSubmit}
             />

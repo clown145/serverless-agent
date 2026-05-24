@@ -1,7 +1,7 @@
 import {
   deletePlatformIntegrationRecord,
   getPlatformIntegrationRecord,
-  updatePlatformIntegrationConfig
+  updatePlatformIntegrationDetails
 } from "../../storage/repositories/platform-integrations-repository";
 import { errorResponse, jsonResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
@@ -43,9 +43,15 @@ export async function handleAdminWecomIntegrationDetail(
       return errorResponse(400, "invalid_payload", zodMessage(parsed.error));
     }
 
-    let updated = await updatePlatformIntegrationConfig(env.AGENT_DB, integration.id, {
-      ...integration.config,
-      ...withoutWecomSecret(parsed.data)
+    const { agentId, name, webhookSecret, ...configUpdate } = withoutWecomSecret(parsed.data);
+    let updated = await updatePlatformIntegrationDetails(env.AGENT_DB, integration.id, {
+      agentId: typeof agentId === "string" ? agentId : undefined,
+      name: typeof name === "string" ? name : undefined,
+      webhookSecret: typeof webhookSecret === "string" ? webhookSecret : undefined,
+      config: {
+        ...integration.config,
+        ...configUpdate
+      }
     });
     if (parsed.data.secret) {
       updated = await saveWecomSecret(env, integration.id, parsed.data.secret);
