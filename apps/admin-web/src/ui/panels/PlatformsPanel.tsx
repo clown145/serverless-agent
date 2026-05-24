@@ -52,7 +52,7 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
     name: "QQ Official",
     appId: "",
     secret: "",
-    connectionMode: "webhook",
+    connectionMode: "gateway",
     isSandbox: false,
     enableGroupC2c: true,
     enableGuildDirectMessage: true,
