@@ -12,6 +12,7 @@ import {
 } from "../storage/repositories/conversation-settings-repository";
 import type { ConversationSettingsRecord } from "../storage/repositories/conversation-settings-types";
 import { rootConversationId } from "../conversations/ids";
+import { promptText } from "../prompts";
 import { imagePartFromAttachment } from "./image-captioning";
 
 const CONTEXT_SCAN_LIMIT = 100;
@@ -141,11 +142,7 @@ async function summarizeAndStore(
     messages: [
       {
         role: "system",
-        content: [
-          "Summarize older conversation history for a long-running agent.",
-          "Keep durable facts, user preferences, decisions, tasks, file paths, tool outcomes, credentials status, and unresolved questions.",
-          "Be concise. Do not invent details."
-        ].join("\n")
+        content: promptText("tasks/summary")
       },
       {
         role: "user",

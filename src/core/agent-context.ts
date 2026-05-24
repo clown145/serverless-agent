@@ -2,6 +2,7 @@ import type { RegisteredTool } from "../tools/types";
 import type { InternalMessage } from "../shared/types/internal-message";
 import type { SelectedSkill } from "../skills/skill-selector";
 import type { SkillCatalogItem } from "../skills/skill-loader";
+import { promptText } from "../prompts";
 import type { ModelContentPart, ModelMessage, ModelTool } from "./model/types";
 
 export type ConversationContextMessage = {
@@ -48,16 +49,11 @@ function createBaseInstructions(
   message: InternalMessage,
   options: AgentContextOptions
 ): string {
-  return [
-    "You are serverless-agent, a Cloudflare serverless agent.",
-    createRuntimeContext(message, options.timeZone),
-    "Use tools when a task requires reading or writing the virtual filesystem, sending messages, or performing external actions.",
-    "Use search.web to find candidate pages, then use web.fetch_page to read and verify pages when the user asks for details, latest information, or claims that need support.",
-    "Do not force a search result count unless the user explicitly requests one; the system search settings control the normal result count.",
-    options.platformFormatInstruction ?? defaultPlatformFormatInstruction(message.platform),
-    "When the task is complete, answer concisely in the user's language.",
-    "Do not claim a tool action succeeded unless a tool result confirms it."
-  ].join("\n");
+  return promptText("agent/base", {
+    runtime_context: createRuntimeContext(message, options.timeZone),
+    platform_format_instruction:
+      options.platformFormatInstruction ?? defaultPlatformFormatInstruction(message.platform)
+  });
 }
 
 function createRuntimeContext(
@@ -97,10 +93,10 @@ function normalizeTimeZone(timeZone?: string): string {
 
 function defaultPlatformFormatInstruction(platform: InternalMessage["platform"]): string {
   if (platform === "webui" || platform === "admin") {
-    return "WebUI formatting: concise Markdown-style text is acceptable, but avoid very wide tables.";
+    return promptText("platforms/webui");
   }
 
-  return "Platform formatting: keep output plain, compact, and compatible with chat clients.";
+  return promptText("platforms/default");
 }
 
 function createConversationMessages(

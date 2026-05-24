@@ -6,17 +6,18 @@
   "license": "GPL-3.0-or-later",
   "type": "module",
   "scripts": {
-    "dev": "npm run admin:build && wrangler dev --config wrangler.toml",
-    "deploy": "npm run admin:build && wrangler deploy --config wrangler.toml",
-    "dry-run": "npm run admin:build && wrangler deploy --config wrangler.toml --dry-run --outdir dist",
+    "prompts:build": "node scripts/build-prompts.mjs",
+    "dev": "npm run prompts:build && npm run admin:build && wrangler dev --config wrangler.toml",
+    "deploy": "npm run prompts:build && npm run admin:build && wrangler deploy --config wrangler.toml",
+    "dry-run": "npm run prompts:build && npm run admin:build && wrangler deploy --config wrangler.toml --dry-run --outdir dist",
     "admin:dev": "vite --config apps/admin-web/vite.config.ts --host 127.0.0.1",
     "admin:build": "vite build --config apps/admin-web/vite.config.ts",
     "admin:typecheck": "tsc --project apps/admin-web/tsconfig.json --noEmit",
     "db:migrate:local": "wrangler d1 migrations apply serverless-agent --local --config wrangler.toml",
     "db:migrate:remote": "wrangler d1 migrations apply serverless-agent --remote --config wrangler.toml",
-    "typecheck": "tsc --noEmit && npm run admin:typecheck",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "typecheck": "npm run prompts:build && tsc --noEmit && npm run admin:typecheck",
+    "test": "npm run prompts:build && vitest run",
+    "test:watch": "npm run prompts:build && vitest"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",

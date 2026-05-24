@@ -1,4 +1,5 @@
 import { createTelegramContextHintsAdapter } from "../adapters/telegram/context-hints";
+import { promptText } from "../prompts";
 import type { Env } from "../shared/types/env";
 import type { InternalMessage } from "../shared/types/internal-message";
 import type {
@@ -35,8 +36,8 @@ function getPlatformContextHintsAdapter(
 
 function defaultPlatformFormatInstruction(platform: InternalMessage["platform"]): string {
   if (platform === "webui" || platform === "admin") {
-    return "WebUI formatting: concise Markdown-style text is acceptable, but avoid very wide tables.";
+    return promptText("platforms/webui");
   }
 
-  return "Platform formatting: keep output plain, compact, and compatible with chat clients.";
+  return promptText("platforms/default");
 }

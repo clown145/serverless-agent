@@ -6,13 +6,8 @@ import type { ConversationContextMessage } from "../core/agent-context";
 import type { ModelContentPart } from "../core/model/types";
 import { resolveRoleModelConfig, type ResolvedModelConfig } from "../core/model/provider-config";
 import { createModelProviderFromConfig } from "../core/model/provider-factory";
+import { promptText } from "../prompts";
 import type { BlobObject } from "../storage/blob/types";
-
-const CAPTION_PROMPT = [
-  "Describe this image for a downstream text-only agent.",
-  "Include visible text, UI elements, objects, people, charts, spatial relationships, and details relevant to user intent.",
-  "Be factual and concise. If the image is unclear, say so."
-].join("\n");
 
 type CaptionModel = {
   config: ResolvedModelConfig;
@@ -109,7 +104,7 @@ async function generateAndCacheCaption(
       {
         role: "user",
         content: [
-          { type: "text", text: CAPTION_PROMPT },
+          { type: "text", text: promptText("tasks/image-caption") },
           image
         ]
       }

@@ -114,6 +114,7 @@ curl -sS http://localhost:8787/admin/messages \
 常用命令：
 
 ```bash
+npm run prompts:build
 npm run typecheck
 npm test
 npm run admin:build
@@ -121,6 +122,8 @@ npm run dry-run
 ```
 
 部署建议使用 GitHub Actions，见 [docs/GITHUB_ACTIONS_DEPLOY.md](docs/GITHUB_ACTIONS_DEPLOY.md)。
+
+默认提示词集中在 `src/prompts/defaults`。Fork 定制时建议在 `src/prompts/overrides` 下创建同名 Markdown 文件，构建时会覆盖默认提示词，避免直接修改上游默认文件造成更新冲突。
 
 ## API
 

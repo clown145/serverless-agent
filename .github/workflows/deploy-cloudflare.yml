@@ -74,6 +74,9 @@ jobs:
           npm run typecheck
           npm test
 
+      - name: Build prompts
+        run: npm run prompts:build
+
       - name: Build Admin WebUI
         run: npm run admin:build
 

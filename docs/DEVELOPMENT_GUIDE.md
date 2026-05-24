@@ -207,6 +207,18 @@ TELEGRAM_BOT_TOKEN
 TELEGRAM_WEBHOOK_SECRET
 ```
 
+## Prompt 定制
+
+默认提示词集中放在 `src/prompts/defaults`，运行时代码只 import `src/prompts/generated.ts`。这个生成文件由 `npm run prompts:build` 创建，不访问 D1、Durable Objects 或 VFS。
+
+Fork 用户不要直接改 `defaults`，上游更新默认提示词时容易产生冲突。需要定制时，在 `src/prompts/overrides` 下创建同名 Markdown 文件，例如：
+
+```text
+src/prompts/overrides/agent/base.md
+```
+
+构建时同名 override 会覆盖 default。`npm run typecheck`、`npm run dev`、`npm run deploy` 和 GitHub Actions 部署流程都会先生成 prompt 常量。
+
 ## 提交前检查
 
 常规代码变更至少运行：

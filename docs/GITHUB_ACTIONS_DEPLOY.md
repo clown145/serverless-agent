@@ -110,13 +110,14 @@ https://<worker-subdomain>.workers.dev/ui
 1. 安装依赖。
 2. 运行 `npm run typecheck`。
 3. 运行 `npm test`。
-4. 构建 Admin WebUI。
-5. 查找或创建 D1、KV、Queue 和对象存储资源。
-6. 从 `wrangler.github.toml` 生成临时 Wrangler 配置。
-7. 应用远程 D1 migrations。
-8. 部署 Worker。
-9. 上传 Worker secrets。
-10. 再部署一次，让当前 Worker 版本能读取最新 secrets。
+4. 生成 prompt 常量。
+5. 构建 Admin WebUI。
+6. 查找或创建 D1、KV、Queue 和对象存储资源。
+7. 从 `wrangler.github.toml` 生成临时 Wrangler 配置。
+8. 应用远程 D1 migrations。
+9. 部署 Worker。
+10. 上传 Worker secrets。
+11. 再部署一次，让当前 Worker 版本能读取最新 secrets。
 
 ## 验证
 

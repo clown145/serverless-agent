@@ -1,4 +1,5 @@
 import { findActivePlatformIntegration } from "../../storage/repositories/platform-integrations-repository";
+import { promptText } from "../../prompts";
 import type { Env } from "../../shared/types/env";
 import {
   normalizeTelegramParseMode,
@@ -37,25 +38,12 @@ async function resolveTelegramContextHints(
 
 function telegramFormatInstruction(parseMode: TelegramParseMode): string {
   if (parseMode === "none") {
-    return [
-      "Telegram formatting: messages are sent as plain text.",
-      "Avoid Markdown tables, HTML tags, and formatting that requires Telegram parse mode.",
-      "Use short sections, numbered lines, plain URLs, and compact text."
-    ].join("\n");
+    return promptText("platforms/telegram-plain");
   }
 
   if (parseMode === "MarkdownV2") {
-    return [
-      "Telegram formatting: messages are sent with Telegram parse_mode MarkdownV2.",
-      "MarkdownV2 requires escaping reserved characters: _ * [ ] ( ) ~ ` > # + - = | { } . !",
-      "Prefer simple bold/italic/code only when you can escape correctly; avoid tables and complex formatting."
-    ].join("\n");
+    return promptText("platforms/telegram-markdown-v2");
   }
 
-  return [
-    "Telegram formatting: messages are sent with Telegram parse_mode HTML by default.",
-    "Use only Telegram-supported HTML tags when useful: <b>, <i>, <u>, <s>, <code>, <pre>, <a href=\"https://...\">text</a>.",
-    "Escape literal <, >, and & when they are not part of supported tags.",
-    "Avoid Markdown tables and MarkdownV2-specific syntax; use short sections, numbered lines, plain URLs, and compact text."
-  ].join("\n");
+  return promptText("platforms/telegram-html");
 }
