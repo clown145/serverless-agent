@@ -28,7 +28,7 @@ export const skillAutoEditsCommand: CommandDefinition = {
       });
       return {
         handled: true,
-        responseText: "Skill 自动编辑已开启：模型可直接更新 Skill 文档，仍会保留校验、审计和 VFS revision。"
+        responseText: "Skill auto edits enabled: the model can update Skill documents directly. Validation, audit logs, and VFS revisions are still preserved."
       };
     }
 
@@ -39,19 +39,19 @@ export const skillAutoEditsCommand: CommandDefinition = {
       });
       return {
         handled: true,
-        responseText: "Skill 自动编辑已关闭：模型更新 Skill 文档前需要确认。"
+        responseText: "Skill auto edits disabled: model updates to Skill documents require confirmation."
       };
     }
 
     return {
       handled: true,
-      responseText: "用法：/skill-auto-edits status|on|off"
+      responseText: "Usage: /skill-auto-edits status|on|off"
     };
   }
 };
 
 function formatStatus(editConfirmationRequired: boolean): string {
   return editConfirmationRequired
-    ? "Skill 自动编辑：关闭。模型更新 Skill 文档前需要确认。"
-    : "Skill 自动编辑：开启。模型可直接更新 Skill 文档。";
+    ? "Skill auto edits: disabled. Model updates to Skill documents require confirmation."
+    : "Skill auto edits: enabled. The model can update Skill documents directly.";
 }

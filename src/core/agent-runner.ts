@@ -77,8 +77,8 @@ async function runAgentForMessageInternal(
       const visionCapabilities = await resolveRoleModelCapabilities(env, message.agentId, "vision");
       if (!visionCapabilities || !supportsVision(visionCapabilities.capabilities)) {
         const text = [
-          "图片转述已开启，但图片理解模型未配置或未标记为支持图片输入。",
-          "请在 WebUI 的模型配置页选择支持 vision 的图片理解模型，或关闭图片转述。"
+          "Image captioning is enabled, but no vision model is configured or marked as vision-capable.",
+          "Select a vision-capable model in the WebUI model settings, or disable image captioning."
         ].join("\n");
         await recordRunFailedStep(env, runId, message.agentId, "Image caption model unavailable");
         await sendFinalMessage(env, runId, message, text);
@@ -90,9 +90,9 @@ async function runAgentForMessageInternal(
     const hasImages = message.attachments.some((attachment) => attachment.type === "image");
     if (hasImages && !imageCaptionEnabled && !supportsVision(capabilities.capabilities)) {
       const text = [
-        "当前模型未标记为支持图片输入。",
-        `模型：${capabilities.modelId}`,
-        "请在 WebUI 的模型页给该模型启用 vision 能力，或切换到支持图片的模型。"
+        "The current model is not marked as supporting image input.",
+        `Model: ${capabilities.modelId}`,
+        "Enable the vision capability for this model in the WebUI, or switch to a vision-capable model."
       ].join("\n");
       await recordRunFailedStep(env, runId, message.agentId, "Model lacks vision capability");
       await sendFinalMessage(env, runId, message, text);
@@ -115,7 +115,7 @@ async function runAgentForMessageInternal(
   } catch (error) {
     const summary = error instanceof Error ? error.message : "Agent run failed";
     await recordRunFailedStep(env, runId, message.agentId, summary);
-    await sendFinalMessage(env, runId, message, `运行失败：${summary}`).catch(
+    await sendFinalMessage(env, runId, message, `Run failed: ${summary}`).catch(
       async (sendError) => {
         await recordRunFailedStep(
           env,

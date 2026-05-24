@@ -10,7 +10,7 @@ export const sidCommand: CommandDefinition = {
   async execute({ message, rootConversationId }) {
     const rootId = rootConversationId || message.conversationId.split("#")[0] || message.conversationId;
     const lines = [
-      bold("当前会话 ID", message.platform),
+      bold("Current Session IDs", message.platform),
       `agentId: ${code(message.agentId, message.platform)}`,
       `platform: ${code(message.platform, message.platform)}`,
       `conversationId: ${code(message.conversationId, message.platform)}`,
@@ -20,7 +20,7 @@ export const sidCommand: CommandDefinition = {
       `senderRole: ${code(message.sender.role, message.platform)}`,
       `platformMessageId: ${code(message.platformMessageId, message.platform)}`,
       "",
-      bold("权限配置可用 subject", message.platform),
+      bold("Permission Policy Subjects", message.platform),
       `agent / ${code(message.agentId, message.platform)}`,
       `user / ${code(message.sender.platformUserId, message.platform)}`,
       `role / ${code(message.sender.role, message.platform)}`,

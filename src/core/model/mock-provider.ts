@@ -10,7 +10,7 @@ export class MockModelProvider implements ModelProvider {
     });
 
     if (latestTool?.role === "tool") {
-      return { content: "工具调用已完成。", toolCalls: [] };
+      return { content: "Tool call completed.", toolCalls: [] };
     }
 
     const latestUser = [...request.messages].reverse().find((message) => {
@@ -21,7 +21,7 @@ export class MockModelProvider implements ModelProvider {
     const writeMatch = content.match(/^\/write\s+(\S+)\s+([\s\S]+)$/);
     if (writeMatch) {
       if (!hasTool(request, "vfs.write_file")) {
-        return { content: "工具不可用：vfs.write_file", toolCalls: [] };
+        return { content: "Tool unavailable: vfs.write_file", toolCalls: [] };
       }
 
       return {
@@ -41,7 +41,7 @@ export class MockModelProvider implements ModelProvider {
     const readMatch = content.match(/^\/read\s+(\S+)$/);
     if (readMatch) {
       if (!hasTool(request, "vfs.read_file")) {
-        return { content: "工具不可用：vfs.read_file", toolCalls: [] };
+        return { content: "Tool unavailable: vfs.read_file", toolCalls: [] };
       }
 
       return {
@@ -61,7 +61,7 @@ export class MockModelProvider implements ModelProvider {
       return { content: "pong", toolCalls: [] };
     }
 
-    return { content: `收到：${content}`, toolCalls: [] };
+    return { content: `Received: ${content}`, toolCalls: [] };
   }
 }
 

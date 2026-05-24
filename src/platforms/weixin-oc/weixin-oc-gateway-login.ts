@@ -85,7 +85,7 @@ export async function pollWeixinOcGatewayLogin(input: {
     if (expiredCount > 3) {
       await input.storage.put(WEIXIN_OC_LOGIN_SESSION_KEY, {
         ...nextSession,
-        error: "二维码已过期，请重新开始扫码登录"
+        error: "QR code expired. Start QR login again."
       });
       return false;
     }
@@ -102,7 +102,7 @@ export async function pollWeixinOcGatewayLogin(input: {
   if (!botToken) {
     await input.storage.put(WEIXIN_OC_LOGIN_SESSION_KEY, {
       ...nextSession,
-      error: "登录成功但微信接口未返回 bot_token"
+      error: "Login succeeded, but the Weixin API did not return bot_token."
     });
     return false;
   }

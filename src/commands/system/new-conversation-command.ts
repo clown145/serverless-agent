@@ -33,13 +33,13 @@ export const newConversationCommand: CommandDefinition = {
     }
 
     const lines = [
-      bold("已开启新会话", message.platform),
-      `标题：${title}`,
-      `会话：${code(conversationSessionSuffix(conversationId), message.platform)}`
+      bold("New Conversation Opened", message.platform),
+      `Title: ${title}`,
+      `Conversation: ${code(conversationSessionSuffix(conversationId), message.platform)}`
     ];
 
     if (message.platform === "webui" || message.platform === "admin") {
-      lines.push(`在会话输入框切换到：${code(conversationId, message.platform)}`);
+      lines.push(`Switch the conversation input to: ${code(conversationId, message.platform)}`);
     }
 
     return { handled: true, responseText: lines.join("\n") };

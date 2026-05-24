@@ -31,7 +31,7 @@ export const contextCommand: CommandDefinition = {
       if (!Number.isFinite(value)) {
         return {
           handled: true,
-          responseText: `用法：${code("/context history 16", message.platform)}`
+          responseText: `Usage: ${code("/context history 16", message.platform)}`
         };
       }
 
@@ -43,7 +43,7 @@ export const contextCommand: CommandDefinition = {
       );
       return {
         handled: true,
-        responseText: `历史窗口已设置为 ${settings?.historyLimit ?? value} 条。`
+        responseText: `History window set to ${settings?.historyLimit ?? value} messages.`
       };
     }
 
@@ -52,14 +52,14 @@ export const contextCommand: CommandDefinition = {
       if (enabled !== "on" && enabled !== "off") {
         return {
           handled: true,
-          responseText: `用法：${code("/context summary on", message.platform)} 或 ${code("/context summary off", message.platform)}`
+          responseText: `Usage: ${code("/context summary on", message.platform)} or ${code("/context summary off", message.platform)}`
         };
       }
 
       await updateConversationSettings(env.AGENT_DB, message.agentId, message.conversationId, {
         summaryEnabled: enabled === "on"
       });
-      return { handled: true, responseText: `自动压缩已${enabled === "on" ? "开启" : "关闭"}。` };
+      return { handled: true, responseText: `Automatic compaction ${enabled === "on" ? "enabled" : "disabled"}.` };
     }
 
     if (action === "summary-model") {
@@ -69,14 +69,14 @@ export const contextCommand: CommandDefinition = {
           summaryProviderId: null,
           summaryModelId: null
         });
-        return { handled: true, responseText: "摘要模型已恢复默认。" };
+        return { handled: true, responseText: "Summary model reset to default." };
       }
 
       const match = await findModel(env.AGENT_DB, modelName);
       if (!match) {
         return {
           handled: true,
-          responseText: `没有找到已启用摘要模型：${code(modelName, message.platform)}`
+          responseText: `Enabled summary model not found: ${code(modelName, message.platform)}`
         };
       }
 
@@ -86,7 +86,7 @@ export const contextCommand: CommandDefinition = {
       });
       return {
         handled: true,
-        responseText: `摘要模型已设置为 ${match.providerName} / ${code(match.modelId, message.platform)}。`
+        responseText: `Summary model set to ${match.providerName} / ${code(match.modelId, message.platform)}.`
       };
     }
 
@@ -94,14 +94,14 @@ export const contextCommand: CommandDefinition = {
       const summary = await compactConversationNow(env, message);
       return {
         handled: true,
-        responseText: summary ? "已压缩当前会话上下文。" : "当前会话历史还不需要压缩。"
+        responseText: summary ? "Current conversation context compacted." : "Current conversation history does not need compaction."
       };
     }
 
     return {
       handled: true,
       responseText: [
-        "可用 context 指令：",
+        "Available context commands:",
         code("/context", message.platform),
         code("/context history <4-80>", message.platform),
         code("/context summary on|off", message.platform),
@@ -118,12 +118,12 @@ async function showContext(
 ): Promise<string> {
   const settings = await getConversationSettings(db, message.agentId, message.conversationId);
   return [
-    bold("当前上下文", message.platform),
-    `会话：${code(conversationSessionSuffix(message.conversationId), message.platform)}`,
-    `历史窗口：${settings?.historyLimit ?? 16} 条`,
-    `自动压缩：${settings?.summaryEnabled === false ? "关闭" : "开启"}`,
-    `摘要模型：${settings?.summaryModelId ?? "默认"}`,
-    `已有摘要：${settings?.summaryText ? "是" : "否"}`
+    bold("Current Context", message.platform),
+    `Conversation: ${code(conversationSessionSuffix(message.conversationId), message.platform)}`,
+    `History window: ${settings?.historyLimit ?? 16} messages`,
+    `Automatic compaction: ${settings?.summaryEnabled === false ? "disabled" : "enabled"}`,
+    `Summary model: ${settings?.summaryModelId ?? "default"}`,
+    `Existing summary: ${settings?.summaryText ? "yes" : "no"}`
   ].join("\n");
 }
 

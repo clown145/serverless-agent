@@ -24,7 +24,7 @@ export const switchConversationCommand: CommandDefinition = {
         rootConversationId
       });
       const lines = [
-        bold("会话列表", message.platform),
+        bold("Conversation Sessions", message.platform),
         ...sessions.slice(0, 12).map((session) =>
           [
             code(conversationSessionSuffix(session.conversationId), message.platform),
@@ -35,7 +35,7 @@ export const switchConversationCommand: CommandDefinition = {
       ];
       return {
         handled: true,
-        responseText: lines.length > 1 ? lines.join("\n") : "暂无可切换会话。"
+        responseText: lines.length > 1 ? lines.join("\n") : "No switchable conversations found."
       };
     }
 
@@ -63,11 +63,11 @@ export const switchConversationCommand: CommandDefinition = {
     }
 
     const lines = [
-      bold("已切换会话", message.platform),
-      `会话：${code(conversationSessionSuffix(settings.conversationId), message.platform)}`
+      bold("Conversation Switched", message.platform),
+      `Conversation: ${code(conversationSessionSuffix(settings.conversationId), message.platform)}`
     ];
     if (message.platform === "webui" || message.platform === "admin") {
-      lines.push(`在会话输入框切换到：${code(settings.conversationId, message.platform)}`);
+      lines.push(`Switch the conversation input to: ${code(settings.conversationId, message.platform)}`);
     }
 
     return { handled: true, responseText: lines.join("\n") };

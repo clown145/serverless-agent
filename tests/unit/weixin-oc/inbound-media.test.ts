@@ -88,7 +88,7 @@ function message(attachment: { sourceUrl: string }): InternalMessage {
       role: "member"
     },
     kind: "attachment",
-    text: "[图片]",
+    text: "[image]",
     attachments: [
       {
         id: "wxoc_image_0",

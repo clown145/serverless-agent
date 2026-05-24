@@ -96,19 +96,19 @@ export function textFromWeixinOcItems(items: WeixinOcMessageItem[] | undefined):
       continue;
     }
     if (itemType === 2) {
-      parts.push("[图片]");
+      parts.push("[image]");
       continue;
     }
     if (itemType === 3) {
-      parts.push(item.voice_item?.text?.trim() || "[语音]");
+      parts.push(item.voice_item?.text?.trim() || "[voice]");
       continue;
     }
     if (itemType === 4) {
-      parts.push("[文件]");
+      parts.push("[file]");
       continue;
     }
     if (itemType === 5) {
-      parts.push("[视频]");
+      parts.push("[video]");
     }
   }
   return parts.join("\n").trim();

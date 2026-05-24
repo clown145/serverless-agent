@@ -21,18 +21,18 @@ export async function notifyPendingAction(
     agentId: action.agentId,
     conversationId: action.conversationId,
     text: [
-      "需要确认工具调用",
-      `工具：${action.toolName}`,
-      action.reason ? `原因：${action.reason}` : undefined
+      "Tool call confirmation required",
+      `Tool: ${action.toolName}`,
+      action.reason ? `Reason: ${action.reason}` : undefined
     ].filter(Boolean).join("\n"),
     buttons: [
       {
-        label: "确认",
+        label: "Confirm",
         action: "pending.confirm",
         payload: { actionId: action.id }
       },
       {
-        label: "拒绝",
+        label: "Reject",
         action: "pending.reject",
         payload: { actionId: action.id }
       }

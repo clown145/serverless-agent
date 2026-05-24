@@ -21,7 +21,7 @@ describe("skill auto edits command", () => {
       message: message("/skill-auto-edits on")
     });
 
-    expect(result?.responseText).toContain("已开启");
+    expect(result?.responseText).toContain("enabled");
   });
 });
 

@@ -21,24 +21,24 @@ export async function handleTelegramCallbackQuery(
 ): Promise<TelegramCallbackHandlerResult> {
   const callbackId = context.query.data;
   if (!callbackId) {
-    await answerCallback(token, context.query.id, "没有回调数据");
+    await answerCallback(token, context.query.id, "Missing callback data");
     return { handled: true };
   }
 
   const callback = await getPlatformCallback(env.AGENT_DB, callbackId);
   if (!callback || callback.agentId !== context.agentId || callback.platform !== "telegram") {
-    await answerCallback(token, context.query.id, "按钮已失效");
+    await answerCallback(token, context.query.id, "Button is no longer valid");
     return { handled: true };
   }
 
   if (callback.status !== "active") {
-    await answerCallback(token, context.query.id, "按钮已使用");
+    await answerCallback(token, context.query.id, "Button was already used");
     return { handled: true };
   }
 
   if (new Date(callback.expiresAt).getTime() < Date.now()) {
     await expirePlatformCallback(env.AGENT_DB, callback.id);
-    await answerCallback(token, context.query.id, "按钮已过期");
+    await answerCallback(token, context.query.id, "Button expired");
     return { handled: true };
   }
 
@@ -47,7 +47,7 @@ export async function handleTelegramCallbackQuery(
   if (callback.action === "pending.confirm") {
     const actionId = stringPayload(payload, "actionId");
     if (!actionId) {
-      await answerCallback(token, context.query.id, "缺少确认 ID");
+      await answerCallback(token, context.query.id, "Missing confirmation ID");
       return { handled: true };
     }
 
@@ -55,14 +55,14 @@ export async function handleTelegramCallbackQuery(
     if (result.ok) {
       await markPlatformCallbackUsed(env.AGENT_DB, callback.id);
     }
-    await answerCallback(token, context.query.id, result.ok ? "已确认" : result.message);
+    await answerCallback(token, context.query.id, result.ok ? "Confirmed" : result.message);
     return { handled: true };
   }
 
   if (callback.action === "pending.reject") {
     const actionId = stringPayload(payload, "actionId");
     if (!actionId) {
-      await answerCallback(token, context.query.id, "缺少确认 ID");
+      await answerCallback(token, context.query.id, "Missing confirmation ID");
       return { handled: true };
     }
 
@@ -70,7 +70,7 @@ export async function handleTelegramCallbackQuery(
     if (result.ok) {
       await markPlatformCallbackUsed(env.AGENT_DB, callback.id);
     }
-    await answerCallback(token, context.query.id, result.ok ? "已拒绝" : result.message);
+    await answerCallback(token, context.query.id, result.ok ? "Rejected" : result.message);
     return { handled: true };
   }
 
@@ -82,7 +82,7 @@ export async function handleTelegramCallbackQuery(
       stringPayload(payload, "buttonLabel") ??
       findButtonLabel(context, callback.id);
     if (!text) {
-      await answerCallback(token, context.query.id, "缺少消息文本");
+      await answerCallback(token, context.query.id, "Missing message text");
       return { handled: true };
     }
 
@@ -115,11 +115,11 @@ export async function handleTelegramCallbackQuery(
     };
 
     await env.AGENT_QUEUE.send(job);
-    await answerCallback(token, context.query.id, "已发送");
+    await answerCallback(token, context.query.id, "Sent");
     return { handled: true, eventId };
   }
 
-  await answerCallback(token, context.query.id, "未知按钮动作");
+  await answerCallback(token, context.query.id, "Unknown button action");
   return { handled: true };
 }
 

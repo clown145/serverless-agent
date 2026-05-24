@@ -7,12 +7,17 @@ import {
   markPendingActionExecuted
 } from "../storage/repositories/pending-actions-repository";
 import type { ToolResult } from "../tools/types";
+import {
+  enqueuePendingActionContinuation,
+  type PendingActionContinuation
+} from "./pending-action-continuation";
 
 export type PendingActionExecution =
   | {
       ok: true;
       actionId: string;
       result: ToolResult;
+      continuation: PendingActionContinuation;
     }
   | {
       ok: false;
@@ -65,7 +70,9 @@ export async function confirmPendingAction(
     errorCode: result.error?.code
   });
 
-  return { ok: true, actionId: action.id, result };
+  const continuation = await enqueuePendingActionContinuation(env, action, result);
+
+  return { ok: true, actionId: action.id, result, continuation };
 }
 
 export async function rejectPendingAction(

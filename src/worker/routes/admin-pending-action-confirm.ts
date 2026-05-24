@@ -19,7 +19,8 @@ export async function handleAdminPendingActionConfirm(
   return jsonResponse({
     ok: true,
     actionId: execution.actionId,
-    result: execution.result
+    result: execution.result,
+    continuation: execution.continuation
   });
 }
 

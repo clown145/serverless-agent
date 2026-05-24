@@ -23,7 +23,7 @@ export const modelCommand: CommandDefinition = {
         modelProviderId: null,
         modelId: null
       });
-      return { handled: true, responseText: "已恢复使用全局默认模型。" };
+      return { handled: true, responseText: "Restored the global default model." };
     }
 
     if (action === "use") {
@@ -31,7 +31,7 @@ export const modelCommand: CommandDefinition = {
       if (!modelName) {
         return {
           handled: true,
-          responseText: `用法：${code("/model use <model-id>", message.platform)}`
+          responseText: `Usage: ${code("/model use <model-id>", message.platform)}`
         };
       }
 
@@ -39,7 +39,7 @@ export const modelCommand: CommandDefinition = {
       if (!match) {
         return {
           handled: true,
-          responseText: `没有找到已启用模型：${code(modelName, message.platform)}。先在 WebUI 模型页刷新并启用模型。`
+          responseText: `Enabled model not found: ${code(modelName, message.platform)}. Refresh and enable models in the WebUI model page first.`
         };
       }
 
@@ -51,7 +51,7 @@ export const modelCommand: CommandDefinition = {
       return {
         handled: true,
         responseText: [
-          bold("已设置当前会话模型", message.platform),
+          bold("Conversation Model Set", message.platform),
           `${match.providerName} / ${code(match.modelId, message.platform)}`
         ].join("\n")
       };
@@ -62,12 +62,12 @@ export const modelCommand: CommandDefinition = {
       if (!models.length) {
         return {
           handled: true,
-          responseText: "暂无已启用模型。请先在 WebUI 模型页刷新模型，并启用需要使用的模型。"
+          responseText: "No enabled models found. Refresh models in the WebUI model page and enable the models you want to use."
         };
       }
 
       const lines = [
-        bold("可用模型", message.platform),
+        bold("Available Models", message.platform),
         ...models.slice(0, 20).map((model) =>
           `${code(modelKey(model.providerId, model.modelId), message.platform)} ${model.displayName ? `- ${model.displayName}` : ""}`.trim()
         )
@@ -77,7 +77,7 @@ export const modelCommand: CommandDefinition = {
 
     return {
       handled: true,
-      responseText: `未知 model 指令。可用：${code("/model", message.platform)}、${code("/model list", message.platform)}、${code("/model use <model-id>", message.platform)}、${code("/model clear", message.platform)}`
+      responseText: `Unknown model command. Available: ${code("/model", message.platform)}, ${code("/model list", message.platform)}, ${code("/model use <model-id>", message.platform)}, ${code("/model clear", message.platform)}`
     };
   }
 };
@@ -94,12 +94,12 @@ async function showModel(
   const providerId = settings?.modelProviderId ?? globalSettings?.providerId;
   const modelId = settings?.modelId ?? globalSettings?.modelId;
   const provider = providers.find((item) => item.id === providerId);
-  const source = settings?.modelProviderId && settings.modelId ? "当前会话" : "全局默认";
+  const source = settings?.modelProviderId && settings.modelId ? "current conversation" : "global default";
 
   return [
-    bold("当前模型", message.platform),
-    `来源：${source}`,
-    `模型：${provider?.name ?? providerId ?? "mock"} / ${code(modelId ?? "mock", message.platform)}`
+    bold("Current Model", message.platform),
+    `Source: ${source}`,
+    `Model: ${provider?.name ?? providerId ?? "mock"} / ${code(modelId ?? "mock", message.platform)}`
   ].join("\n");
 }
 

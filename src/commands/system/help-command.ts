@@ -10,12 +10,12 @@ export const helpCommand: CommandDefinition = {
   async execute({ message }) {
     const commands = listCommands(message.platform);
     const lines = [
-      bold("可用指令", message.platform),
+      bold("Available Commands", message.platform),
       ...commands.map((command) =>
         `${code(commandUsage(command), message.platform)} - ${command.description}`
       ),
       "",
-      "常用：/new 开新会话，/sessions 看会话，/switch <会话> 切换，/model use <模型> 切模型，/context compact 压缩上下文，/task in 300 <任务> 创建未来任务。"
+      "Common: /new opens a conversation, /sessions lists sessions, /switch <session> switches sessions, /model use <model> changes models, /context compact compacts context, /task in 300 <task> creates a future task."
     ];
 
     return { handled: true, responseText: lines.join("\n") };

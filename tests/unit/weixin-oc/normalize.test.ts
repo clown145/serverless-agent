@@ -64,7 +64,7 @@ describe("Weixin OC normalize", () => {
       { type: 4, file_item: { file_name: "report.pdf", len: "12" } },
       { type: 5 }
     ];
-    expect(textFromWeixinOcItems(items)).toBe("[图片]\ntranscribed\n[文件]\n[视频]");
+    expect(textFromWeixinOcItems(items)).toBe("[image]\ntranscribed\n[file]\n[video]");
     expect(attachmentsFromWeixinOcItems(items)).toMatchObject([
       {
         id: "wxoc_image_img-1",

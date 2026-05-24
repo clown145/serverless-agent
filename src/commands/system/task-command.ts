@@ -56,10 +56,10 @@ export const taskCommand: CommandDefinition = {
     return {
       handled: true,
       responseText: [
-        bold("任务已创建", message.platform),
-        `ID：${code(schedule.id, message.platform)}`,
-        `下次执行：${schedule.dueAt}`,
-        parsed.intervalSeconds ? `周期：${parsed.intervalSeconds} 秒` : "类型：一次性"
+        bold("Task Created", message.platform),
+        `ID: ${code(schedule.id, message.platform)}`,
+        `Next run: ${schedule.dueAt}`,
+        parsed.intervalSeconds ? `Interval: ${parsed.intervalSeconds} seconds` : "Type: one-shot"
       ].join("\n")
     };
   }
@@ -96,8 +96,8 @@ function parseTaskArgs(args: string[]): {
 
 function usage(platform: Parameters<typeof code>[1]): string {
   return [
-    "用法：",
-    code("/task in 300 搜索最新公告并总结", platform),
-    code("/task every 3600 检查一次项目状态", platform)
+    "Usage:",
+    code("/task in 300 summarize the latest announcement", platform),
+    code("/task every 3600 check the project status", platform)
   ].join("\n");
 }
