@@ -13,7 +13,6 @@ import {
   getSearchSettings,
   setSearchSettings
 } from "../../storage/repositories/search-settings-repository";
-import { requireAdmin } from "../admin-auth";
 import {
   createSearchProviderSchema,
   setSearchProviderSchema,
@@ -25,11 +24,6 @@ export async function handleAdminSearchProviders(
   request: Request,
   env: Env
 ): Promise<Response> {
-  const authError = requireAdmin(request, env);
-  if (authError) {
-    return authError;
-  }
-
   if (request.method === "GET") {
     const agentId =
       new URL(request.url).searchParams.get("agentId") ??

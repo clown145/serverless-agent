@@ -4,7 +4,6 @@ import { createVfsWorkspace } from "../../vfs/services/workspace-service";
 import { initializeVfsWorkspace } from "../../vfs/bootstrap/default-workspace";
 import { errorResponse, jsonResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
-import { requireAdmin } from "../admin-auth";
 
 type WriteVfsPayload = {
   agentId?: string;
@@ -40,11 +39,6 @@ export async function handleAdminVfs(
   request: Request,
   env: Env
 ): Promise<Response> {
-  const authError = requireAdmin(request, env);
-  if (authError) {
-    return authError;
-  }
-
   if (request.method === "GET") {
     return handleReadOrList(request, env);
   }

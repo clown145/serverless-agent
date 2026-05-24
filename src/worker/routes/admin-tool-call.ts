@@ -8,18 +8,12 @@ import {
   createRun
 } from "../../storage/repositories/runs-repository";
 import { createRuntimeToolRegistry } from "../../tools/registry/tool-registry";
-import { requireAdmin } from "../admin-auth";
 import { callToolSchema, zodMessage } from "./tools/tool-call-schemas";
 
 export async function handleAdminToolCall(
   request: Request,
   env: Env
 ): Promise<Response> {
-  const authError = requireAdmin(request, env);
-  if (authError) {
-    return authError;
-  }
-
   if (request.method !== "POST") {
     return errorResponse(405, "method_not_allowed", "Method not allowed");
   }

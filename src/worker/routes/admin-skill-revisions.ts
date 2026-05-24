@@ -5,7 +5,6 @@ import {
 } from "../../skills/skill-service";
 import { errorResponse, jsonResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
-import { requireAdmin } from "../admin-auth";
 import {
   skillRevisionQuerySchema,
   skillRevisionsQuerySchema,
@@ -23,11 +22,6 @@ export async function handleAdminSkillRevisions(
   skillId: string,
   version?: number
 ): Promise<Response> {
-  const authError = requireAdmin(request, env);
-  if (authError) {
-    return authError;
-  }
-
   if (request.method === "GET" && version === undefined) {
     return handleList(request, env, skillId);
   }

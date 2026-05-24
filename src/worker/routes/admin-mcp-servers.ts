@@ -8,7 +8,6 @@ import {
   updateMcpServerCredential
 } from "../../storage/repositories/mcp-servers-repository";
 import { listMcpToolCatalog } from "../../storage/repositories/mcp-tools-repository";
-import { requireAdmin } from "../admin-auth";
 import { toMcpServerDto, toMcpToolDto } from "./mcp/mcp-dto";
 import { createMcpServerSchema, zodMessage } from "./mcp/mcp-schemas";
 
@@ -16,11 +15,6 @@ export async function handleAdminMcpServers(
   request: Request,
   env: Env
 ): Promise<Response> {
-  const authError = requireAdmin(request, env);
-  if (authError) {
-    return authError;
-  }
-
   if (request.method === "GET") {
     const [servers, tools] = await Promise.all([
       listMcpServerRecords(env.AGENT_DB),

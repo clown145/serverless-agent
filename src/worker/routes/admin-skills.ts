@@ -6,18 +6,12 @@ import {
 import { ensureBuiltinSkills } from "../../skills/builtin/provision";
 import { errorResponse, jsonResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
-import { requireAdmin } from "../admin-auth";
 import { createSkillSchema, zodMessage } from "./skills/skill-schemas";
 
 export async function handleAdminSkills(
   request: Request,
   env: Env
 ): Promise<Response> {
-  const authError = requireAdmin(request, env);
-  if (authError) {
-    return authError;
-  }
-
   if (request.method === "GET") {
     const agentId = new URL(request.url).searchParams.get("agentId") ??
       env.DEFAULT_AGENT_ID ??

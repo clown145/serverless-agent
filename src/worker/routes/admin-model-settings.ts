@@ -30,7 +30,6 @@ import {
   updateModelProviderCredential,
 } from "../../storage/repositories/model-providers-repository";
 import type { ModelProviderRecord } from "../../storage/repositories/model-settings-types";
-import { requireAdmin } from "../admin-auth";
 import {
   createProviderSchema,
   refreshModelMetadataSchema,
@@ -46,11 +45,6 @@ export async function handleAdminModelSettings(
   request: Request,
   env: Env
 ): Promise<Response> {
-  const authError = requireAdmin(request, env);
-  if (authError) {
-    return authError;
-  }
-
   if (request.method === "GET") {
     const agentId =
       new URL(request.url).searchParams.get("agentId") ??
@@ -174,11 +168,6 @@ export async function handleAdminModelProviderDetail(
   env: Env,
   providerId: string
 ): Promise<Response> {
-  const authError = requireAdmin(request, env);
-  if (authError) {
-    return authError;
-  }
-
   if (request.method === "DELETE") {
     const deleted = await deleteModelProviderRecord(env.AGENT_DB, providerId);
     if (!deleted) {
@@ -388,11 +377,6 @@ export async function handleAdminModelCatalogDetail(
   env: Env,
   modelCatalogId: string
 ): Promise<Response> {
-  const authError = requireAdmin(request, env);
-  if (authError) {
-    return authError;
-  }
-
   if (request.method !== "PUT") {
     return errorResponse(405, "method_not_allowed", "Method not allowed");
   }

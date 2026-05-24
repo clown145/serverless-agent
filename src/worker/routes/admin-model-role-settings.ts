@@ -13,7 +13,6 @@ import { listModelProviders } from "../../storage/repositories/model-providers-r
 import type { ModelRole } from "../../storage/repositories/model-settings-types";
 import { errorResponse, jsonResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
-import { requireAdmin } from "../admin-auth";
 import { toProviderDto } from "./model-settings/model-provider-dto";
 import {
   toAgentModelConfigDto,
@@ -30,11 +29,6 @@ export async function handleAdminModelRoleSettings(
   request: Request,
   env: Env
 ): Promise<Response> {
-  const authError = requireAdmin(request, env);
-  if (authError) {
-    return authError;
-  }
-
   const agentId = new URL(request.url).searchParams.get("agentId") ?? env.DEFAULT_AGENT_ID ?? "default";
 
   if (request.method === "GET") {

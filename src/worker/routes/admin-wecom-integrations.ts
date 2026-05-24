@@ -7,7 +7,6 @@ import {
 } from "../../storage/repositories/platform-integrations-repository";
 import { errorResponse, jsonResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
-import { requireAdmin } from "../admin-auth";
 import { toWecomIntegrationDto } from "./platforms/wecom-dto";
 import {
   createWecomIntegrationSchema,
@@ -18,11 +17,6 @@ export async function handleAdminWecomIntegrations(
   request: Request,
   env: Env
 ): Promise<Response> {
-  const authError = requireAdmin(request, env);
-  if (authError) {
-    return authError;
-  }
-
   if (request.method === "GET") {
     const integrations = await listPlatformIntegrationRecords(env.AGENT_DB, {
       platform: "wecom"

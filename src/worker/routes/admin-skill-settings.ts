@@ -4,7 +4,6 @@ import {
 } from "../../storage/repositories/skill-settings-repository";
 import { errorResponse, jsonResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
-import { requireAdmin } from "../admin-auth";
 import {
   updateSkillSettingsSchema,
   zodMessage
@@ -14,11 +13,6 @@ export async function handleAdminSkillSettings(
   request: Request,
   env: Env
 ): Promise<Response> {
-  const authError = requireAdmin(request, env);
-  if (authError) {
-    return authError;
-  }
-
   if (request.method === "GET") {
     const agentId = new URL(request.url).searchParams.get("agentId") ??
       env.DEFAULT_AGENT_ID ??

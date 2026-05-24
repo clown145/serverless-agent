@@ -5,17 +5,11 @@ import { getModelSettings } from "../../storage/repositories/agent-model-setting
 import { listModelCatalog } from "../../storage/repositories/model-catalog-repository";
 import { listModelProviders } from "../../storage/repositories/model-providers-repository";
 import { getVfsWorkspaceBootstrapStatus } from "../../vfs/bootstrap/default-workspace";
-import { requireAdmin } from "../admin-auth";
 
 export async function handleAdminSetupStatus(
   request: Request,
   env: Env
 ): Promise<Response> {
-  const authError = requireAdmin(request, env);
-  if (authError) {
-    return authError;
-  }
-
   const agentId =
     new URL(request.url).searchParams.get("agentId") ??
     env.DEFAULT_AGENT_ID ??

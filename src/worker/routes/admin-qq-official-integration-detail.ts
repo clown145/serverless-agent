@@ -5,7 +5,6 @@ import {
 } from "../../storage/repositories/platform-integrations-repository";
 import { errorResponse, jsonResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
-import { requireAdmin } from "../admin-auth";
 import { saveQqOfficialSecret } from "./admin-qq-official-integrations";
 import {
   connectQqOfficialIntegration,
@@ -24,11 +23,6 @@ export async function handleAdminQqOfficialIntegrationDetail(
   env: Env,
   integrationId: string
 ): Promise<Response> {
-  const authError = requireAdmin(request, env);
-  if (authError) {
-    return authError;
-  }
-
   if (request.method === "DELETE") {
     return deleteIntegration(env, integrationId);
   }

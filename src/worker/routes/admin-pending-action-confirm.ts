@@ -1,18 +1,12 @@
 import { confirmPendingAction } from "../../permissions/pending-action-executor";
 import { errorResponse, jsonResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
-import { requireAdmin } from "../admin-auth";
 
 export async function handleAdminPendingActionConfirm(
   request: Request,
   env: Env,
   actionId: string
 ): Promise<Response> {
-  const authError = requireAdmin(request, env);
-  if (authError) {
-    return authError;
-  }
-
   if (request.method !== "POST") {
     return errorResponse(405, "method_not_allowed", "Method not allowed");
   }

@@ -1,18 +1,12 @@
 import { errorResponse, jsonResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
 import { deletePermissionPolicy } from "../../storage/repositories/permission-policies-repository";
-import { requireAdmin } from "../admin-auth";
 
 export async function handleAdminPermissionPolicyDetail(
   request: Request,
   env: Env,
   policyId: string
 ): Promise<Response> {
-  const authError = requireAdmin(request, env);
-  if (authError) {
-    return authError;
-  }
-
   if (request.method !== "DELETE") {
     return errorResponse(405, "method_not_allowed", "Method not allowed");
   }

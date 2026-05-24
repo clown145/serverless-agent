@@ -1,5 +1,6 @@
 import type { Env } from "../shared/types/env";
 import { errorResponse, jsonResponse } from "../shared/http";
+import { requireAdminRoute } from "./admin-auth";
 import {
   handleAdminConversationDetail,
   handleAdminConversations
@@ -79,6 +80,11 @@ export async function routeRequest(
   if (url.pathname.startsWith("/webhooks/qq-official/")) {
     const webhookSecret = decodeURIComponent(url.pathname.replace("/webhooks/qq-official/", ""));
     return handleQqOfficialWebhook(request, env, webhookSecret);
+  }
+
+  const authError = requireAdminRoute(request, env, url.pathname);
+  if (authError) {
+    return authError;
   }
 
   if (url.pathname === "/admin/messages") {

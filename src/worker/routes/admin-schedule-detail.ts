@@ -9,18 +9,12 @@ import {
   pauseSchedule,
   resumeSchedule
 } from "../../storage/repositories/schedules-repository";
-import { requireAdmin } from "../admin-auth";
 
 export async function handleAdminScheduleDetail(
   request: Request,
   env: Env,
   scheduleId: string
 ): Promise<Response> {
-  const authError = requireAdmin(request, env);
-  if (authError) {
-    return authError;
-  }
-
   const [id = "", action] = scheduleId.split("/");
   if (!id) {
     return errorResponse(404, "schedule_not_found", "Schedule not found");

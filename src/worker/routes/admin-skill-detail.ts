@@ -2,7 +2,6 @@ import { loadSkill } from "../../skills/skill-loader";
 import { deleteSkill, updateSkillFile } from "../../skills/skill-service";
 import { errorResponse, jsonResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
-import { requireAdmin } from "../admin-auth";
 import { updateSkillSchema, zodMessage } from "./skills/skill-schemas";
 
 export async function handleAdminSkillDetail(
@@ -10,11 +9,6 @@ export async function handleAdminSkillDetail(
   env: Env,
   skillId: string
 ): Promise<Response> {
-  const authError = requireAdmin(request, env);
-  if (authError) {
-    return authError;
-  }
-
   const agentId = new URL(request.url).searchParams.get("agentId") ??
     env.DEFAULT_AGENT_ID ??
     "default";

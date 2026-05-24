@@ -8,7 +8,6 @@ import {
   recordMcpServerDiscovery
 } from "../../storage/repositories/mcp-servers-repository";
 import { upsertMcpToolCatalog } from "../../storage/repositories/mcp-tools-repository";
-import { requireAdmin } from "../admin-auth";
 import { toMcpToolDto } from "./mcp/mcp-dto";
 
 export async function handleAdminMcpServerDetail(
@@ -16,11 +15,6 @@ export async function handleAdminMcpServerDetail(
   env: Env,
   serverId: string
 ): Promise<Response> {
-  const authError = requireAdmin(request, env);
-  if (authError) {
-    return authError;
-  }
-
   if (request.method === "DELETE") {
     const deleted = await deleteMcpServerRecord(env.AGENT_DB, serverId);
     if (!deleted) {

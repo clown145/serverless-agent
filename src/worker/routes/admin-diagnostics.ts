@@ -3,17 +3,11 @@ import { runBindingDiagnostics } from "../../diagnostics/runtime-checks";
 import { summarizeDiagnostics } from "../../diagnostics/types";
 import { jsonResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
-import { requireAdmin } from "../admin-auth";
 
 export async function handleAdminDiagnostics(
   request: Request,
   env: Env
 ): Promise<Response> {
-  const authError = requireAdmin(request, env);
-  if (authError) {
-    return authError;
-  }
-
   const [bindingChecks, configChecks] = await Promise.all([
     runBindingDiagnostics(env),
     runConfigDiagnostics(env)

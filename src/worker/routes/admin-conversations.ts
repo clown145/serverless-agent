@@ -8,7 +8,6 @@ import {
   listConversationSettings,
   updateConversationSettings
 } from "../../storage/repositories/conversation-settings-repository";
-import { requireAdmin } from "../admin-auth";
 import { toConversationDto } from "./conversations/conversation-dto";
 import {
   compactConversationSchema,
@@ -22,11 +21,6 @@ export async function handleAdminConversations(
   request: Request,
   env: Env
 ): Promise<Response> {
-  const authError = requireAdmin(request, env);
-  if (authError) {
-    return authError;
-  }
-
   if (request.method === "GET") {
     return listConversations(request, env);
   }
@@ -64,11 +58,6 @@ export async function handleAdminConversationDetail(
   env: Env,
   conversationId: string
 ): Promise<Response> {
-  const authError = requireAdmin(request, env);
-  if (authError) {
-    return authError;
-  }
-
   const url = new URL(request.url);
   const agentId =
     url.searchParams.get("agentId") ??

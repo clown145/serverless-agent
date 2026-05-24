@@ -12,7 +12,6 @@ import { createWebUiMessage } from "../../adapters/webui/normalize";
 import type { QueueMessageBody } from "../../shared/types/queue";
 import { listConversationMessages } from "../../storage/repositories/messages-repository";
 import { dispatchAgentJob, enqueueAgentJob } from "../agent-dispatch";
-import { requireAdmin } from "../admin-auth";
 import { listMessagesSchema, zodMessage } from "./messages/message-schemas";
 
 type AdminMessagePayload = {
@@ -32,11 +31,6 @@ export async function handleAdminMessage(
   env: Env,
   _ctx: ExecutionContext
 ): Promise<Response> {
-  const authError = requireAdmin(request, env);
-  if (authError) {
-    return authError;
-  }
-
   if (request.method === "GET") {
     return handleListMessages(request, env);
   }

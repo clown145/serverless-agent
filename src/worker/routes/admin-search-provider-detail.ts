@@ -6,7 +6,6 @@ import {
   deleteSearchProviderRecord,
   getSearchProviderRecord
 } from "../../storage/repositories/search-providers-repository";
-import { requireAdmin } from "../admin-auth";
 import { testSearchProviderSchema, zodMessage } from "./search/search-schemas";
 
 export async function handleAdminSearchProviderDetail(
@@ -14,11 +13,6 @@ export async function handleAdminSearchProviderDetail(
   env: Env,
   providerId: string
 ): Promise<Response> {
-  const authError = requireAdmin(request, env);
-  if (authError) {
-    return authError;
-  }
-
   if (request.method === "DELETE") {
     const deleted = await deleteSearchProviderRecord(env.AGENT_DB, providerId);
     if (!deleted) {

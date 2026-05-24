@@ -5,7 +5,6 @@ import {
   createSchedule,
   listSchedules
 } from "../../storage/repositories/schedules-repository";
-import { requireAdmin } from "../admin-auth";
 import { stringifySchedulePayload } from "../../scheduler/schedule-payload";
 import { resolveDueAt } from "../../scheduler/schedule-time";
 import {
@@ -41,11 +40,6 @@ export async function handleAdminSchedules(
   request: Request,
   env: Env
 ): Promise<Response> {
-  const authError = requireAdmin(request, env);
-  if (authError) {
-    return authError;
-  }
-
   if (request.method === "GET") {
     return handleListSchedules(request, env);
   }

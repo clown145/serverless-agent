@@ -5,7 +5,6 @@ import {
   createPermissionPolicy,
   listPermissionPolicies
 } from "../../storage/repositories/permission-policies-repository";
-import { requireAdmin } from "../admin-auth";
 
 const createPolicySchema = z.object({
   agentId: z.string().min(1).optional(),
@@ -26,11 +25,6 @@ export async function handleAdminPermissionPolicies(
   request: Request,
   env: Env
 ): Promise<Response> {
-  const authError = requireAdmin(request, env);
-  if (authError) {
-    return authError;
-  }
-
   if (request.method === "GET") {
     const agentId = new URL(request.url).searchParams.get("agentId") ?? undefined;
     const policies = await listPermissionPolicies(env.AGENT_DB, agentId);

@@ -5,7 +5,6 @@ import {
 } from "../../storage/repositories/platform-integrations-repository";
 import { errorResponse, jsonResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
-import { requireAdmin } from "../admin-auth";
 import {
   deleteTelegramIntegrationWebhook,
   setTelegramIntegrationWebhook,
@@ -23,11 +22,6 @@ export async function handleAdminTelegramIntegrationDetail(
   env: Env,
   integrationId: string
 ): Promise<Response> {
-  const authError = requireAdmin(request, env);
-  if (authError) {
-    return authError;
-  }
-
   const pathname = new URL(request.url).pathname;
   if (request.method === "DELETE" && !pathname.endsWith("/webhook")) {
     return deleteIntegration(env, integrationId);

@@ -6,7 +6,6 @@ import {
 } from "../../skills/skill-service";
 import { errorResponse, jsonResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
-import { requireAdmin } from "../admin-auth";
 import {
   deleteSkillFileQuerySchema,
   skillFileQuerySchema,
@@ -25,11 +24,6 @@ export async function handleAdminSkillFiles(
   env: Env,
   skillId: string
 ): Promise<Response> {
-  const authError = requireAdmin(request, env);
-  if (authError) {
-    return authError;
-  }
-
   if (request.method === "GET") {
     return handleReadOrList(request, env, skillId);
   }

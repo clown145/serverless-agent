@@ -2,7 +2,6 @@ import { errorResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
 import { createBlobStorage } from "../../storage/blob";
 import { getMessageAttachmentRecord } from "../../storage/repositories/message-attachments-repository";
-import { requireAdmin } from "../admin-auth";
 
 export async function handleAdminMessageAttachment(
   request: Request,
@@ -12,11 +11,6 @@ export async function handleAdminMessageAttachment(
     attachmentId: string;
   }
 ): Promise<Response> {
-  const authError = requireAdmin(request, env);
-  if (authError) {
-    return authError;
-  }
-
   if (request.method !== "GET") {
     return errorResponse(405, "method_not_allowed", "Method not allowed");
   }
