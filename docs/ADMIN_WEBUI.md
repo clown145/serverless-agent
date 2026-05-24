@@ -43,7 +43,7 @@ WebUI
 - schedules 创建、查看和取消；
 - pending actions 查看和确认；
 - permission policies 创建、查看和删除；
-- admin token 本地保存。
+- admin token 登录校验和本地保存。
 
 ## 开发命令
 
@@ -69,7 +69,9 @@ npm run dev
 
 ## 安全说明
 
-如果配置了 `INTERNAL_ADMIN_TOKEN`，WebUI 的 System 页面需要填写 token，后续 `/admin/*` 请求会带上 `Authorization: Bearer <token>`。
+WebUI 入口会先显示 token 登录页，并通过 `/admin/setup/status` 校验 token。校验通过后才进入管理控制台，后续 `/admin/*` 请求会带上 `Authorization: Bearer <token>`。
+
+如果未配置 `INTERNAL_ADMIN_TOKEN`，后端不会强制校验 `/admin/*` token；登录页仍会用当前输入访问 setup status，本地开发可以直接进入。生产环境应配置 `INTERNAL_ADMIN_TOKEN`。
 
 浏览器本地保存的 admin token 只用于本机调试和访问当前部署，不应该写入仓库或文档示例。
 

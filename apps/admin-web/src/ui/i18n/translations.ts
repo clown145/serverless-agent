@@ -54,6 +54,14 @@ export const translations: Record<Locale, Record<string, string>> = {
     "common.level": "级别 {level}",
     "common.loadedCount": "已加载 {count} 条",
 
+    "auth.title": "认证",
+    "auth.heading": "输入 Admin token",
+    "auth.description": "验证通过后才能进入管理控制台。",
+    "auth.signIn": "进入控制台",
+    "auth.signOut": "退出登录",
+    "auth.checking": "正在验证",
+    "auth.invalidToken": "Token 无效或无法连接到管理 API。",
+
     "status.completed": "已完成",
     "status.success": "成功",
     "status.active": "启用",
@@ -573,6 +581,14 @@ export const translations: Record<Locale, Record<string, string>> = {
     "common.secretSaved": "secret saved",
     "common.level": "level {level}",
     "common.loadedCount": "{count} loaded",
+
+    "auth.title": "Authentication",
+    "auth.heading": "Enter admin token",
+    "auth.description": "Verify the token before opening the admin console.",
+    "auth.signIn": "Open console",
+    "auth.signOut": "Sign out",
+    "auth.checking": "Checking",
+    "auth.invalidToken": "Invalid token or admin API is unreachable.",
 
     "status.completed": "completed",
     "status.success": "success",

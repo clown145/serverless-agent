@@ -180,6 +180,73 @@
   gap: 14px;
 }
 
+.login-shell {
+  display: grid;
+  min-height: 100vh;
+  grid-template-rows: auto 1fr;
+}
+
+.login-topbar {
+  display: flex;
+  min-height: 64px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  padding: 10px 20px;
+}
+
+.login-topbar h1 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.login-main {
+  display: grid;
+  align-items: start;
+  justify-items: center;
+  padding: 48px 20px;
+}
+
+.login-panel {
+  width: min(100%, 440px);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  padding: 22px;
+  box-shadow: 0 1px 2px rgb(25 35 50 / 4%);
+}
+
+.login-heading {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.login-heading h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.login-heading p,
+.login-error {
+  margin: 4px 0 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.login-form {
+  display: grid;
+  gap: 12px;
+}
+
+.login-error {
+  color: var(--danger);
+}
+
 .list-pane,
 .detail-pane {
   min-width: 0;

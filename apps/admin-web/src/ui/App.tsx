@@ -1,4 +1,10 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import {
+  clearAdminToken,
+  hasStoredAdminToken,
+  loadAdminToken,
+  saveAdminToken
+} from "../auth-token";
 import { createAdminClient } from "../api/client";
 import { ChatPanel } from "./panels/ChatPanel";
 import { ConversationsPanel } from "./panels/ConversationsPanel";
@@ -22,8 +28,8 @@ import { useI18n } from "./i18n/I18nProvider";
 import { NAV_ITEMS } from "./navigation";
 import { MobileNavigation, Sidebar } from "./Sidebar";
 import type { ViewId } from "./views";
+import { LoginGate } from "./auth/LoginGate";
 
-const tokenKey = "serverless-agent:admin-token";
 const viewKey = "serverless-agent:active-view";
 
 export function App() {
@@ -31,14 +37,30 @@ export function App() {
   const [active, setActive] = useState<ViewId>(() => initialView());
   const [selectedRunId, setSelectedRunId] = useState("");
   const [selectedConversationId, setSelectedConversationId] = useState("webui:default");
-  const [token, setToken] = useState(() => localStorage.getItem(tokenKey) ?? "");
+  const [token, setToken] = useState(loadAdminToken);
+  const [authenticated, setAuthenticated] = useState(false);
   const [notice, setNotice] = useState<{ message: string; tone: "ok" | "error" }>();
   const client = useMemo(() => createAdminClient(() => token), [token]);
 
-  function updateToken(value: string) {
+  const updateToken = useCallback((value: string) => {
     setToken(value);
-    localStorage.setItem(tokenKey, value);
-  }
+    saveAdminToken(value);
+  }, []);
+
+  const authenticate = useCallback(
+    (value: string) => {
+      updateToken(value);
+      setAuthenticated(true);
+    },
+    [updateToken]
+  );
+
+  const signOut = useCallback(() => {
+    clearAdminToken();
+    setToken("");
+    setAuthenticated(false);
+    setActive("setup");
+  }, []);
 
   function notify(message: string, tone: "ok" | "error" = "ok") {
     setNotice({ message, tone });
@@ -62,6 +84,10 @@ export function App() {
 
   const activeItem = NAV_ITEMS.find((item) => item.id === active);
   const activeLabel = activeItem ? t(activeItem.labelKey) : t("app.currentView");
+
+  if (!authenticated) {
+    return <LoginGate initialToken={token} onAuthenticated={authenticate} />;
+  }
 
   return (
     <div className="app-shell">
@@ -119,7 +145,9 @@ export function App() {
           )}
           {active === "pending" && <PendingPanel client={client} notify={notify} />}
           {active === "permissions" && <PermissionsPanel client={client} notify={notify} />}
-          {active === "system" && <SystemPanel token={token} onTokenChange={updateToken} />}
+          {active === "system" && (
+            <SystemPanel token={token} onSignOut={signOut} onTokenChange={updateToken} />
+          )}
         </main>
       </div>
     </div>
@@ -132,7 +160,7 @@ function initialView(): ViewId {
     return savedView;
   }
 
-  return localStorage.getItem(tokenKey) ? "setup" : "system";
+  return hasStoredAdminToken() ? "setup" : "system";
 }
 
 function isViewId(value: string | null): value is ViewId {

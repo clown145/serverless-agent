@@ -3,10 +3,11 @@ import { useI18n } from "../i18n/I18nProvider";
 
 type SystemPanelProps = {
   token: string;
+  onSignOut: () => void;
   onTokenChange: (token: string) => void;
 };
 
-export function SystemPanel({ token, onTokenChange }: SystemPanelProps) {
+export function SystemPanel({ token, onSignOut, onTokenChange }: SystemPanelProps) {
   const { t } = useI18n();
 
   return (
@@ -23,6 +24,11 @@ export function SystemPanel({ token, onTokenChange }: SystemPanelProps) {
             onChange={(event) => onTokenChange(event.target.value)}
           />
         </label>
+      </div>
+      <div className="button-row">
+        <button className="secondary-button" onClick={onSignOut} type="button">
+          {t("auth.signOut")}
+        </button>
       </div>
       <JsonBlock
         value={{

@@ -73,6 +73,21 @@ describe("router admin auth", () => {
 
     expect(response.status).toBe(200);
   });
+
+  it("keeps the WebUI shell accessible while protecting the admin API it uses", async () => {
+    const response = await routeRequest(
+      new Request("https://agent.local/ui"),
+      {
+        ...createEnv(),
+        ASSETS: {
+          fetch: vi.fn().mockResolvedValue(new Response("<html></html>", { status: 200 }))
+        }
+      } as unknown as Env,
+      createExecutionContext()
+    );
+
+    expect(response.status).toBe(200);
+  });
 });
 
 function createEnv(): Env {
