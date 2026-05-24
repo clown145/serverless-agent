@@ -1,10 +1,7 @@
 import type { Env } from "../../shared/types/env";
 import { listMcpServerRecords } from "../../storage/repositories/mcp-servers-repository";
 import { listEnabledMcpToolCatalog } from "../../storage/repositories/mcp-tools-repository";
-import type {
-  McpServerRecord,
-  McpToolRecord
-} from "../../storage/repositories/mcp-types";
+import type { McpServerRecord, McpToolRecord } from "../../storage/repositories/mcp-types";
 import type { RegisteredTool } from "../types";
 import { createMcpRegisteredTool } from "./adapter";
 import { resolveMcpCredential } from "./credential";
@@ -17,9 +14,7 @@ export async function createEnabledMcpTools(env: Env): Promise<RegisteredTool[]>
     listEnabledMcpToolCatalog(env.AGENT_DB)
   ]);
   const serverById = new Map(
-    servers
-      .filter((server) => server.status === "active")
-      .map((server) => [server.id, server])
+    servers.filter((server) => server.status === "active").map((server) => [server.id, server])
   );
 
   const registered: RegisteredTool[] = [];

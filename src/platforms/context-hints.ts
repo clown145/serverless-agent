@@ -2,10 +2,7 @@ import { createTelegramContextHintsAdapter } from "../adapters/telegram/context-
 import { promptText } from "../prompts";
 import type { Env } from "../shared/types/env";
 import type { InternalMessage } from "../shared/types/internal-message";
-import type {
-  PlatformContextHints,
-  PlatformContextHintsAdapter
-} from "./context-hints/types";
+import type { PlatformContextHints, PlatformContextHintsAdapter } from "./context-hints/types";
 
 export type { PlatformContextHints } from "./context-hints/types";
 

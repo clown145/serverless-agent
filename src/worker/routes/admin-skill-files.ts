@@ -13,11 +13,7 @@ import {
   updateSkillSchema,
   zodMessage
 } from "./skills/skill-schemas";
-import {
-  defaultAgentId,
-  searchParamsObject,
-  skillRouteError
-} from "./skills/route-utils";
+import { defaultAgentId, searchParamsObject, skillRouteError } from "./skills/route-utils";
 
 export async function handleAdminSkillFiles(
   request: Request,
@@ -39,11 +35,7 @@ export async function handleAdminSkillFiles(
   return errorResponse(405, "method_not_allowed", "Method not allowed");
 }
 
-async function handleReadOrList(
-  request: Request,
-  env: Env,
-  skillId: string
-): Promise<Response> {
+async function handleReadOrList(request: Request, env: Env, skillId: string): Promise<Response> {
   const url = new URL(request.url);
   const mode = url.searchParams.get("mode") ?? "tree";
 
@@ -82,11 +74,7 @@ async function handleReadOrList(
   }
 }
 
-async function handleWrite(
-  request: Request,
-  env: Env,
-  skillId: string
-): Promise<Response> {
+async function handleWrite(request: Request, env: Env, skillId: string): Promise<Response> {
   const parsed = updateSkillSchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) {
     return errorResponse(400, "invalid_payload", zodMessage(parsed.error));
@@ -106,11 +94,7 @@ async function handleWrite(
   }
 }
 
-async function handleDelete(
-  request: Request,
-  env: Env,
-  skillId: string
-): Promise<Response> {
+async function handleDelete(request: Request, env: Env, skillId: string): Promise<Response> {
   const url = new URL(request.url);
   const parsed = deleteSkillFileQuerySchema.safeParse(searchParamsObject(url));
   if (!parsed.success) {

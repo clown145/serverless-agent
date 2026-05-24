@@ -44,9 +44,7 @@ describe("router admin auth", () => {
   });
 
   it("allows authorized admin requests through to the route handler", async () => {
-    mocks.connectConfiguredQqOfficialGateways.mockResolvedValue([
-      { agentId: "default", ok: true }
-    ]);
+    mocks.connectConfiguredQqOfficialGateways.mockResolvedValue([{ agentId: "default", ok: true }]);
 
     const env = createEnv();
     const response = await routeRequest(

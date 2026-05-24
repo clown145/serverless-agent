@@ -1,14 +1,14 @@
 import { bytesToHex } from "./base64";
 
 const SHIFT_AMOUNTS = [
-  7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22,
-  5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20,
-  4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23,
-  6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21
+  7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14,
+  20, 5, 9, 14, 20, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 6, 10, 15, 21, 6,
+  10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21
 ] as const;
 
-const TABLE = Array.from({ length: 64 }, (_, index) =>
-  Math.floor(Math.abs(Math.sin(index + 1)) * 2 ** 32) >>> 0
+const TABLE = Array.from(
+  { length: 64 },
+  (_, index) => Math.floor(Math.abs(Math.sin(index + 1)) * 2 ** 32) >>> 0
 );
 
 export function md5Hex(bytes: Uint8Array): string {
@@ -46,7 +46,10 @@ export function md5Hex(bytes: Uint8Array): string {
       c = b;
       b = add32(
         b,
-        rotateLeft32(add32(add32(a, f), add32(TABLE[index] ?? 0, words[g] ?? 0)), SHIFT_AMOUNTS[index] ?? 0)
+        rotateLeft32(
+          add32(add32(a, f), add32(TABLE[index] ?? 0, words[g] ?? 0)),
+          SHIFT_AMOUNTS[index] ?? 0
+        )
       );
       a = d;
       d = nextD;
@@ -80,11 +83,12 @@ function blockWords(bytes: Uint8Array, offset: number): number[] {
   return Array.from({ length: 16 }, (_, index) => {
     const start = offset + index * 4;
     return (
-      (bytes[start] ?? 0) |
-      ((bytes[start + 1] ?? 0) << 8) |
-      ((bytes[start + 2] ?? 0) << 16) |
-      ((bytes[start + 3] ?? 0) << 24)
-    ) >>> 0;
+      ((bytes[start] ?? 0) |
+        ((bytes[start + 1] ?? 0) << 8) |
+        ((bytes[start + 2] ?? 0) << 16) |
+        ((bytes[start + 3] ?? 0) << 24)) >>>
+      0
+    );
   });
 }
 

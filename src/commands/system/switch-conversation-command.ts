@@ -1,7 +1,4 @@
-import {
-  conversationSessionSuffix,
-  createLogicalConversationId
-} from "../../conversations/ids";
+import { conversationSessionSuffix, createLogicalConversationId } from "../../conversations/ids";
 import { setConversationBinding } from "../../storage/repositories/conversation-bindings-repository";
 import {
   ensureConversationSettings,
@@ -25,13 +22,17 @@ export const switchConversationCommand: CommandDefinition = {
       });
       const lines = [
         bold("Conversation Sessions", message.platform),
-        ...sessions.slice(0, 12).map((session) =>
-          [
-            code(conversationSessionSuffix(session.conversationId), message.platform),
-            session.title ?? "",
-            session.updatedAt
-          ].filter(Boolean).join(" · ")
-        )
+        ...sessions
+          .slice(0, 12)
+          .map((session) =>
+            [
+              code(conversationSessionSuffix(session.conversationId), message.platform),
+              session.title ?? "",
+              session.updatedAt
+            ]
+              .filter(Boolean)
+              .join(" · ")
+          )
       ];
       return {
         handled: true,
@@ -67,7 +68,9 @@ export const switchConversationCommand: CommandDefinition = {
       `Conversation: ${code(conversationSessionSuffix(settings.conversationId), message.platform)}`
     ];
     if (message.platform === "webui" || message.platform === "admin") {
-      lines.push(`Switch the conversation input to: ${code(settings.conversationId, message.platform)}`);
+      lines.push(
+        `Switch the conversation input to: ${code(settings.conversationId, message.platform)}`
+      );
     }
 
     return { handled: true, responseText: lines.join("\n") };

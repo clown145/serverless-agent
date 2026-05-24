@@ -35,11 +35,7 @@ export async function resolveModelConfig(
   } = {}
 ): Promise<ResolvedModelConfig> {
   if (options.providerId && options.modelId) {
-    const config = await resolveEnabledModelConfig(
-      env,
-      options.providerId,
-      options.modelId
-    );
+    const config = await resolveEnabledModelConfig(env, options.providerId, options.modelId);
     if (config) {
       return config;
     }

@@ -2,10 +2,7 @@ import { jsonResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
 import { listRuns } from "../../storage/repositories/runs-list-repository";
 
-export async function handleAdminRuns(
-  request: Request,
-  env: Env
-): Promise<Response> {
+export async function handleAdminRuns(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
   const agentId = url.searchParams.get("agentId") ?? undefined;
   const limit = Number(url.searchParams.get("limit") ?? "25");

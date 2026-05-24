@@ -12,10 +12,7 @@ export type CreateRunInput = {
   updatedAt: string;
 };
 
-export async function createRun(
-  db: D1Database,
-  input: CreateRunInput
-): Promise<void> {
+export async function createRun(db: D1Database, input: CreateRunInput): Promise<void> {
   await db
     .prepare(
       `INSERT INTO runs (
@@ -36,10 +33,7 @@ export async function createRun(
     .run();
 }
 
-export async function appendRunStep(
-  db: D1Database,
-  input: RunStepInput
-): Promise<void> {
+export async function appendRunStep(db: D1Database, input: RunStepInput): Promise<void> {
   await db
     .prepare(
       `INSERT INTO run_steps (
@@ -58,21 +52,14 @@ export async function appendRunStep(
     .run();
 }
 
-export async function completeRun(
-  db: D1Database,
-  runId: string,
-  status: RunStatus
-): Promise<void> {
+export async function completeRun(db: D1Database, runId: string, status: RunStatus): Promise<void> {
   await db
     .prepare("UPDATE runs SET status = ?, updated_at = ? WHERE id = ?")
     .bind(status, nowIso(), runId)
     .run();
 }
 
-export async function getRunStatus(
-  db: D1Database,
-  runId: string
-): Promise<RunStatus | undefined> {
+export async function getRunStatus(db: D1Database, runId: string): Promise<RunStatus | undefined> {
   const row = await db
     .prepare("SELECT status FROM runs WHERE id = ?")
     .bind(runId)

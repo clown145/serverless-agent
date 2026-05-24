@@ -107,9 +107,7 @@ export function mapMcpServerRow(row: McpServerRow): McpServerRecord {
   };
 }
 
-export function mapMcpServerCredentialRow(
-  row: McpServerCredentialRow
-): McpServerCredentialRecord {
+export function mapMcpServerCredentialRow(row: McpServerCredentialRow): McpServerCredentialRecord {
   return {
     id: row.id,
     serverId: row.server_id,
@@ -131,9 +129,7 @@ export function mapMcpToolRow(row: McpToolRow): McpToolRecord {
     title: row.title ?? undefined,
     description: row.description ?? undefined,
     inputSchema: parseJsonSchema(row.input_schema_json),
-    outputSchema: row.output_schema_json
-      ? parseJsonSchema(row.output_schema_json)
-      : undefined,
+    outputSchema: row.output_schema_json ? parseJsonSchema(row.output_schema_json) : undefined,
     annotations: row.annotations_json
       ? (JSON.parse(row.annotations_json) as ToolAnnotations)
       : undefined,

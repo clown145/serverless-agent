@@ -36,13 +36,7 @@ export type QqOfficialSessionState = {
   lastSeq?: number;
   shardId: number;
   shardCount: number;
-  status:
-    | "idle"
-    | "connecting"
-    | "connected"
-    | "resuming"
-    | "closed"
-    | "error";
+  status: "idle" | "connecting" | "connected" | "resuming" | "closed" | "error";
   lastReadyAt?: string;
   lastHeartbeatAt?: string;
   lastHeartbeatAckAt?: string;

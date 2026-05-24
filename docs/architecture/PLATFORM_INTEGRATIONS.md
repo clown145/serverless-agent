@@ -48,14 +48,14 @@ Worker 和 Platform Gateway Durable Object 都只做轻量工作：
 
 ## 当前适配器
 
-| 平台 | 内部 platform | 入站方式 | 出站能力 | 主要状态 |
-| --- | --- | --- | --- | --- |
-| Telegram | `telegram` | `POST /webhooks/telegram` | 文本、文件、图片、按钮、typing | WebUI integration 或 Worker secrets |
-| QQ Official | `qq` | `connectionMode=gateway` 使用 DO WebSocket；`connectionMode=webhook` 使用 `POST /webhooks/qq-official/:webhookSecret` | 文本；群聊/C2C 支持文件和图片；频道/私信支持文本 | D1 integration、conversation target，gateway 模式另有 DO session |
-| WeCom | `wecom` | `GET/POST /webhooks/wecom/:webhookSecret` | 文本下行、客服联系入口 | D1 integration、加密 secret |
-| Weixin OC | `weixin_oc` | Gateway DO 扫码登录和 HTTP long-poll | 文本、文件、图片、typing | 加密 token 在 D1；运行游标和 context token 在 DO storage |
-| WebUI | `webui` | `POST /admin/messages` | 写入本地 WebUI conversation history | D1 |
-| Admin script | `admin` | `POST /admin/messages` | 写入本地 admin conversation history | D1 |
+| 平台         | 内部 platform | 入站方式                                                                                                              | 出站能力                                         | 主要状态                                                         |
+| ------------ | ------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ | ---------------------------------------------------------------- |
+| Telegram     | `telegram`    | `POST /webhooks/telegram`                                                                                             | 文本、文件、图片、按钮、typing                   | WebUI integration 或 Worker secrets                              |
+| QQ Official  | `qq`          | `connectionMode=gateway` 使用 DO WebSocket；`connectionMode=webhook` 使用 `POST /webhooks/qq-official/:webhookSecret` | 文本；群聊/C2C 支持文件和图片；频道/私信支持文本 | D1 integration、conversation target，gateway 模式另有 DO session |
+| WeCom        | `wecom`       | `GET/POST /webhooks/wecom/:webhookSecret`                                                                             | 文本下行、客服联系入口                           | D1 integration、加密 secret                                      |
+| Weixin OC    | `weixin_oc`   | Gateway DO 扫码登录和 HTTP long-poll                                                                                  | 文本、文件、图片、typing                         | 加密 token 在 D1；运行游标和 context token 在 DO storage         |
+| WebUI        | `webui`       | `POST /admin/messages`                                                                                                | 写入本地 WebUI conversation history              | D1                                                               |
+| Admin script | `admin`       | `POST /admin/messages`                                                                                                | 写入本地 admin conversation history              | D1                                                               |
 
 `webhook` 仍是内部平台枚举的一员，用于通用 webhook 类入口和权限策略兼容。
 

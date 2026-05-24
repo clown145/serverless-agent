@@ -46,7 +46,7 @@ export function SkillsPanel({ client, notify }: PanelProps) {
       const nextSkillId =
         preferredSkillId && skillResult.skills.some((item) => item.id === preferredSkillId)
           ? preferredSkillId
-          : skillResult.skills[0]?.id ?? "";
+          : (skillResult.skills[0]?.id ?? "");
       setSelectedSkillId(nextSkillId);
       if (nextSkillId) {
         await loadSkill(nextSkillId, "SKILL.md");

@@ -22,16 +22,13 @@ export async function withPlatformActivity<T>(
     return task();
   }
 
-  return runWithActivityPulse(
-    async () => {
-      await adapter.sendActivity?.({
-        agentId: message.agentId,
-        conversationId: message.conversationId,
-        activity
-      });
-    },
-    task
-  );
+  return runWithActivityPulse(async () => {
+    await adapter.sendActivity?.({
+      agentId: message.agentId,
+      conversationId: message.conversationId,
+      activity
+    });
+  }, task);
 }
 
 export async function runWithActivityPulse<T>(

@@ -1,8 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import {
-  sendTelegramButtons,
-  sendTelegramChatAction
-} from "../../src/adapters/telegram/outbound";
+import { sendTelegramButtons, sendTelegramChatAction } from "../../src/adapters/telegram/outbound";
 import type { Env } from "../../src/shared/types/env";
 
 const originalFetch = globalThis.fetch;
@@ -14,9 +11,7 @@ afterEach(() => {
 
 describe("telegram outbound", () => {
   it("sends chat action activity", async () => {
-    const fetchMock = vi.fn(async () =>
-      jsonResponse({ ok: true, result: true })
-    );
+    const fetchMock = vi.fn(async () => jsonResponse({ ok: true, result: true }));
     globalThis.fetch = fetchMock as unknown as typeof fetch;
 
     const result = await sendTelegramChatAction(
@@ -38,9 +33,7 @@ describe("telegram outbound", () => {
   });
 
   it("chunks inline buttons by requested layout columns", async () => {
-    const fetchMock = vi.fn(async () =>
-      jsonResponse({ ok: true, result: { message_id: 42 } })
-    );
+    const fetchMock = vi.fn(async () => jsonResponse({ ok: true, result: { message_id: 42 } }));
     globalThis.fetch = fetchMock as unknown as typeof fetch;
 
     const result = await sendTelegramButtons(
@@ -68,9 +61,7 @@ describe("telegram outbound", () => {
           { text: "A", callback_data: expect.stringMatching(/^cb_/) },
           { text: "B", callback_data: expect.stringMatching(/^cb_/) }
         ],
-        [
-          { text: "C", callback_data: expect.stringMatching(/^cb_/) }
-        ]
+        [{ text: "C", callback_data: expect.stringMatching(/^cb_/) }]
       ]
     });
   });

@@ -1,8 +1,5 @@
 import { WecomApiClient } from "../../../adapters/wecom/api";
-import {
-  buildQrCodeUrl,
-  contactSceneForIntegration
-} from "../../../adapters/wecom/contact";
+import { buildQrCodeUrl, contactSceneForIntegration } from "../../../adapters/wecom/contact";
 import { integrationWecomConfig, stringConfig } from "../../../adapters/wecom/config";
 import {
   getPlatformIntegrationRecord,
@@ -13,9 +10,7 @@ import { errorResponse, jsonResponse } from "../../../shared/http";
 import type { Env } from "../../../shared/types/env";
 import { toWecomIntegrationDto } from "./wecom-dto";
 
-type WecomIntegration = NonNullable<
-  Awaited<ReturnType<typeof getPlatformIntegrationRecord>>
->;
+type WecomIntegration = NonNullable<Awaited<ReturnType<typeof getPlatformIntegrationRecord>>>;
 
 export async function testWecomIntegration(
   env: Env,
@@ -51,7 +46,7 @@ export async function createWecomContactWay(
 
   try {
     const config = await integrationWecomConfig(env, integration);
-    const openKfId = config.openKfId ?? await resolveOpenKfId(client, config.customerServiceName);
+    const openKfId = config.openKfId ?? (await resolveOpenKfId(client, config.customerServiceName));
     if (!openKfId) {
       return errorResponse(
         400,

@@ -151,10 +151,7 @@ function stringPayload(payload: Record<string, unknown>, key: string): string | 
   return typeof value === "string" && value ? value : undefined;
 }
 
-function findButtonLabel(
-  context: TelegramCallbackContext,
-  callbackId: string
-): string | undefined {
+function findButtonLabel(context: TelegramCallbackContext, callbackId: string): string | undefined {
   const rows = context.query.message?.reply_markup?.inline_keyboard ?? [];
   for (const row of rows) {
     for (const button of row) {

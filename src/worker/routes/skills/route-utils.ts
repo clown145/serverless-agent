@@ -9,14 +9,6 @@ export function searchParamsObject(url: URL): Record<string, string> {
   return Object.fromEntries(url.searchParams.entries());
 }
 
-export function skillRouteError(
-  code: string,
-  error: unknown,
-  fallback: string
-): Response {
-  return errorResponse(
-    400,
-    code,
-    error instanceof Error ? error.message : fallback
-  );
+export function skillRouteError(code: string, error: unknown, fallback: string): Response {
+  return errorResponse(400, code, error instanceof Error ? error.message : fallback);
 }

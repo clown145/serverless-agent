@@ -7,10 +7,7 @@ import type { SearchProvider } from "./provider-types";
 import { ExaSearchProvider } from "./exa-provider";
 import { TavilySearchProvider } from "./tavily-provider";
 
-export async function createSearchProvider(
-  env: Env,
-  agentId: string
-): Promise<SearchProvider> {
+export async function createSearchProvider(env: Env, agentId: string): Promise<SearchProvider> {
   const settings = await getSearchSettings(env.AGENT_DB, agentId);
   if (settings?.providerId) {
     const provider = await getSearchProviderRecord(env.AGENT_DB, settings.providerId);

@@ -35,17 +35,13 @@ describe("platform context hints", () => {
   });
 });
 
-function envWithIntegration(
-  config: Record<string, unknown> | undefined
-): Env {
+function envWithIntegration(config: Record<string, unknown> | undefined): Env {
   return {
     AGENT_DB: createIntegrationDb(config)
   } as unknown as Env;
 }
 
-function createIntegrationDb(
-  config: Record<string, unknown> | undefined
-): D1Database {
+function createIntegrationDb(config: Record<string, unknown> | undefined): D1Database {
   const row = config
     ? ({
         id: "pint_1",
@@ -68,9 +64,7 @@ function createIntegrationDb(
   } as unknown as D1Database;
 }
 
-function message(
-  overrides: Pick<InternalMessage, "platform" | "conversationId">
-): InternalMessage {
+function message(overrides: Pick<InternalMessage, "platform" | "conversationId">): InternalMessage {
   return {
     id: "msg_1",
     platform: overrides.platform,

@@ -37,11 +37,7 @@ export function VfsEntryList({
       <header className="panel-header compact">
         <h1>{t("vfs.title")}</h1>
         <div className="tool-meta">
-          <ToolbarButton
-            label={t("vfs.initialize")}
-            icon={FolderTree}
-            onClick={onInitialize}
-          />
+          <ToolbarButton label={t("vfs.initialize")} icon={FolderTree} onClick={onInitialize} />
           <ToolbarButton label={t("common.refresh")} icon={RefreshCw} onClick={onRefresh} />
         </div>
       </header>

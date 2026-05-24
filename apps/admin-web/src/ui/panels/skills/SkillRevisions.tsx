@@ -50,9 +50,7 @@ export function SkillRevisions({
             <>
               <div className="skill-meta-line">
                 <span>v{selectedRevision.version}</span>
-                {selectedRevision.size !== undefined && (
-                  <span>{selectedRevision.size} bytes</span>
-                )}
+                {selectedRevision.size !== undefined && <span>{selectedRevision.size} bytes</span>}
                 {selectedRevision.mimeType && <span>{selectedRevision.mimeType}</span>}
                 <ToolbarButton
                   label={t("skills.rollback")}

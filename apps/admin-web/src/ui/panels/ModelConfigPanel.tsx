@@ -21,8 +21,6 @@ export function ModelConfigPanel({ client, notify }: PanelProps) {
   const { t } = useI18n();
   const [providers, setProviders] = useState<ModelProvider[]>([]);
   const [models, setModels] = useState<ModelCatalogItem[]>([]);
-  const [settings, setSettings] = useState<ModelSettings>();
-  const [roles, setRoles] = useState<ModelRoleSettings>({});
   const [config, setConfig] = useState<AgentModelConfig>({ imageCaptionEnabled: false });
   const [draft, setDraft] = useState<Record<ModelRole, string>>({
     default: "",
@@ -40,8 +38,6 @@ export function ModelConfigPanel({ client, notify }: PanelProps) {
       const result = await client.getModelRoleSettings();
       setProviders(result.providers);
       setModels(result.models);
-      setSettings(result.settings);
-      setRoles(result.roles);
       setConfig(result.config);
       setDraft(toDraft(result.settings, result.roles));
     } catch (error) {
@@ -54,8 +50,6 @@ export function ModelConfigPanel({ client, notify }: PanelProps) {
       const result = await client.updateModelRoleSettings(toPayload(draft), config);
       setProviders(result.providers);
       setModels(result.models);
-      setSettings(result.settings);
-      setRoles(result.roles);
       setConfig(result.config);
       setDraft(toDraft(result.settings, result.roles));
       notify(t("modelConfig.saved"), "ok");

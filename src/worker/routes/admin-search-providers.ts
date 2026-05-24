@@ -20,15 +20,10 @@ import {
 } from "./search/search-schemas";
 import { toSearchProviderDto, toSearchSettingsDto } from "./search/search-dto";
 
-export async function handleAdminSearchProviders(
-  request: Request,
-  env: Env
-): Promise<Response> {
+export async function handleAdminSearchProviders(request: Request, env: Env): Promise<Response> {
   if (request.method === "GET") {
     const agentId =
-      new URL(request.url).searchParams.get("agentId") ??
-      env.DEFAULT_AGENT_ID ??
-      "default";
+      new URL(request.url).searchParams.get("agentId") ?? env.DEFAULT_AGENT_ID ?? "default";
     const [providers, settings] = await Promise.all([
       listSearchProviderRecords(env.AGENT_DB),
       getSearchSettings(env.AGENT_DB, agentId)

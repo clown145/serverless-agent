@@ -50,9 +50,7 @@ export async function resolveWeixinOcGatewayTarget(
   };
 }
 
-export async function clearWeixinOcLoginSession(
-  storage: DurableObjectStorage
-): Promise<void> {
+export async function clearWeixinOcLoginSession(storage: DurableObjectStorage): Promise<void> {
   await storage.delete(WEIXIN_OC_LOGIN_SESSION_KEY);
   await storage.delete(WEIXIN_OC_QR_EXPIRED_COUNT_KEY);
 }
@@ -94,9 +92,7 @@ export async function getStoredWeixinOcAccountState(
   storage: DurableObjectStorage,
   config: WeixinOcBotConfig
 ): Promise<WeixinOcAccountState> {
-  const stored = await storage.get<Partial<WeixinOcAccountState>>(
-    WEIXIN_OC_ACCOUNT_STATE_KEY
-  );
+  const stored = await storage.get<Partial<WeixinOcAccountState>>(WEIXIN_OC_ACCOUNT_STATE_KEY);
   if (stored) {
     return normalizeRuntimeAccountState(stored);
   }
@@ -123,9 +119,7 @@ export async function recordWeixinOcRuntimeError(
   } satisfies WeixinOcRuntimeStatus);
 }
 
-export async function clearWeixinOcRuntimeError(
-  storage: DurableObjectStorage
-): Promise<void> {
+export async function clearWeixinOcRuntimeError(storage: DurableObjectStorage): Promise<void> {
   await storage.delete(WEIXIN_OC_RUNTIME_STATUS_KEY);
 }
 
@@ -146,9 +140,7 @@ async function withRuntimeAccountState(
   };
 }
 
-function normalizeRuntimeAccountState(
-  state: Partial<WeixinOcAccountState>
-): WeixinOcAccountState {
+function normalizeRuntimeAccountState(state: Partial<WeixinOcAccountState>): WeixinOcAccountState {
   return {
     accountId: stringFromUnknown(state.accountId),
     syncBuf: stringFromUnknown(state.syncBuf) ?? "",
@@ -163,9 +155,6 @@ function stringFromUnknown(value: unknown): string | undefined {
 
 function hasRuntimeAccountState(state: WeixinOcAccountState): boolean {
   return Boolean(
-    state.accountId ||
-      state.syncBuf ||
-      state.baseUrl ||
-      Object.keys(state.contextTokens).length > 0
+    state.accountId || state.syncBuf || state.baseUrl || Object.keys(state.contextTokens).length > 0
   );
 }

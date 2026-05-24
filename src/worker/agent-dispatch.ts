@@ -8,10 +8,7 @@ export type AgentDispatchResult = {
   result?: EnqueueMailboxResult;
 };
 
-export async function enqueueAgentJob(
-  env: Env,
-  job: QueueMessageBody
-): Promise<void> {
+export async function enqueueAgentJob(env: Env, job: QueueMessageBody): Promise<void> {
   await env.AGENT_QUEUE.send(job);
 }
 

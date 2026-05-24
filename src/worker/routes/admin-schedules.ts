@@ -1,10 +1,7 @@
 import { z } from "zod";
 import { jsonResponse, errorResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
-import {
-  createSchedule,
-  listSchedules
-} from "../../storage/repositories/schedules-repository";
+import { createSchedule, listSchedules } from "../../storage/repositories/schedules-repository";
 import { stringifySchedulePayload } from "../../scheduler/schedule-payload";
 import { resolveDueAt } from "../../scheduler/schedule-time";
 import {
@@ -17,7 +14,9 @@ const createScheduleSchema = z
     agentId: z.string().min(1).optional(),
     title: z.string().min(1).optional(),
     text: z.string().min(1),
-    platform: z.enum(["telegram", "qq", "wecom", "weixin_oc", "webhook", "admin", "webui"]).optional(),
+    platform: z
+      .enum(["telegram", "qq", "wecom", "weixin_oc", "webhook", "admin", "webui"])
+      .optional(),
     conversationId: z.string().min(1).optional(),
     actorId: z.string().min(1).optional(),
     actorRole: z.enum(["owner", "admin", "member", "unknown"]).optional(),
@@ -36,10 +35,7 @@ const createScheduleSchema = z
     message: "modelProviderId and modelId must be provided together"
   });
 
-export async function handleAdminSchedules(
-  request: Request,
-  env: Env
-): Promise<Response> {
+export async function handleAdminSchedules(request: Request, env: Env): Promise<Response> {
   if (request.method === "GET") {
     return handleListSchedules(request, env);
   }
@@ -51,19 +47,13 @@ export async function handleAdminSchedules(
   return errorResponse(405, "method_not_allowed", "Method not allowed");
 }
 
-async function handleListSchedules(
-  request: Request,
-  env: Env
-): Promise<Response> {
+async function handleListSchedules(request: Request, env: Env): Promise<Response> {
   const agentId = new URL(request.url).searchParams.get("agentId") ?? undefined;
   const schedules = await listSchedules(env.AGENT_DB, agentId);
   return jsonResponse({ ok: true, schedules });
 }
 
-async function handleCreateSchedule(
-  request: Request,
-  env: Env
-): Promise<Response> {
+async function handleCreateSchedule(request: Request, env: Env): Promise<Response> {
   const parsed = createScheduleSchema.safeParse(await request.json());
   if (!parsed.success) {
     return errorResponse(400, "invalid_payload", parsed.error.message);

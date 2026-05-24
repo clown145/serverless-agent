@@ -23,9 +23,7 @@ export class QqOfficialApiClient {
   private readonly fetcher: typeof fetch;
 
   constructor(private readonly options: QqOfficialApiClientOptions) {
-    this.baseUrl = options.isSandbox
-      ? QQ_OFFICIAL_SANDBOX_API_BASE_URL
-      : QQ_OFFICIAL_API_BASE_URL;
+    this.baseUrl = options.isSandbox ? QQ_OFFICIAL_SANDBOX_API_BASE_URL : QQ_OFFICIAL_API_BASE_URL;
     this.fetcher = options.fetcher ?? ((input, init) => fetch(input, init));
   }
 
@@ -382,9 +380,7 @@ function normalizeGatewayInfo(payload: RawGatewayBotResponse): QqOfficialGateway
 }
 
 function pruneUndefined(input: Record<string, unknown>): Record<string, unknown> {
-  return Object.fromEntries(
-    Object.entries(input).filter(([, value]) => value !== undefined)
-  );
+  return Object.fromEntries(Object.entries(input).filter(([, value]) => value !== undefined));
 }
 
 function randomMessageSeq(): number {
@@ -422,13 +418,8 @@ function isMarkdownRejectedError(error: unknown): boolean {
   );
 }
 
-function qqOfficialApiError(
-  status: number,
-  payload: Record<string, unknown> | undefined
-): string {
+function qqOfficialApiError(status: number, payload: Record<string, unknown> | undefined): string {
   const message = typeof payload?.message === "string" ? payload.message : undefined;
   const code = typeof payload?.code === "number" ? ` ${payload.code}` : "";
-  return message
-    ? `QQ official API error${code}: ${message}`
-    : `QQ official API error ${status}`;
+  return message ? `QQ official API error${code}: ${message}` : `QQ official API error ${status}`;
 }

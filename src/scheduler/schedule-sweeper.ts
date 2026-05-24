@@ -13,10 +13,7 @@ export type SweepResult = {
   dispatched: number;
 };
 
-export async function sweepDueSchedules(
-  env: Env,
-  scheduledTime: string
-): Promise<SweepResult> {
+export async function sweepDueSchedules(env: Env, scheduledTime: string): Promise<SweepResult> {
   const scannedAt = nowIso();
   const due = await listDueSchedules(env.AGENT_DB, scheduledTime);
   let dispatched = 0;

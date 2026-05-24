@@ -1,21 +1,13 @@
-import {
-  createStandardSkill,
-  listSkills,
-  upsertStandardSkill
-} from "../../skills/skill-service";
+import { createStandardSkill, listSkills, upsertStandardSkill } from "../../skills/skill-service";
 import { ensureBuiltinSkills } from "../../skills/builtin/provision";
 import { errorResponse, jsonResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
 import { createSkillSchema, zodMessage } from "./skills/skill-schemas";
 
-export async function handleAdminSkills(
-  request: Request,
-  env: Env
-): Promise<Response> {
+export async function handleAdminSkills(request: Request, env: Env): Promise<Response> {
   if (request.method === "GET") {
-    const agentId = new URL(request.url).searchParams.get("agentId") ??
-      env.DEFAULT_AGENT_ID ??
-      "default";
+    const agentId =
+      new URL(request.url).searchParams.get("agentId") ?? env.DEFAULT_AGENT_ID ?? "default";
     await ensureBuiltinSkills(env, agentId);
     return jsonResponse({ ok: true, skills: await listSkills(env, agentId) });
   }

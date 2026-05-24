@@ -11,8 +11,7 @@ import { fetchQqOfficialGateway } from "./gateway-object";
 export function createQqOfficialOutboundAdapter(env: Env): PlatformOutboundAdapter {
   return {
     platform: "qq",
-    sendText: (input) =>
-      sendQqOfficialText(env, input.agentId, input.conversationId, input.text),
+    sendText: (input) => sendQqOfficialText(env, input.agentId, input.conversationId, input.text),
     sendFile: (input) =>
       sendQqOfficialFile(env, input.agentId, input.conversationId, input.file, {
         caption: input.caption

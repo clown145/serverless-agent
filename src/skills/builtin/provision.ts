@@ -6,10 +6,7 @@ import {
 } from "../../storage/repositories/vfs-repository";
 import { SKILL_CREATOR_ID, SKILL_CREATOR_MARKDOWN } from "./skill-creator";
 
-export async function ensureBuiltinSkills(
-  env: Env,
-  agentId: string
-): Promise<void> {
+export async function ensureBuiltinSkills(env: Env, agentId: string): Promise<void> {
   await ensureSkillCreator(env, agentId);
 }
 

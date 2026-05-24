@@ -54,9 +54,7 @@ export async function createMcpServerRecord(
   };
 }
 
-export async function listMcpServerRecords(
-  db: D1Database
-): Promise<McpServerRecord[]> {
+export async function listMcpServerRecords(db: D1Database): Promise<McpServerRecord[]> {
   const result = await db
     .prepare("SELECT * FROM mcp_servers WHERE status != 'deleted' ORDER BY created_at DESC")
     .all<McpServerRow>();
@@ -110,10 +108,7 @@ export async function recordMcpServerDiscovery(
     .run();
 }
 
-export async function deleteMcpServerRecord(
-  db: D1Database,
-  id: string
-): Promise<boolean> {
+export async function deleteMcpServerRecord(db: D1Database, id: string): Promise<boolean> {
   const result = await db
     .prepare("UPDATE mcp_servers SET status = 'deleted', updated_at = ? WHERE id = ?")
     .bind(nowIso(), id)

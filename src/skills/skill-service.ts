@@ -42,10 +42,7 @@ export async function listSkills(env: Env, agentId: string) {
   return listSkillCatalog(env, agentId);
 }
 
-export async function upsertStandardSkill(
-  env: Env,
-  input: UpsertSkillInput
-) {
+export async function upsertStandardSkill(env: Env, input: UpsertSkillInput) {
   assertSkillId(input.skillId);
   validateSkillMarkdown(input.content);
 
@@ -90,10 +87,7 @@ export async function createStandardSkill(
   });
 }
 
-export async function updateSkillFile(
-  env: Env,
-  input: UpdateSkillFileInput
-) {
+export async function updateSkillFile(env: Env, input: UpdateSkillFileInput) {
   assertSkillId(input.skillId);
   const path = skillFilePath(input.skillId, input.relativePath);
   if (path === `${skillBasePath(input.skillId)}/SKILL.md`) {

@@ -6,15 +6,15 @@
 
 ## 文件职责
 
-| 文件 | 职责 |
-| --- | --- |
-| `http-client.ts` | initialize、`tools/list` discovery 和 `tools/call`。 |
+| 文件                | 职责                                                       |
+| ------------------- | ---------------------------------------------------------- |
+| `http-client.ts`    | initialize、`tools/list` discovery 和 `tools/call`。       |
 | `http-transport.ts` | Streamable HTTP 上的 JSON-RPC，包括 SSE response parsing。 |
-| `adapter.ts` | 将发现的 MCP tools 包装为 registry tools。 |
-| `credential.ts` | MCP server credentials 加密和解密。 |
-| `names.ts` | MCP tool name 映射。 |
-| `result.ts` | MCP result 到内部 result 的转换。 |
-| `types.ts` | 协议侧 MCP tool/result 类型。 |
+| `adapter.ts`        | 将发现的 MCP tools 包装为 registry tools。                 |
+| `credential.ts`     | MCP server credentials 加密和解密。                        |
+| `names.ts`          | MCP tool name 映射。                                       |
+| `result.ts`         | MCP result 到内部 result 的转换。                          |
+| `types.ts`          | 协议侧 MCP tool/result 类型。                              |
 
 ## 当前状态
 

@@ -75,10 +75,7 @@ export function createPendingActionContinuationMessage(
   };
 }
 
-function continuationText(
-  action: PendingActionRecord,
-  result: ToolResult
-): string {
+function continuationText(action: PendingActionRecord, result: ToolResult): string {
   return promptText("tasks/pending-action-continuation", {
     tool_name: action.toolName,
     action_id: action.id,
@@ -104,12 +101,7 @@ function normalizePlatform(platform: string | undefined): Platform | undefined {
 }
 
 function normalizeSenderRole(role: string | undefined): SenderRole {
-  if (
-    role === "owner" ||
-    role === "admin" ||
-    role === "member" ||
-    role === "unknown"
-  ) {
+  if (role === "owner" || role === "admin" || role === "member" || role === "unknown") {
     return role;
   }
 

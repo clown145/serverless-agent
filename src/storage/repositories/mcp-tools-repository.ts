@@ -2,11 +2,7 @@ import { createId } from "../../shared/ids";
 import { nowIso } from "../../shared/time";
 import { mcpToolInternalName } from "../../tools/mcp/names";
 import type { McpTool } from "../../tools/mcp/types";
-import {
-  mapMcpToolRow,
-  type McpToolRecord,
-  type McpToolRow
-} from "./mcp-types";
+import { mapMcpToolRow, type McpToolRecord, type McpToolRow } from "./mcp-types";
 
 export async function upsertMcpToolCatalog(
   db: D1Database,
@@ -18,9 +14,7 @@ export async function upsertMcpToolCatalog(
   const now = nowIso();
   const existingTools = await listMcpToolCatalog(db, input.serverId);
   const enabledToolNames = new Set(
-    existingTools
-      .filter((tool) => tool.status === "enabled")
-      .map((tool) => tool.toolName)
+    existingTools.filter((tool) => tool.status === "enabled").map((tool) => tool.toolName)
   );
 
   await db
@@ -95,9 +89,7 @@ export async function listMcpToolCatalog(
   return (result.results ?? []).map(mapMcpToolRow);
 }
 
-export async function listEnabledMcpToolCatalog(
-  db: D1Database
-): Promise<McpToolRecord[]> {
+export async function listEnabledMcpToolCatalog(db: D1Database): Promise<McpToolRecord[]> {
   const result = await db
     .prepare(
       `SELECT * FROM mcp_tool_catalog

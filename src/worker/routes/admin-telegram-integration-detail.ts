@@ -12,10 +12,7 @@ import {
   testTelegramIntegration
 } from "./platforms/telegram-admin-actions";
 import { toTelegramIntegrationDto } from "./platforms/telegram-dto";
-import {
-  updateTelegramIntegrationSchema,
-  zodMessage
-} from "./platforms/telegram-schemas";
+import { updateTelegramIntegrationSchema, zodMessage } from "./platforms/telegram-schemas";
 
 export async function handleAdminTelegramIntegrationDetail(
   request: Request,

@@ -2,20 +2,10 @@ import type { InternalMessage } from "../../shared/types/internal-message";
 import type { Platform } from "../../shared/types/internal-message";
 import { createId } from "../../shared/ids";
 import { nowIso } from "../../shared/time";
-import {
-  mapMessageRow,
-  type ConversationMessage,
-  type MessageRow
-} from "./message-types";
-import {
-  insertMessageAttachments,
-  listMessageAttachments
-} from "./message-attachments-repository";
+import { mapMessageRow, type ConversationMessage, type MessageRow } from "./message-types";
+import { insertMessageAttachments, listMessageAttachments } from "./message-attachments-repository";
 
-export async function insertMessage(
-  db: D1Database,
-  message: InternalMessage
-): Promise<void> {
+export async function insertMessage(db: D1Database, message: InternalMessage): Promise<void> {
   await db
     .prepare(
       `INSERT OR IGNORE INTO messages (
@@ -42,7 +32,10 @@ export async function insertMessage(
     messageId: message.id,
     agentId: message.agentId,
     conversationId: message.conversationId,
-    attachments: message.attachments.map(({ dataBase64, ...attachment }) => attachment)
+    attachments: message.attachments.map((attachment) => {
+      const { dataBase64: _dataBase64, ...persistedAttachment } = attachment;
+      return persistedAttachment;
+    })
   });
 }
 
@@ -145,8 +138,13 @@ export async function listConversationMessages(
   return messages.map((message) => ({
     ...message,
     attachments: (byMessage.get(message.id) ?? []).map(
-      ({ messageId: _messageId, agentId: _agentId, conversationId: _conversationId, createdAt: _createdAt, ...attachment }) =>
-        attachment
+      ({
+        messageId: _messageId,
+        agentId: _agentId,
+        conversationId: _conversationId,
+        createdAt: _createdAt,
+        ...attachment
+      }) => attachment
     )
   }));
 }

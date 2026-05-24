@@ -50,7 +50,9 @@ export function RunsPanel({ client, notify, selectedRunId }: RunsPanelProps) {
     client
       .getRun(activeRunId)
       .then((result) => setDetails(result))
-      .catch((error) => notify(error instanceof Error ? error.message : "Failed to load run", "error"));
+      .catch((error) =>
+        notify(error instanceof Error ? error.message : "Failed to load run", "error")
+      );
   }, [activeRunId]);
 
   return (
@@ -58,7 +60,11 @@ export function RunsPanel({ client, notify, selectedRunId }: RunsPanelProps) {
       <div className="list-pane">
         <header className="panel-header compact">
           <h1>{t("runs.title")}</h1>
-          <ToolbarButton label={t("common.refresh")} icon={RefreshCw} onClick={() => void loadRuns()} />
+          <ToolbarButton
+            label={t("common.refresh")}
+            icon={RefreshCw}
+            onClick={() => void loadRuns()}
+          />
         </header>
         <div className="item-list">
           {runs.map((run) => (
@@ -110,11 +116,15 @@ export function RunsPanel({ client, notify, selectedRunId }: RunsPanelProps) {
                   <summary>
                     <span>{String(toolCall.tool_name)}</span>
                     <StatusBadge value={String(toolCall.status ?? "unknown")} />
-                    {toolCall.latency_ms !== undefined && <span>{String(toolCall.latency_ms)}ms</span>}
+                    {toolCall.latency_ms !== undefined && (
+                      <span>{String(toolCall.latency_ms)}ms</span>
+                    )}
                   </summary>
                   <div className="detail-grid">
                     <JsonBlock value={toolCall.input ?? toolCall.input_json} />
-                    <JsonBlock value={toolCall.output ?? toolCall.output_json ?? toolCall.error_code} />
+                    <JsonBlock
+                      value={toolCall.output ?? toolCall.output_json ?? toolCall.error_code}
+                    />
                   </div>
                 </details>
               ))}

@@ -128,11 +128,7 @@ export async function runScheduleNowFromTool(
   }
 
   const dispatchedAt = nowIso();
-  const updated = await markScheduleManualDispatch(
-    context.env.AGENT_DB,
-    scheduleId,
-    dispatchedAt
-  );
+  const updated = await markScheduleManualDispatch(context.env.AGENT_DB, scheduleId, dispatchedAt);
   const job = await enqueueScheduleFire(context.env, updated ?? schedule, {
     scheduledTime: dispatchedAt,
     receivedAt: dispatchedAt

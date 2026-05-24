@@ -1,5 +1,5 @@
 import { RefreshCw } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ModelCatalogItem, ModelProvider, Schedule } from "../../api/types";
 import { EmptyState } from "../EmptyState";
 import { useI18n } from "../i18n/I18nProvider";
@@ -10,9 +10,8 @@ import type { ScheduleFormState } from "./schedules/types";
 import type { PanelProps } from "./types";
 import type { ViewId } from "../views";
 
-const DEFAULT_FORM: ScheduleFormState = {
+const BASE_FORM: Omit<ScheduleFormState, "text"> = {
   title: "",
-  text: "Search today's product announcements and summarize the updates.",
   timeMode: "delay",
   delaySeconds: 300,
   dueAt: "",
@@ -32,10 +31,12 @@ type SchedulesPanelProps = PanelProps & {
 
 export function SchedulesPanel({ client, notify, onNavigate }: SchedulesPanelProps) {
   const { t } = useI18n();
+  const exampleText = t("schedules.exampleText");
+  const previousExampleText = useRef(exampleText);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [providers, setProviders] = useState<ModelProvider[]>([]);
   const [models, setModels] = useState<ModelCatalogItem[]>([]);
-  const [form, setForm] = useState<ScheduleFormState>(DEFAULT_FORM);
+  const [form, setForm] = useState<ScheduleFormState>(() => createDefaultForm(exampleText));
 
   async function load() {
     try {
@@ -62,9 +63,8 @@ export function SchedulesPanel({ client, notify, onNavigate }: SchedulesPanelPro
         actorRole: "owner",
         modelProviderId: form.modelId ? form.modelProviderId : undefined,
         modelId: form.modelId || undefined,
-        dueAt: form.timeMode === "dueAt" && form.dueAt
-          ? new Date(form.dueAt).toISOString()
-          : undefined,
+        dueAt:
+          form.timeMode === "dueAt" && form.dueAt ? new Date(form.dueAt).toISOString() : undefined,
         delaySeconds: form.timeMode === "delay" ? form.delaySeconds : undefined,
         intervalSeconds: form.intervalSeconds > 0 ? form.intervalSeconds : undefined,
         maxAttempts: form.maxAttempts,
@@ -94,6 +94,17 @@ export function SchedulesPanel({ client, notify, onNavigate }: SchedulesPanelPro
   useEffect(() => {
     void load();
   }, []);
+
+  useEffect(() => {
+    if (previousExampleText.current === exampleText) {
+      return;
+    }
+
+    setForm((current) =>
+      current.text === previousExampleText.current ? { ...current, text: exampleText } : current
+    );
+    previousExampleText.current = exampleText;
+  }, [exampleText]);
 
   return (
     <section className="panel">
@@ -149,4 +160,11 @@ export function SchedulesPanel({ client, notify, onNavigate }: SchedulesPanelPro
       </div>
     </section>
   );
+}
+
+function createDefaultForm(text: string): ScheduleFormState {
+  return {
+    ...BASE_FORM,
+    text
+  };
 }

@@ -14,13 +14,7 @@ type ScheduleRowProps = {
   onRunNow: (id: string) => Promise<void>;
 };
 
-export function ScheduleRow({
-  schedule,
-  onCancel,
-  onPause,
-  onResume,
-  onRunNow
-}: ScheduleRowProps) {
+export function ScheduleRow({ schedule, onCancel, onPause, onResume, onRunNow }: ScheduleRowProps) {
   const { t } = useI18n();
   const payload = parsePayload(schedule.payloadJson);
   const canPause = schedule.status === "active";
@@ -34,14 +28,33 @@ export function ScheduleRow({
         <p>{payload.text}</p>
         <div className="tool-meta">
           <StatusBadge value={schedule.status} />
-          <span>{t("schedules.next")}: {schedule.dueAt}</span>
-          <span>{t("schedules.interval")}: {schedule.intervalSeconds || t("status.none")}</span>
-          <span>{t("schedules.platform")}: {schedule.platform ?? payload.platform ?? "admin"}</span>
-          <span>{t("schedules.conversation")}: {schedule.conversationId ?? payload.conversationId ?? "admin:schedule"}</span>
-          <span>{t("schedules.attempts")}: {schedule.attemptCount}/{schedule.maxAttempts}</span>
+          <span>
+            {t("schedules.next")}: {schedule.dueAt}
+          </span>
+          <span>
+            {t("schedules.interval")}: {schedule.intervalSeconds || t("status.none")}
+          </span>
+          <span>
+            {t("schedules.platform")}: {schedule.platform ?? payload.platform ?? "admin"}
+          </span>
+          <span>
+            {t("schedules.conversation")}:{" "}
+            {schedule.conversationId ?? payload.conversationId ?? "admin:schedule"}
+          </span>
+          <span>
+            {t("schedules.attempts")}: {schedule.attemptCount}/{schedule.maxAttempts}
+          </span>
         </div>
-        {schedule.lastRunAt ? <span>{t("schedules.lastRun")}: {schedule.lastRunAt}</span> : null}
-        {schedule.lastRunId ? <span>{t("schedules.lastRunId")}: {schedule.lastRunId}</span> : null}
+        {schedule.lastRunAt ? (
+          <span>
+            {t("schedules.lastRun")}: {schedule.lastRunAt}
+          </span>
+        ) : null}
+        {schedule.lastRunId ? (
+          <span>
+            {t("schedules.lastRunId")}: {schedule.lastRunId}
+          </span>
+        ) : null}
         {schedule.lastError ? <span className="danger-text">{schedule.lastError}</span> : null}
       </div>
       <div className="schedule-actions">

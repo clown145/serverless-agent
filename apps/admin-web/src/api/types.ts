@@ -292,15 +292,25 @@ export type ModelSettings = {
 
 export type ModelRole = "default" | "summary" | "vision";
 
-export type ModelRoleSettings = Partial<Record<ModelRole, {
-  providerId?: string;
-  modelId?: string;
-}>>;
+export type ModelRoleSettings = Partial<
+  Record<
+    ModelRole,
+    {
+      providerId?: string;
+      modelId?: string;
+    }
+  >
+>;
 
-export type ModelRoleSettingsUpdate = Partial<Record<ModelRole, {
-  providerId: string;
-  modelId: string;
-} | null>>;
+export type ModelRoleSettingsUpdate = Partial<
+  Record<
+    ModelRole,
+    {
+      providerId: string;
+      modelId: string;
+    } | null
+  >
+>;
 
 export type AgentModelConfig = {
   imageCaptionEnabled: boolean;
@@ -322,14 +332,7 @@ export type SetupStatus = {
 
 export type DiagnosticCheck = {
   id: string;
-  category:
-    | "runtime"
-    | "model"
-    | "search"
-    | "platforms"
-    | "workspace"
-    | "mcp"
-    | "activity";
+  category: "runtime" | "model" | "search" | "platforms" | "workspace" | "mcp" | "activity";
   label: string;
   status: "ok" | "warn" | "error";
   detail: string;

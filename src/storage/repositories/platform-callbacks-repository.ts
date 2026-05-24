@@ -68,10 +68,7 @@ export async function getPlatformCallback(
   return row ? mapPlatformCallbackRow(row) : undefined;
 }
 
-export async function markPlatformCallbackUsed(
-  db: D1Database,
-  id: string
-): Promise<boolean> {
+export async function markPlatformCallbackUsed(db: D1Database, id: string): Promise<boolean> {
   const now = nowIso();
   const result = await db
     .prepare(
@@ -85,10 +82,7 @@ export async function markPlatformCallbackUsed(
   return Boolean(result.meta.changes);
 }
 
-export async function expirePlatformCallback(
-  db: D1Database,
-  id: string
-): Promise<void> {
+export async function expirePlatformCallback(db: D1Database, id: string): Promise<void> {
   const now = nowIso();
   await db
     .prepare(

@@ -38,18 +38,18 @@
 
 ## 内置工具域
 
-| 路径 | 工具域 |
-| --- | --- |
-| `vfs/` | 虚拟文件系统工具。 |
-| `messaging/` | 平台消息发送工具。 |
-| `schedule/` | 未来任务和周期任务工具。 |
-| `search/` | Web search provider 工具。 |
-| `web/` | 页面读取和正文抽取工具。 |
-| `http/` | 高权限结构化 HTTP 请求工具。 |
-| `skills/` | Skill 管理工具。 |
-| `mcp/` | MCP server 工具适配。 |
-| `email/` | 邮件工具边界。 |
-| `git/` | Git provider API 工具边界。 |
+| 路径         | 工具域                       |
+| ------------ | ---------------------------- |
+| `vfs/`       | 虚拟文件系统工具。           |
+| `messaging/` | 平台消息发送工具。           |
+| `schedule/`  | 未来任务和周期任务工具。     |
+| `search/`    | Web search provider 工具。   |
+| `web/`       | 页面读取和正文抽取工具。     |
+| `http/`      | 高权限结构化 HTTP 请求工具。 |
+| `skills/`    | Skill 管理工具。             |
+| `mcp/`       | MCP server 工具适配。        |
+| `email/`     | 邮件工具边界。               |
+| `git/`       | Git provider API 工具边界。  |
 
 ## 相关文档
 

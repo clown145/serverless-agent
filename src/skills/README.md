@@ -21,13 +21,13 @@
 
 ## 文件职责
 
-| 文件 | 职责 |
-| --- | --- |
-| `skill-frontmatter.ts` | 解析和生成标准 frontmatter。 |
-| `skill-loader.ts` | 加载完整 skill 和短 catalog。 |
-| `skill-selector.ts` | 处理显式 skill 选择。 |
-| `skill-service.ts` | Skill 文件管理服务。 |
-| `builtin/` | 内置 skill 内容。 |
+| 文件                   | 职责                          |
+| ---------------------- | ----------------------------- |
+| `skill-frontmatter.ts` | 解析和生成标准 frontmatter。  |
+| `skill-loader.ts`      | 加载完整 skill 和短 catalog。 |
+| `skill-selector.ts`    | 处理显式 skill 选择。         |
+| `skill-service.ts`     | Skill 文件管理服务。          |
+| `builtin/`             | 内置 skill 内容。             |
 
 ## 边界
 

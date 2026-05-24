@@ -16,10 +16,7 @@ export type SearchVfsInput = {
   limit?: number;
 };
 
-export async function searchVfs(
-  env: Env,
-  input: SearchVfsInput
-): Promise<VfsSearchMatch[]> {
+export async function searchVfs(env: Env, input: SearchVfsInput): Promise<VfsSearchMatch[]> {
   const path = normalizeVfsPath(input.path);
   const query = input.query.trim();
   const limit = Math.min(Math.max(input.limit ?? 20, 1), 100);

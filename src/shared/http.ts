@@ -8,11 +8,7 @@ export function jsonResponse(data: unknown, init: ResponseInit = {}): Response {
   });
 }
 
-export function errorResponse(
-  status: number,
-  code: string,
-  message: string
-): Response {
+export function errorResponse(status: number, code: string, message: string): Response {
   return jsonResponse(
     {
       ok: false,

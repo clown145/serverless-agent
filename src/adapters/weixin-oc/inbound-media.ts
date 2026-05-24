@@ -93,10 +93,7 @@ function buildCdnDownloadUrl(cdnBaseUrl: string, media: WeixinOcMediaRef): strin
   return url.toString();
 }
 
-function parseWeixinOcAesKey(input: {
-  aeskey?: string;
-  media: WeixinOcMediaRef;
-}): Uint8Array {
+function parseWeixinOcAesKey(input: { aeskey?: string; media: WeixinOcMediaRef }): Uint8Array {
   if (input.aeskey?.trim()) {
     return hexToBytes(input.aeskey.trim());
   }

@@ -52,7 +52,11 @@ export class WecomApiClient {
     assertWecomOk(payload, "Failed to get WeCom access token");
 
     if (!payload.access_token) {
-      throw new WecomApiError("WeCom access token response is missing access_token", payload.errcode, payload);
+      throw new WecomApiError(
+        "WeCom access token response is missing access_token",
+        payload.errcode,
+        payload
+      );
     }
 
     this.accessToken = {
@@ -86,15 +90,12 @@ export class WecomApiClient {
     cursor?: string;
     limit?: number;
   }): Promise<WecomKfSyncMessageResponse> {
-    const payload = await this.postWithAccessToken<WecomKfSyncMessageResponse>(
-      "kf/sync_msg",
-      {
-        token: input.token ?? "",
-        open_kfid: input.openKfId,
-        cursor: input.cursor ?? "",
-        limit: input.limit ?? 1000
-      }
-    );
+    const payload = await this.postWithAccessToken<WecomKfSyncMessageResponse>("kf/sync_msg", {
+      token: input.token ?? "",
+      open_kfid: input.openKfId,
+      cursor: input.cursor ?? "",
+      limit: input.limit ?? 1000
+    });
     assertWecomOk(payload, "Failed to sync WeCom customer service messages");
     return payload;
   }
@@ -117,10 +118,7 @@ export class WecomApiClient {
       body.msgid = input.msgId;
     }
 
-    const payload = await this.postWithAccessToken<WecomKfSendMessageResponse>(
-      "kf/send_msg",
-      body
-    );
+    const payload = await this.postWithAccessToken<WecomKfSendMessageResponse>("kf/send_msg", body);
     assertWecomOk(payload, "Failed to send WeCom customer service text");
     return payload;
   }
@@ -132,10 +130,7 @@ export class WecomApiClient {
     return this.fetchJson<T>(url.toString());
   }
 
-  private async postWithAccessToken<T>(
-    path: string,
-    body: Record<string, unknown>
-  ): Promise<T> {
+  private async postWithAccessToken<T>(path: string, body: Record<string, unknown>): Promise<T> {
     const accessToken = await this.getAccessToken();
     const url = new URL(path, this.apiBaseUrl);
     url.searchParams.set("access_token", accessToken);

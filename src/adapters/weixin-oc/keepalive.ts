@@ -9,12 +9,9 @@ export async function connectConfiguredWeixinOcGateways(
   const results = [];
 
   for (const bot of bots) {
-    const response = await fetchWeixinOcGatewayForIntegration(
-      env,
-      bot.integrationId,
-      "/connect",
-      { method: "POST" }
-    );
+    const response = await fetchWeixinOcGatewayForIntegration(env, bot.integrationId, "/connect", {
+      method: "POST"
+    });
     results.push({
       agentId: bot.agentId,
       integrationId: bot.integrationId,

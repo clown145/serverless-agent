@@ -22,9 +22,8 @@ export async function deleteVfsEntry(
   }
 
   const entry = await getVfsEntry(env.AGENT_DB, input.agentId, path);
-  const children = entry.kind === "directory"
-    ? await listDirectChildren(env.AGENT_DB, input.agentId, path)
-    : [];
+  const children =
+    entry.kind === "directory" ? await listDirectChildren(env.AGENT_DB, input.agentId, path) : [];
 
   if (children.length > 0 && !input.recursive) {
     throw vfsConflict(`Directory is not empty: ${path}`);
@@ -37,9 +36,7 @@ export async function deleteVfsEntry(
 
   for (const deletedPath of deletedPaths) {
     await deleteTextContent(env.AGENT_DB, input.agentId, deletedPath);
-    await env.AGENT_DB.prepare(
-      "DELETE FROM vfs_entries WHERE agent_id = ? AND path = ?"
-    )
+    await env.AGENT_DB.prepare("DELETE FROM vfs_entries WHERE agent_id = ? AND path = ?")
       .bind(input.agentId, deletedPath)
       .run();
   }

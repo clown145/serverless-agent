@@ -12,10 +12,7 @@ export function filterToolsForSkill(
   return tools.filter((tool) => skillAllowsToolDefinition(tool, selectedSkill));
 }
 
-export function canUseToolWithSkill(
-  _toolName: string,
-  selectedSkill?: SelectedSkill
-): boolean {
+export function canUseToolWithSkill(_toolName: string, _selectedSkill?: SelectedSkill): boolean {
   return true;
 }
 

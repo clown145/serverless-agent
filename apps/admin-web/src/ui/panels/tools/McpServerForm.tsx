@@ -14,11 +14,7 @@ type McpServerFormProps = {
   onSubmit: () => void;
 };
 
-export function McpServerForm({
-  draft,
-  onDraftChange,
-  onSubmit
-}: McpServerFormProps) {
+export function McpServerForm({ draft, onDraftChange, onSubmit }: McpServerFormProps) {
   const { t } = useI18n();
 
   return (
@@ -28,7 +24,7 @@ export function McpServerForm({
         <input
           value={draft.name}
           onChange={(event) => onDraftChange({ ...draft, name: event.target.value })}
-          placeholder="Filesystem"
+          placeholder={t("tools.mcpServerNamePlaceholder")}
         />
       </label>
       <label>
@@ -36,7 +32,7 @@ export function McpServerForm({
         <input
           value={draft.url}
           onChange={(event) => onDraftChange({ ...draft, url: event.target.value })}
-          placeholder="https://example.com/mcp"
+          placeholder={t("tools.mcpUrlPlaceholder")}
         />
       </label>
       <label>
@@ -61,7 +57,7 @@ export function McpServerForm({
           value={draft.authHeader}
           disabled={draft.authType !== "api-key-header"}
           onChange={(event) => onDraftChange({ ...draft, authHeader: event.target.value })}
-          placeholder="X-API-Key"
+          placeholder={t("tools.authHeaderPlaceholder")}
         />
       </label>
       <label>

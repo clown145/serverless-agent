@@ -29,4 +29,3 @@ export const fetchPageInputJsonSchema = {
   required: ["url"],
   additionalProperties: false
 } as const;
-

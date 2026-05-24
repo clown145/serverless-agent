@@ -7,9 +7,7 @@ import { errorResponse, jsonResponse } from "../../../shared/http";
 import type { Env } from "../../../shared/types/env";
 import { toWeixinOcIntegrationDto } from "./weixin-oc-dto";
 
-type WeixinOcIntegration = NonNullable<
-  Awaited<ReturnType<typeof getPlatformIntegrationRecord>>
->;
+type WeixinOcIntegration = NonNullable<Awaited<ReturnType<typeof getPlatformIntegrationRecord>>>;
 
 export async function connectWeixinOcIntegration(
   env: Env,
@@ -36,12 +34,9 @@ export async function getWeixinOcIntegrationStatus(
   env: Env,
   integration: WeixinOcIntegration
 ): Promise<Response> {
-  const response = await fetchWeixinOcGatewayForIntegration(
-    env,
-    integration.id,
-    "/status",
-    { method: "GET" }
-  );
+  const response = await fetchWeixinOcGatewayForIntegration(env, integration.id, "/status", {
+    method: "GET"
+  });
   const payload = await response.json().catch(() => ({}));
   return jsonResponse({
     ok: response.ok,
@@ -58,12 +53,9 @@ async function gatewayAction(
   errorCode: string
 ): Promise<Response> {
   try {
-    const response = await fetchWeixinOcGatewayForIntegration(
-      env,
-      integration.id,
-      pathname,
-      { method }
-    );
+    const response = await fetchWeixinOcGatewayForIntegration(env, integration.id, pathname, {
+      method
+    });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) {
       const message = JSON.stringify(payload);

@@ -1,6 +1,7 @@
 import type { Env } from "../../shared/types/env";
 import { nowIso } from "../../shared/time";
 import { buildVfsBlobKey } from "./blob-keys";
+import type { BlobStorage } from "../../storage/blob/types";
 import { deleteTextContent, readTextContent, upsertTextContent } from "./content-store";
 import { upsertFileEntry } from "./file-entry-writer";
 import { insertFileRevision } from "./revision-store";
@@ -20,10 +21,7 @@ export type PutVfsFileInput = {
   createdBy: string;
 };
 
-export async function putVfsFile(
-  env: Env,
-  input: PutVfsFileInput
-): Promise<VfsEntry> {
+export async function putVfsFile(env: Env, input: PutVfsFileInput): Promise<VfsEntry> {
   const path = normalizeVfsPath(input.path);
   if (isRootPath(path)) {
     throw vfsInvalid("Cannot write the VFS root directory as a file");
@@ -33,13 +31,8 @@ export async function putVfsFile(
   const size = new TextEncoder().encode(input.content).byteLength;
   const checksum = await sha256Hex(input.content);
   const mimeType = input.mimeType ?? "text/plain; charset=utf-8";
-  const storageKind: VfsStorageKind = shouldStoreTextInD1(size)
-    ? "d1_text"
-    : "r2_blob";
-  const r2Key =
-    storageKind === "r2_blob"
-      ? buildVfsBlobKey(input.agentId, checksum)
-      : undefined;
+  const storageKind: VfsStorageKind = shouldStoreTextInD1(size) ? "d1_text" : "r2_blob";
+  const r2Key = storageKind === "r2_blob" ? buildVfsBlobKey(input.agentId, checksum) : undefined;
 
   await ensureParentDirectories(env.AGENT_DB, {
     agentId: input.agentId,
@@ -54,11 +47,32 @@ export async function putVfsFile(
   }
 
   if (r2Key) {
-    await createBlobStorage(env).put(r2Key, input.content, { contentType: mimeType });
+    const blobStorage = createBlobStorage(env);
+    await blobStorage.put(r2Key, input.content, { contentType: mimeType });
+    try {
+      await writeVfsFileMetadata(env, {
+        agentId: input.agentId,
+        path,
+        storageKind,
+        r2Key,
+        mimeType,
+        size,
+        checksum,
+        version: existing ? existing.version + 1 : 1,
+        content: input.content,
+        createdBy: input.createdBy,
+        now
+      });
+    } catch (error) {
+      await cleanupUnreferencedBlob(env.AGENT_DB, blobStorage, input.agentId, r2Key);
+      throw error;
+    }
+
+    return await getVfsEntry(env.AGENT_DB, input.agentId, path);
   }
 
   const version = existing ? existing.version + 1 : 1;
-  await upsertFileEntry(env.AGENT_DB, {
+  await writeVfsFileMetadata(env, {
     agentId: input.agentId,
     path,
     storageKind,
@@ -67,35 +81,7 @@ export async function putVfsFile(
     size,
     checksum,
     version,
-    createdBy: input.createdBy,
-    now
-  });
-
-  if (storageKind === "d1_text") {
-    await upsertTextContent(env.AGENT_DB, {
-      agentId: input.agentId,
-      path,
-      content: input.content,
-      mimeType,
-      size,
-      checksum,
-      version,
-      now
-    });
-  } else {
-    await deleteTextContent(env.AGENT_DB, input.agentId, path);
-  }
-
-  await insertFileRevision(env.AGENT_DB, {
-    agentId: input.agentId,
-    path,
-    storageKind,
-    r2Key,
-    content: storageKind === "d1_text" ? input.content : undefined,
-    mimeType,
-    size,
-    checksum,
-    version,
+    content: input.content,
     createdBy: input.createdBy,
     now
   });
@@ -103,11 +89,87 @@ export async function putVfsFile(
   return await getVfsEntry(env.AGENT_DB, input.agentId, path);
 }
 
-export async function getVfsFile(
+async function writeVfsFileMetadata(
   env: Env,
+  input: {
+    agentId: string;
+    path: string;
+    storageKind: VfsStorageKind;
+    r2Key?: string;
+    mimeType: string;
+    size: number;
+    checksum: string;
+    version: number;
+    content: string;
+    createdBy: string;
+    now: string;
+  }
+): Promise<void> {
+  await upsertFileEntry(env.AGENT_DB, {
+    agentId: input.agentId,
+    path: input.path,
+    storageKind: input.storageKind,
+    r2Key: input.r2Key,
+    mimeType: input.mimeType,
+    size: input.size,
+    checksum: input.checksum,
+    version: input.version,
+    createdBy: input.createdBy,
+    now: input.now
+  });
+
+  if (input.storageKind === "d1_text") {
+    await upsertTextContent(env.AGENT_DB, {
+      agentId: input.agentId,
+      path: input.path,
+      content: input.content,
+      mimeType: input.mimeType,
+      size: input.size,
+      checksum: input.checksum,
+      version: input.version,
+      now: input.now
+    });
+  } else {
+    await deleteTextContent(env.AGENT_DB, input.agentId, input.path);
+  }
+
+  await insertFileRevision(env.AGENT_DB, {
+    agentId: input.agentId,
+    path: input.path,
+    storageKind: input.storageKind,
+    r2Key: input.r2Key,
+    content: input.storageKind === "d1_text" ? input.content : undefined,
+    mimeType: input.mimeType,
+    size: input.size,
+    checksum: input.checksum,
+    version: input.version,
+    createdBy: input.createdBy,
+    now: input.now
+  });
+}
+
+async function cleanupUnreferencedBlob(
+  db: D1Database,
+  blobStorage: BlobStorage,
   agentId: string,
-  path: string
-): Promise<VfsFile> {
+  r2Key: string
+): Promise<void> {
+  const row = await db
+    .prepare(
+      `SELECT r2_key FROM vfs_entries WHERE agent_id = ? AND r2_key = ?
+       UNION ALL
+       SELECT r2_key FROM vfs_revisions WHERE agent_id = ? AND r2_key = ?
+       LIMIT 1`
+    )
+    .bind(agentId, r2Key, agentId, r2Key)
+    .first<{ r2_key: string }>();
+
+  if (!row) {
+    await blobStorage.delete(r2Key).catch(() => undefined);
+  }
+}
+
+export async function getVfsFile(env: Env, agentId: string, path: string): Promise<VfsFile> {
   const normalized = normalizeVfsPath(path);
   const entry = await findVfsEntry(env.AGENT_DB, agentId, normalized);
 

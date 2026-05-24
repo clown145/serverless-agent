@@ -1,8 +1,5 @@
 import type { Env } from "../shared/types/env";
-import {
-  getVfsFile,
-  listVfsEntries
-} from "../storage/repositories/vfs-repository";
+import { getVfsFile, listVfsEntries } from "../storage/repositories/vfs-repository";
 import { parseSkillMarkdown } from "./skill-frontmatter";
 
 export type SkillMetadata = {
@@ -24,30 +21,20 @@ export type SkillCatalogItem = {
   description: string;
 };
 
-export async function loadSkill(
-  env: Env,
-  agentId: string,
-  skillId: string
-): Promise<LoadedSkill> {
+export async function loadSkill(env: Env, agentId: string, skillId: string): Promise<LoadedSkill> {
   assertSkillId(skillId);
 
   return loadStandardSkill(env, agentId, skillId);
 }
 
-export async function listInstalledSkillIds(
-  env: Env,
-  agentId: string
-): Promise<string[]> {
+export async function listInstalledSkillIds(env: Env, agentId: string): Promise<string[]> {
   const entries = await listVfsEntries(env, agentId, "/skills");
   return entries
     .filter((entry) => entry.kind === "directory")
     .map((entry) => entry.path.replace(/^\/skills\//, ""));
 }
 
-export async function listSkillCatalog(
-  env: Env,
-  agentId: string
-): Promise<SkillCatalogItem[]> {
+export async function listSkillCatalog(env: Env, agentId: string): Promise<SkillCatalogItem[]> {
   const skillIds = await listInstalledSkillIds(env, agentId);
   const items: SkillCatalogItem[] = [];
 
@@ -67,11 +54,7 @@ export async function listSkillCatalog(
   return items.sort((left, right) => left.id.localeCompare(right.id));
 }
 
-async function loadStandardSkill(
-  env: Env,
-  agentId: string,
-  skillId: string
-): Promise<LoadedSkill> {
+async function loadStandardSkill(env: Env, agentId: string, skillId: string): Promise<LoadedSkill> {
   const skillFile = await getVfsFile(env, agentId, `/skills/${skillId}/SKILL.md`);
   const parsed = parseSkillMarkdown(skillFile.content);
   const name = stringFrontmatter(parsed.frontmatter.name) ?? skillId;

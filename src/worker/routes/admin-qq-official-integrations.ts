@@ -8,10 +8,7 @@ import {
 import { errorResponse, jsonResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
 import { toQqOfficialIntegrationDto } from "./platforms/qq-official-dto";
-import {
-  createQqOfficialIntegrationSchema,
-  zodMessage
-} from "./platforms/qq-official-schemas";
+import { createQqOfficialIntegrationSchema, zodMessage } from "./platforms/qq-official-schemas";
 
 export async function handleAdminQqOfficialIntegrations(
   request: Request,
@@ -63,11 +60,7 @@ export async function handleAdminQqOfficialIntegrations(
   });
 }
 
-export async function saveQqOfficialSecret(
-  env: Env,
-  integrationId: string,
-  secret: string
-) {
+export async function saveQqOfficialSecret(env: Env, integrationId: string, secret: string) {
   const encrypted = await encryptQqOfficialSecret(env, secret);
   const credential = await createPlatformCredentialRecord(env.AGENT_DB, {
     integrationId,

@@ -14,16 +14,13 @@ export function createMemoryDurableObjectStorage(): DurableObjectStorage {
       return values.get(key) as T | undefined;
     },
 
-    async list<T = unknown>(
-      options: DurableObjectListOptions = {}
-    ): Promise<Map<string, T>> {
+    async list<T = unknown>(options: DurableObjectListOptions = {}): Promise<Map<string, T>> {
       const entries = [...values.entries()]
         .filter(([key]) => !options.prefix || key.startsWith(options.prefix))
         .filter(([key]) => !options.start || key >= options.start)
         .filter(([key]) => !options.end || key < options.end)
         .sort(([left], [right]) => left.localeCompare(right));
-      const limited =
-        typeof options.limit === "number" ? entries.slice(0, options.limit) : entries;
+      const limited = typeof options.limit === "number" ? entries.slice(0, options.limit) : entries;
       return new Map(limited as Array<[string, T]>);
     },
 
@@ -35,9 +32,7 @@ export function createMemoryDurableObjectStorage(): DurableObjectStorage {
       return values.delete(key);
     },
 
-    async transaction<T>(
-      closure: (txn: DurableObjectTransaction) => Promise<T>
-    ): Promise<T> {
+    async transaction<T>(closure: (txn: DurableObjectTransaction) => Promise<T>): Promise<T> {
       const snapshot = new Map(values);
       const txn: MemoryTransaction = {
         get: storage.get,
@@ -62,8 +57,7 @@ export function createMemoryDurableObjectStorage(): DurableObjectStorage {
     },
 
     async setAlarm(scheduledTime: number | Date): Promise<void> {
-      alarm =
-        scheduledTime instanceof Date ? scheduledTime.getTime() : scheduledTime;
+      alarm = scheduledTime instanceof Date ? scheduledTime.getTime() : scheduledTime;
     },
 
     async deleteAlarm(): Promise<void> {

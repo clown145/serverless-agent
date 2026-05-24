@@ -15,11 +15,7 @@ import { persistInboundAttachments } from "../media/persist-attachments";
 import { getAgentModelConfig } from "../storage/repositories/agent-model-config-repository";
 import { resolveInboundConversation } from "../conversations/resolve";
 import { insertMessage } from "../storage/repositories/messages-repository";
-import {
-  appendRunStep,
-  completeRun,
-  createRun
-} from "../storage/repositories/runs-repository";
+import { appendRunStep, completeRun, createRun } from "../storage/repositories/runs-repository";
 import { recordRunFailedStep } from "./run-step-recorder";
 
 export async function runAgentForMessage(

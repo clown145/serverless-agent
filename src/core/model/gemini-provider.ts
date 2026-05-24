@@ -1,8 +1,4 @@
-import type {
-  ModelProvider,
-  ModelRequest,
-  ModelResponse
-} from "./types";
+import type { ModelProvider, ModelRequest, ModelResponse } from "./types";
 import {
   buildSystemInstruction,
   extractGeminiText,
@@ -26,8 +22,7 @@ export class GeminiProvider implements ModelProvider {
   private readonly baseUrl: string;
 
   constructor(private readonly options: GeminiOptions) {
-    this.baseUrl =
-      options.baseUrl ?? "https://generativelanguage.googleapis.com/v1beta";
+    this.baseUrl = options.baseUrl ?? "https://generativelanguage.googleapis.com/v1beta";
   }
 
   async complete(request: ModelRequest): Promise<ModelResponse> {
@@ -77,8 +72,7 @@ export class GeminiProvider implements ModelProvider {
       throw new Error(message ?? `Gemini API error ${response.status}`);
     }
 
-    const parts = (payload as GeminiResponse | undefined)?.candidates?.[0]?.content
-      ?.parts;
+    const parts = (payload as GeminiResponse | undefined)?.candidates?.[0]?.content?.parts;
     const toolCalls = mapper.mapToolCalls(
       (parts ?? [])
         .filter((part) => part.functionCall)

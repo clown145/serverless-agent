@@ -26,12 +26,14 @@ describe("Weixin OC inbound media", () => {
       envWithBucket(stored),
       config(),
       message({
-        sourceUrl: `weixin-oc:cdn:${btoa(JSON.stringify({
-          media: {
-            encrypt_query_param: "download-param",
-            aes_key: bytesToBase64(new TextEncoder().encode(keyHex))
-          }
-        }))}`
+        sourceUrl: `weixin-oc:cdn:${btoa(
+          JSON.stringify({
+            media: {
+              encrypt_query_param: "download-param",
+              aes_key: bytesToBase64(new TextEncoder().encode(keyHex))
+            }
+          })
+        )}`
       })
     );
 

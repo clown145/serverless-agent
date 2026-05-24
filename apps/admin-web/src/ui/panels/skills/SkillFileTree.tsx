@@ -59,7 +59,7 @@ export function SkillFileTree({
         <input
           value={newFilePath}
           onChange={(event) => onNewFilePathChange(event.target.value)}
-          placeholder="references/example.md"
+          placeholder={t("skills.filePathPlaceholder")}
         />
         <ToolbarButton
           label={t("skills.newFile")}

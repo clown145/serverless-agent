@@ -1,8 +1,5 @@
 import { physicalConversationForPlatform } from "../../conversations/ids";
-import type {
-  PlatformOutboundAdapter,
-  PlatformSendResult
-} from "../../platforms/outbound/types";
+import type { PlatformOutboundAdapter, PlatformSendResult } from "../../platforms/outbound/types";
 import type { Env } from "../../shared/types/env";
 import { WecomApiClient } from "./api";
 import { resolveWecomForAgent } from "./config";
@@ -10,8 +7,7 @@ import { resolveWecomForAgent } from "./config";
 export function createWecomOutboundAdapter(env: Env): PlatformOutboundAdapter {
   return {
     platform: "wecom",
-    sendText: (input) =>
-      sendWecomKfText(env, input.agentId, input.conversationId, input.text)
+    sendText: (input) => sendWecomKfText(env, input.agentId, input.conversationId, input.text)
   };
 }
 

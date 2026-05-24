@@ -75,14 +75,9 @@ export async function createSchedule(
   };
 }
 
-export async function listSchedules(
-  db: D1Database,
-  agentId?: string
-): Promise<ScheduleRecord[]> {
+export async function listSchedules(db: D1Database, agentId?: string): Promise<ScheduleRecord[]> {
   const query = agentId
-    ? db
-        .prepare("SELECT * FROM schedules WHERE agent_id = ? ORDER BY due_at ASC")
-        .bind(agentId)
+    ? db.prepare("SELECT * FROM schedules WHERE agent_id = ? ORDER BY due_at ASC").bind(agentId)
     : db.prepare("SELECT * FROM schedules ORDER BY due_at ASC");
   const result = await query.all<ScheduleRow>();
 
@@ -236,10 +231,7 @@ export async function markScheduleManualDispatch(
   return getSchedule(db, scheduleId);
 }
 
-export async function cancelSchedule(
-  db: D1Database,
-  scheduleId: string
-): Promise<boolean> {
+export async function cancelSchedule(db: D1Database, scheduleId: string): Promise<boolean> {
   const result = await db
     .prepare(
       `UPDATE schedules
@@ -257,9 +249,12 @@ async function completeScheduleRun(
   schedule: ScheduleRecord,
   input: { runId: string; completedAt: string }
 ): Promise<ScheduleRecord | undefined> {
-  const nextStatus: ScheduleRecord["status"] = schedule.status === "failed"
-    ? schedule.intervalSeconds ? "active" : "completed"
-    : schedule.status;
+  const nextStatus: ScheduleRecord["status"] =
+    schedule.status === "failed"
+      ? schedule.intervalSeconds
+        ? "active"
+        : "completed"
+      : schedule.status;
 
   await db
     .prepare(

@@ -23,7 +23,11 @@ export async function handleQqOfficialWebhook(
       webhookSecret
     })) ?? (await getPlatformIntegrationRecord(env.AGENT_DB, webhookSecret));
   if (!integration || integration.platform !== "qq") {
-    return errorResponse(404, "qq_official_integration_not_found", "QQ official integration not found");
+    return errorResponse(
+      404,
+      "qq_official_integration_not_found",
+      "QQ official integration not found"
+    );
   }
 
   try {

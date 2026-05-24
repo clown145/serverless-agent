@@ -11,8 +11,7 @@ import { parseWeixinOcConversationId } from "./normalize";
 export function createWeixinOcOutboundAdapter(env: Env): PlatformOutboundAdapter {
   return {
     platform: "weixin_oc",
-    sendText: (input) =>
-      sendWeixinOcText(env, input.agentId, input.conversationId, input.text),
+    sendText: (input) => sendWeixinOcText(env, input.agentId, input.conversationId, input.text),
     sendFile: (input) =>
       sendWeixinOcFile(env, input.agentId, input.conversationId, input.file, {
         caption: input.caption
@@ -21,8 +20,7 @@ export function createWeixinOcOutboundAdapter(env: Env): PlatformOutboundAdapter
       sendWeixinOcImage(env, input.agentId, input.conversationId, input.file, {
         caption: input.caption
       }),
-    sendActivity: (input) =>
-      sendWeixinOcActivity(env, input.agentId, input.conversationId)
+    sendActivity: (input) => sendWeixinOcActivity(env, input.agentId, input.conversationId)
   };
 }
 
@@ -84,7 +82,7 @@ export async function sendWeixinOcActivity(
     body: JSON.stringify({ userId: target.userId })
   });
   if (!response.ok) {
-    const payload = await response.json().catch(() => ({})) as { error?: { message?: string } };
+    const payload = (await response.json().catch(() => ({}))) as { error?: { message?: string } };
     return {
       ok: false,
       error: payload.error?.message ?? `Weixin OC typing failed ${response.status}`

@@ -33,7 +33,4 @@ export type ScheduleFireJob = {
   receivedAt: string;
 };
 
-export type QueueMessageBody =
-  | InboundMessageJob
-  | ScheduleTickJob
-  | ScheduleFireJob;
+export type QueueMessageBody = InboundMessageJob | ScheduleTickJob | ScheduleFireJob;

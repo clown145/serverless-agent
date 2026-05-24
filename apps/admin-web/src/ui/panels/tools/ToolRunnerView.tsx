@@ -6,7 +6,7 @@ import { EmptyState } from "../../EmptyState";
 import { useI18n } from "../../i18n/I18nProvider";
 import { JsonBlock } from "../../JsonBlock";
 import { StatusBadge } from "../../StatusBadge";
-import { createToolInputDraft } from "./toolInputDefaults";
+import { createToolInputDraft, type ToolInputExampleText } from "./toolInputDefaults";
 
 type ToolRunnerViewProps = {
   tool?: ToolCatalogItem;
@@ -15,22 +15,18 @@ type ToolRunnerViewProps = {
   onExecuted: () => void;
 };
 
-export function ToolRunnerView({
-  tool,
-  client,
-  notify,
-  onExecuted
-}: ToolRunnerViewProps) {
+export function ToolRunnerView({ tool, client, notify, onExecuted }: ToolRunnerViewProps) {
   const { t } = useI18n();
   const [inputText, setInputText] = useState("{}");
   const [allowDangerous, setAllowDangerous] = useState(false);
   const [running, setRunning] = useState(false);
   const [call, setCall] = useState<ToolDebugCall>();
+  const exampleText = toolExampleText(t);
 
   useEffect(() => {
-    setInputText(JSON.stringify(createToolInputDraft(tool), null, 2));
+    setInputText(JSON.stringify(createToolInputDraft(tool, exampleText), null, 2));
     setCall(undefined);
-  }, [tool?.name]);
+  }, [tool?.name, t]);
 
   async function runTool() {
     if (!tool) {
@@ -98,7 +94,9 @@ export function ToolRunnerView({
         <button
           className="secondary-button"
           type="button"
-          onClick={() => setInputText(JSON.stringify(createToolInputDraft(tool), null, 2))}
+          onClick={() =>
+            setInputText(JSON.stringify(createToolInputDraft(tool, exampleText), null, 2))
+          }
         >
           <RotateCcw size={16} />
           {t("common.reset")}
@@ -126,4 +124,16 @@ export function ToolRunnerView({
       )}
     </div>
   );
+}
+
+function toolExampleText(t: ReturnType<typeof useI18n>["t"]): ToolInputExampleText {
+  return {
+    buttonPrompt: t("tools.example.buttonPrompt"),
+    buttonContinueLabel: t("tools.example.buttonContinueLabel"),
+    buttonContinueText: t("tools.example.buttonContinueText"),
+    buttonRemindLabel: t("tools.example.buttonRemindLabel"),
+    buttonRemindText: t("tools.example.buttonRemindText"),
+    scheduleTitle: t("tools.example.scheduleTitle"),
+    scheduleText: t("tools.example.scheduleText")
+  };
 }

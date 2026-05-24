@@ -32,10 +32,8 @@ export function SkillCreateDialog({
           {t("skills.skillId")}
           <input
             value={draft.skillId}
-            onChange={(event) =>
-              onDraftChange({ ...draft, skillId: event.target.value.trim() })
-            }
-            placeholder="my-skill"
+            onChange={(event) => onDraftChange({ ...draft, skillId: event.target.value.trim() })}
+            placeholder={t("skills.skillIdPlaceholder")}
           />
         </label>
         <label>
@@ -43,16 +41,14 @@ export function SkillCreateDialog({
           <input
             value={draft.name}
             onChange={(event) => onDraftChange({ ...draft, name: event.target.value })}
-            placeholder="My Skill"
+            placeholder={t("skills.namePlaceholder")}
           />
         </label>
         <label>
           {t("skills.description")}
           <input
             value={draft.description}
-            onChange={(event) =>
-              onDraftChange({ ...draft, description: event.target.value })
-            }
+            onChange={(event) => onDraftChange({ ...draft, description: event.target.value })}
             placeholder={t("skills.descriptionPlaceholder")}
           />
         </label>

@@ -3,10 +3,7 @@ import { getVfsWorkspaceBootstrapStatus } from "../../vfs/bootstrap/default-work
 import { diagnosticOk, diagnosticWarn } from "../check-result";
 import type { DiagnosticCheck } from "../types";
 
-export async function checkWorkspaceConfig(
-  env: Env,
-  agentId: string
-): Promise<DiagnosticCheck[]> {
+export async function checkWorkspaceConfig(env: Env, agentId: string): Promise<DiagnosticCheck[]> {
   const status = await getVfsWorkspaceBootstrapStatus(env, agentId);
   return [
     status.initialized

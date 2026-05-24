@@ -62,28 +62,30 @@ async function captionMessageImages(
   captionModel: CaptionModel,
   message: ConversationContextMessage
 ): Promise<string[]> {
-  const parts = (message.attachments ?? []).filter((p): p is ModelContentPart & { type: "image" } => p.type === "image");
+  const parts = (message.attachments ?? []).filter(
+    (p): p is ModelContentPart & { type: "image" } => p.type === "image"
+  );
   if (parts.length === 0) return [];
 
-  return Promise.all(parts.map(async (part, i) => {
-    const index = i + 1;
-    const attachment = part.sourceAttachment;
-    try {
-      const caption = attachment && cachedCaptionMatches(attachment, captionModel)
-        ? attachment.captionText
-        : await generateAndCacheCaption(env, captionModel, message.id, part);
-      return `[Image ${index}]\n${caption}`;
-    } catch (error) {
-      console.error(`Failed to caption image ${index} in message ${message.id}:`, error);
-      return `[Image ${index}]\n(Image description unavailable due to processing error)`;
-    }
-  }));
+  return Promise.all(
+    parts.map(async (part, i) => {
+      const index = i + 1;
+      const attachment = part.sourceAttachment;
+      try {
+        const caption =
+          attachment && cachedCaptionMatches(attachment, captionModel)
+            ? attachment.captionText
+            : await generateAndCacheCaption(env, captionModel, message.id, part);
+        return `[Image ${index}]\n${caption}`;
+      } catch (error) {
+        console.error(`Failed to caption image ${index} in message ${message.id}:`, error);
+        return `[Image ${index}]\n(Image description unavailable due to processing error)`;
+      }
+    })
+  );
 }
 
-function cachedCaptionMatches(
-  attachment: MessageAttachment,
-  captionModel: CaptionModel
-): boolean {
+function cachedCaptionMatches(attachment: MessageAttachment, captionModel: CaptionModel): boolean {
   return Boolean(
     attachment.captionText &&
     attachment.captionModelProviderId === captionModel.providerId &&
@@ -103,10 +105,7 @@ async function generateAndCacheCaption(
     messages: [
       {
         role: "user",
-        content: [
-          { type: "text", text: promptText("tasks/image-caption") },
-          image
-        ]
+        content: [{ type: "text", text: promptText("tasks/image-caption") }, image]
       }
     ]
   });
@@ -145,9 +144,5 @@ function appendCaptions(text: string | undefined, captions: string[]): string | 
     return text;
   }
 
-  return [
-    text,
-    "Image descriptions:",
-    captions.join("\n\n")
-  ].filter(Boolean).join("\n\n");
+  return [text, "Image descriptions:", captions.join("\n\n")].filter(Boolean).join("\n\n");
 }

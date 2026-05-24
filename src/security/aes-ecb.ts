@@ -247,7 +247,7 @@ function addRoundKey(state: Uint8Array, expandedKey: Uint8Array, round: number):
 
 function multiply2(value: number): number {
   const result = value << 1;
-  return ((result & 0x100) ? result ^ 0x11b : result) & 0xff;
+  return (result & 0x100 ? result ^ 0x11b : result) & 0xff;
 }
 
 function multiply3(value: number): number {

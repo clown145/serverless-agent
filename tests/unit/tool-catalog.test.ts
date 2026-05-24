@@ -32,9 +32,7 @@ describe("tool catalog", () => {
     expect(catalog.find((tool) => tool.name === "weixin_oc.send_image")?.platforms).toEqual([
       "weixin_oc"
     ]);
-    expect(
-      catalog.find((tool) => tool.name === "weixin_oc.send_image")?.behavior
-    ).toMatchObject({
+    expect(catalog.find((tool) => tool.name === "weixin_oc.send_image")?.behavior).toMatchObject({
       preventsFinalResponse: true
     });
   });

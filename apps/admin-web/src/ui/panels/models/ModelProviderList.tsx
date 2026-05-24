@@ -8,11 +8,7 @@ import {
   TestTube2,
   Trash2
 } from "lucide-react";
-import type {
-  ModelCapability,
-  ModelCatalogItem,
-  ModelProvider
-} from "../../../api/types";
+import type { ModelCapability, ModelCatalogItem, ModelProvider } from "../../../api/types";
 import { EmptyState } from "../../EmptyState";
 import { useI18n } from "../../i18n/I18nProvider";
 import { StatusBadge } from "../../StatusBadge";
@@ -196,12 +192,7 @@ function renderModelChoice({
       key={model.id}
       className={`model-choice ${active ? "selected" : ""} ${enabled ? "" : "muted"}`}
     >
-      <button
-        className="model-activate"
-        disabled={!enabled}
-        type="button"
-        onClick={onActivate}
-      >
+      <button className="model-activate" disabled={!enabled} type="button" onClick={onActivate}>
         <span className="model-name-block">
           <span>{model.displayName ?? model.modelId}</span>
           {(model.contextWindow || model.maxOutputTokens) && (
@@ -257,11 +248,7 @@ function renderModelChoice({
               onChange={(event) =>
                 onCapabilitiesChange(
                   model.id,
-                  toggleCapability(
-                    model.capabilities,
-                    capability,
-                    event.target.checked
-                  )
+                  toggleCapability(model.capabilities, capability, event.target.checked)
                 )
               }
             />
@@ -279,9 +266,7 @@ function toggleCapability(
   enabled: boolean
 ): ModelCapability[] {
   if (enabled) {
-    return MODEL_CAPABILITIES.filter(
-      (item) => item === capability || capabilities.includes(item)
-    );
+    return MODEL_CAPABILITIES.filter((item) => item === capability || capabilities.includes(item));
   }
 
   return capabilities.filter((item) => item !== capability);

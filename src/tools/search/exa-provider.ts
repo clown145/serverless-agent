@@ -43,9 +43,7 @@ export class ExaSearchProvider implements SearchProvider {
       },
       body: JSON.stringify(toExaRequest(input))
     });
-    const payload = (await response.json().catch(() => undefined)) as
-      | ExaSearchResponse
-      | undefined;
+    const payload = (await response.json().catch(() => undefined)) as ExaSearchResponse | undefined;
 
     if (!response.ok) {
       throw new Error(exaErrorMessage(response.status, payload));
@@ -62,7 +60,7 @@ export class ExaSearchProvider implements SearchProvider {
           url: result.url ?? "",
           content: result.highlights?.[0] ?? trimContent(result.text),
           score: result.score ?? result.highlightScores?.[0],
-          rawContent: input.includeRawContent ? result.text ?? null : undefined,
+          rawContent: input.includeRawContent ? (result.text ?? null) : undefined,
           favicon: result.favicon
         })),
       requestId: payload?.requestId,
@@ -150,7 +148,5 @@ function exaErrorMessage(status: number, payload?: ExaSearchResponse): string {
 }
 
 function compact(input: Record<string, unknown>): Record<string, unknown> {
-  return Object.fromEntries(
-    Object.entries(input).filter(([, value]) => value !== undefined)
-  );
+  return Object.fromEntries(Object.entries(input).filter(([, value]) => value !== undefined));
 }

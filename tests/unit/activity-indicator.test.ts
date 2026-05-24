@@ -15,11 +15,10 @@ describe("activity indicator", () => {
       finishTask = resolve;
     });
 
-    const run = runWithActivityPulse(
-      sendActivity,
-      async () => taskResult,
-      { intervalMs: 4_000, maxPulses: 5 }
-    );
+    const run = runWithActivityPulse(sendActivity, async () => taskResult, {
+      intervalMs: 4_000,
+      maxPulses: 5
+    });
 
     await vi.waitFor(() => {
       expect(sendActivity).toHaveBeenCalledTimes(1);
@@ -43,11 +42,10 @@ describe("activity indicator", () => {
       finishTask = resolve;
     });
 
-    const run = runWithActivityPulse(
-      sendActivity,
-      async () => taskResult,
-      { intervalMs: 1_000, maxPulses: 3 }
-    );
+    const run = runWithActivityPulse(sendActivity, async () => taskResult, {
+      intervalMs: 1_000,
+      maxPulses: 3
+    });
 
     await vi.waitFor(() => {
       expect(sendActivity).toHaveBeenCalledTimes(1);

@@ -3,10 +3,7 @@ import { createVfsWorkspace } from "../../vfs/services/workspace-service";
 import { builtinTool } from "../builtin/source";
 import type { RegisteredTool } from "../types";
 import { failed } from "./result";
-import {
-  commandInputJsonSchema,
-  commandInputSchema
-} from "./schema";
+import { commandInputJsonSchema, commandInputSchema } from "./schema";
 
 export function createVfsCommandTool(): RegisteredTool {
   return builtinTool({

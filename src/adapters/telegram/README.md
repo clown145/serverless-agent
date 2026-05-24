@@ -20,16 +20,16 @@ Telegram adapter 负责 Telegram webhook payload 校验、标准化、Bot API �
 
 ## 文件职责
 
-| 文件 | 职责 |
-| --- | --- |
-| `api.ts` | Bot API client。 |
-| `callbacks/` | `callback_query` 和 pending action callback。 |
-| `commands.ts` | Telegram command helpers。 |
-| `config.ts` | 配置解析。 |
-| `credential.ts` | 加密 credential 读取。 |
-| `formatting.ts` | parse mode 和 fallback formatting。 |
-| `normalize.ts` | Telegram update 到 `InternalMessage` 的转换。 |
-| `outbound.ts` | Platform outbound adapter。 |
+| 文件            | 职责                                          |
+| --------------- | --------------------------------------------- |
+| `api.ts`        | Bot API client。                              |
+| `callbacks/`    | `callback_query` 和 pending action callback。 |
+| `commands.ts`   | Telegram command helpers。                    |
+| `config.ts`     | 配置解析。                                    |
+| `credential.ts` | 加密 credential 读取。                        |
+| `formatting.ts` | parse mode 和 fallback formatting。           |
+| `normalize.ts`  | Telegram update 到 `InternalMessage` 的转换。 |
+| `outbound.ts`   | Platform outbound adapter。                   |
 
 ## 相关文档
 

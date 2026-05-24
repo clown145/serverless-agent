@@ -1,20 +1,8 @@
 import { z } from "zod";
 
-export const httpMethodSchema = z.enum([
-  "GET",
-  "POST",
-  "PUT",
-  "PATCH",
-  "DELETE",
-  "HEAD"
-]);
+export const httpMethodSchema = z.enum(["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"]);
 
-export const httpCookieJarModeSchema = z.enum([
-  "disabled",
-  "send",
-  "store",
-  "send_and_store"
-]);
+export const httpCookieJarModeSchema = z.enum(["disabled", "send", "store", "send_and_store"]);
 
 const httpFileSourceSchema = z.discriminatedUnion("type", [
   z.object({
@@ -67,9 +55,7 @@ export const httpRequestInputSchema = z
     method: httpMethodSchema.default("GET"),
     headers: headerRecordSchema,
     query: z.record(z.string(), z.string()).default({}),
-    bodyType: z
-      .enum(["none", "json", "text", "form", "base64", "multipart"])
-      .default("none"),
+    bodyType: z.enum(["none", "json", "text", "form", "base64", "multipart"]).default("none"),
     json: z.unknown().optional(),
     text: z.string().optional(),
     form: z.record(z.string(), z.string()).optional(),

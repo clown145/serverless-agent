@@ -1,10 +1,6 @@
 import { Plus, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
-import type {
-  ConversationSettings,
-  ModelCatalogItem,
-  ModelProvider
-} from "../../api/types";
+import type { ConversationSettings, ModelCatalogItem, ModelProvider } from "../../api/types";
 import { ToolbarButton } from "../ToolbarButton";
 import { useI18n } from "../i18n/I18nProvider";
 import {

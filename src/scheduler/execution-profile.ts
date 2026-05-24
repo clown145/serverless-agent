@@ -3,12 +3,18 @@ import type { Platform, SenderRole } from "../shared/types/internal-message";
 
 export const scheduleExecutionProfileSchema = z.object({
   runAs: z.enum(["creator", "scheduler", "owner"]).default("creator"),
-  contextMode: z.enum(["latest_conversation", "isolated", "snapshot"]).default("latest_conversation"),
+  contextMode: z
+    .enum(["latest_conversation", "isolated", "snapshot"])
+    .default("latest_conversation"),
   modelMode: z.enum(["fixed", "follow_conversation"]).default("follow_conversation"),
-  permissionMode: z.enum(["creator_current", "creator_snapshot", "scheduler_limited"]).default("creator_current"),
+  permissionMode: z
+    .enum(["creator_current", "creator_snapshot", "scheduler_limited"])
+    .default("creator_current"),
   createdByActorId: z.string().min(1),
   createdByActorRole: z.enum(["owner", "admin", "member", "unknown"]).optional(),
-  createdFromPlatform: z.enum(["telegram", "qq", "wecom", "weixin_oc", "webhook", "admin", "webui"]).optional(),
+  createdFromPlatform: z
+    .enum(["telegram", "qq", "wecom", "weixin_oc", "webhook", "admin", "webui"])
+    .optional(),
   createdFromConversationId: z.string().min(1).optional(),
   createdFromRunId: z.string().min(1).optional(),
   modelProviderId: z.string().min(1).optional(),
@@ -37,9 +43,10 @@ export function createScheduleExecutionProfile(
   return scheduleExecutionProfileSchema.parse({
     runAs: input.runAs ?? "creator",
     contextMode: input.contextMode ?? "latest_conversation",
-    modelMode: input.modelProviderId && input.modelId
-      ? input.modelMode ?? "fixed"
-      : input.modelMode ?? "follow_conversation",
+    modelMode:
+      input.modelProviderId && input.modelId
+        ? (input.modelMode ?? "fixed")
+        : (input.modelMode ?? "follow_conversation"),
     permissionMode: input.permissionMode ?? "creator_current",
     createdByActorId: input.createdByActorId,
     createdByActorRole: input.createdByActorRole,
@@ -51,9 +58,7 @@ export function createScheduleExecutionProfile(
   });
 }
 
-export function stringifyScheduleExecutionProfile(
-  profile: ScheduleExecutionProfile
-): string {
+export function stringifyScheduleExecutionProfile(profile: ScheduleExecutionProfile): string {
   return JSON.stringify(scheduleExecutionProfileSchema.parse(profile));
 }
 

@@ -29,4 +29,3 @@ describe("Weixin OC integration schemas", () => {
     });
   });
 });
-

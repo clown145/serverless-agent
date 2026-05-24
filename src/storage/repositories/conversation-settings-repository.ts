@@ -154,9 +154,10 @@ export async function updateConversationSettings(
     title: valueOrExisting(input.title, existing.title),
     modelProviderId: valueOrExisting(input.modelProviderId, existing.modelProviderId),
     modelId: valueOrExisting(input.modelId, existing.modelId),
-    historyLimit: input.historyLimit !== undefined
-      ? clampHistoryLimit(input.historyLimit)
-      : existing.historyLimit,
+    historyLimit:
+      input.historyLimit !== undefined
+        ? clampHistoryLimit(input.historyLimit)
+        : existing.historyLimit,
     summaryEnabled: input.summaryEnabled ?? existing.summaryEnabled,
     summaryProviderId: valueOrExisting(input.summaryProviderId, existing.summaryProviderId),
     summaryModelId: valueOrExisting(input.summaryModelId, existing.summaryModelId)

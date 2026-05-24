@@ -1,4 +1,4 @@
-import type { BlobObject, BlobPutOptions, BlobStorage } from "./types";
+import type { BlobPutOptions, BlobStorage } from "./types";
 import { blobObjectFromBytes, bytesFromBlobValue } from "./utils";
 import { presignS3Url } from "./s3-signing";
 

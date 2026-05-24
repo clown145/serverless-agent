@@ -6,28 +6,28 @@
 
 ## 主要目录
 
-| 路径 | 职责 |
-| --- | --- |
-| `worker/` | HTTP routes、Queue consumer、Cron handler、admin API。 |
-| `agents/` | Durable Object coordinator、mailbox、alarm 和 run 恢复。 |
-| `adapters/` | Telegram、QQ、WeCom、Weixin OC、WebUI/Admin 协议适配。 |
-| `commands/` | slash/system command 解析、注册和执行分发。 |
-| `context/` | conversation context、附件 caption 等上下文加载逻辑。 |
-| `conversations/` | conversation ID 生成和解析。 |
-| `core/` | 平台无关的 agent loop、model provider、context 和 tool-call flow。 |
-| `diagnostics/` | 配置检查和 runtime checks。 |
-| `media/` | 附件持久化和 media object key helper。 |
-| `platforms/` | 平台能力、outbound registry、gateway DO wrappers 和 context hints。 |
-| `tools/` | 模型可调用工具、registry、schema、权限和执行器。 |
-| `storage/` | D1 repositories、object storage、KV/DO storage helpers。 |
-| `vfs/` | 虚拟文件系统的 path、service、storage 和 command 层。 |
-| `scheduler/` | schedules、Cron sweep、heartbeat 和 retry。 |
-| `skills/` | `SKILL.md` frontmatter、skill loader 和 skill service。 |
-| `permissions/` | permission policy 和 pending action runtime。 |
-| `observability/` | audit log、debug log、trace 和 metrics。 |
-| `security/` | 加密、secret 和安全 helper。 |
-| `setup/` | 初始配置状态检查。 |
-| `shared/` | 共享类型、常量、错误类和小型纯函数。 |
+| 路径             | 职责                                                                |
+| ---------------- | ------------------------------------------------------------------- |
+| `worker/`        | HTTP routes、Queue consumer、Cron handler、admin API。              |
+| `agents/`        | Durable Object coordinator、mailbox、alarm 和 run 恢复。            |
+| `adapters/`      | Telegram、QQ、WeCom、Weixin OC、WebUI/Admin 协议适配。              |
+| `commands/`      | slash/system command 解析、注册和执行分发。                         |
+| `context/`       | conversation context、附件 caption 等上下文加载逻辑。               |
+| `conversations/` | conversation ID 生成和解析。                                        |
+| `core/`          | 平台无关的 agent loop、model provider、context 和 tool-call flow。  |
+| `diagnostics/`   | 配置检查和 runtime checks。                                         |
+| `media/`         | 附件持久化和 media object key helper。                              |
+| `platforms/`     | 平台能力、outbound registry、gateway DO wrappers 和 context hints。 |
+| `tools/`         | 模型可调用工具、registry、schema、权限和执行器。                    |
+| `storage/`       | D1 repositories、object storage、KV/DO storage helpers。            |
+| `vfs/`           | 虚拟文件系统的 path、service、storage 和 command 层。               |
+| `scheduler/`     | schedules、Cron sweep、heartbeat 和 retry。                         |
+| `skills/`        | `SKILL.md` frontmatter、skill loader 和 skill service。             |
+| `permissions/`   | permission policy 和 pending action runtime。                       |
+| `observability/` | audit log、debug log、trace 和 metrics。                            |
+| `security/`      | 加密、secret 和安全 helper。                                        |
+| `setup/`         | 初始配置状态检查。                                                  |
+| `shared/`        | 共享类型、常量、错误类和小型纯函数。                                |
 
 ## 依赖规则
 

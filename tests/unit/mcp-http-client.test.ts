@@ -1,8 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import {
-  callMcpHttpTool,
-  discoverMcpHttpTools
-} from "../../src/tools/mcp/http-client";
+import { callMcpHttpTool, discoverMcpHttpTools } from "../../src/tools/mcp/http-client";
 
 const originalFetch = globalThis.fetch;
 

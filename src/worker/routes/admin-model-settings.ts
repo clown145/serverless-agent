@@ -27,7 +27,7 @@ import {
   getModelProviderRecord,
   listModelProviders,
   updateModelProviderRecord,
-  updateModelProviderCredential,
+  updateModelProviderCredential
 } from "../../storage/repositories/model-providers-repository";
 import type { ModelProviderRecord } from "../../storage/repositories/model-settings-types";
 import {
@@ -41,15 +41,10 @@ import {
 } from "./model-settings/model-settings-schemas";
 import { toProviderDto } from "./model-settings/model-provider-dto";
 
-export async function handleAdminModelSettings(
-  request: Request,
-  env: Env
-): Promise<Response> {
+export async function handleAdminModelSettings(request: Request, env: Env): Promise<Response> {
   if (request.method === "GET") {
     const agentId =
-      new URL(request.url).searchParams.get("agentId") ??
-      env.DEFAULT_AGENT_ID ??
-      "default";
+      new URL(request.url).searchParams.get("agentId") ?? env.DEFAULT_AGENT_ID ?? "default";
     const [providers, models, settings] = await Promise.all([
       listModelProviders(env.AGENT_DB),
       listModelCatalog(env.AGENT_DB),
@@ -109,7 +104,8 @@ export async function handleAdminModelSettings(
         iv: encrypted.iv,
         algorithm: encrypted.algorithm
       });
-      provider = await updateModelProviderCredential(env.AGENT_DB, provider.id, credential.id) ?? provider;
+      provider =
+        (await updateModelProviderCredential(env.AGENT_DB, provider.id, credential.id)) ?? provider;
     }
 
     return jsonResponse({ ok: true, provider: toProviderDto(provider) }, { status: 201 });
@@ -121,13 +117,8 @@ export async function handleAdminModelSettings(
       return errorResponse(400, "invalid_payload", zodMessage(parsed.error));
     }
 
-    const enabledModels = await listEnabledModelCatalog(
-      env.AGENT_DB,
-      parsed.data.providerId
-    );
-    const enabledModel = enabledModels.find(
-      (model) => model.modelId === parsed.data.modelId
-    );
+    const enabledModels = await listEnabledModelCatalog(env.AGENT_DB, parsed.data.providerId);
+    const enabledModel = enabledModels.find((model) => model.modelId === parsed.data.modelId);
     if (!enabledModel) {
       return errorResponse(
         400,
@@ -148,10 +139,7 @@ export async function handleAdminModelSettings(
   return errorResponse(405, "method_not_allowed", "Method not allowed");
 }
 
-async function encryptCredentialOrRespond(
-  env: Env,
-  apiKey: string
-) {
+async function encryptCredentialOrRespond(env: Env, apiKey: string) {
   try {
     return await encryptProviderCredential(env, apiKey);
   } catch (error) {
@@ -191,12 +179,7 @@ export async function handleAdminModelProviderDetail(
     const defaults = modelProviderDefaults(parsed.data.providerType);
     const authType = parsed.data.authType ?? defaults.authType;
     const apiKey = parsed.data.apiKey?.trim();
-    if (
-      authType !== "none" &&
-      !apiKey &&
-      !parsed.data.apiKeySecret &&
-      !current.credentialId
-    ) {
+    if (authType !== "none" && !apiKey && !parsed.data.apiKeySecret && !current.credentialId) {
       return errorResponse(
         400,
         "missing_provider_api_key",
@@ -230,7 +213,8 @@ export async function handleAdminModelProviderDetail(
         iv: result.iv,
         algorithm: result.algorithm
       });
-      provider = await updateModelProviderCredential(env.AGENT_DB, providerId, credential.id) ?? provider;
+      provider =
+        (await updateModelProviderCredential(env.AGENT_DB, providerId, credential.id)) ?? provider;
     }
 
     return jsonResponse({ ok: true, provider: toProviderDto(provider) });
@@ -285,11 +269,12 @@ export async function handleAdminModelProviderDetail(
         providerId,
         models: remoteModels
       });
-      const metadata = await refreshProviderMetadata(env, provider, providerId, models)
-        .catch((error) => ({
+      const metadata = await refreshProviderMetadata(env, provider, providerId, models).catch(
+        (error) => ({
           matched: 0,
           error: error instanceof Error ? error.message : "Failed to refresh model metadata"
-        }));
+        })
+      );
       if ("models" in metadata) {
         models = metadata.models;
       }
@@ -315,9 +300,7 @@ export async function handleAdminModelProviderDetail(
       return errorResponse(404, "provider_not_found", "Model provider not found");
     }
 
-    const parsed = refreshModelMetadataSchema.safeParse(
-      await request.json().catch(() => ({}))
-    );
+    const parsed = refreshModelMetadataSchema.safeParse(await request.json().catch(() => ({})));
     if (!parsed.success) {
       return errorResponse(400, "invalid_payload", zodMessage(parsed.error));
     }
@@ -381,27 +364,17 @@ export async function handleAdminModelCatalogDetail(
     return errorResponse(405, "method_not_allowed", "Method not allowed");
   }
 
-  const parsed = updateModelCatalogSchema.safeParse(
-    await request.json().catch(() => ({}))
-  );
+  const parsed = updateModelCatalogSchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) {
     return errorResponse(400, "invalid_payload", zodMessage(parsed.error));
   }
 
   let model = parsed.data.capabilities
-    ? await updateModelCatalogCapabilities(
-        env.AGENT_DB,
-        modelCatalogId,
-        parsed.data.capabilities
-      )
+    ? await updateModelCatalogCapabilities(env.AGENT_DB, modelCatalogId, parsed.data.capabilities)
     : undefined;
 
   if (parsed.data.status) {
-    model = await updateModelCatalogStatus(
-      env.AGENT_DB,
-      modelCatalogId,
-      parsed.data.status
-    );
+    model = await updateModelCatalogStatus(env.AGENT_DB, modelCatalogId, parsed.data.status);
   }
 
   if (!model) {

@@ -18,7 +18,10 @@ export async function verifyWecomSignature(input: {
   nonce: string;
   encrypted: string;
 }): Promise<boolean> {
-  return (await createWecomSignature(input.token, input.timestamp, input.nonce, input.encrypted)) === input.signature;
+  return (
+    (await createWecomSignature(input.token, input.timestamp, input.nonce, input.encrypted)) ===
+    input.signature
+  );
 }
 
 export async function createWecomSignature(
@@ -90,9 +93,7 @@ async function decryptWecomPayload(
 ): Promise<string> {
   const aesKey = decodeEncodingAesKey(encodingAesKey);
   const encryptedBytes = base64ToBytes(normalizeBase64(encrypted));
-  const key = await crypto.subtle.importKey("raw", aesKey, { name: "AES-CBC" }, false, [
-    "decrypt"
-  ]);
+  const key = await crypto.subtle.importKey("raw", aesKey, { name: "AES-CBC" }, false, ["decrypt"]);
   const decryptedBuffer = await crypto.subtle.decrypt(
     { name: "AES-CBC", iv: aesKey.slice(0, 16) },
     key,
@@ -133,11 +134,12 @@ function normalizeBase64(value: string): string {
 
 function readUInt32BE(bytes: Uint8Array, offset: number): number {
   return (
-    ((bytes[offset] ?? 0) << 24) |
-    ((bytes[offset + 1] ?? 0) << 16) |
-    ((bytes[offset + 2] ?? 0) << 8) |
-    (bytes[offset + 3] ?? 0)
-  ) >>> 0;
+    (((bytes[offset] ?? 0) << 24) |
+      ((bytes[offset + 1] ?? 0) << 16) |
+      ((bytes[offset + 2] ?? 0) << 8) |
+      (bytes[offset + 3] ?? 0)) >>>
+    0
+  );
 }
 
 function hex(bytes: Uint8Array): string {

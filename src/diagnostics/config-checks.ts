@@ -12,21 +12,15 @@ const DEFAULT_AGENT_ID = "default";
 
 export async function runConfigDiagnostics(env: Env): Promise<DiagnosticCheck[]> {
   const agentId = env.DEFAULT_AGENT_ID ?? DEFAULT_AGENT_ID;
-  const [
-    modelChecks,
-    searchChecks,
-    platformChecks,
-    workspaceChecks,
-    mcpChecks,
-    activityChecks
-  ] = await Promise.all([
-    safeChecks("model", "Model diagnostics", () => checkModelConfig(env, agentId)),
-    safeChecks("search", "Search diagnostics", () => checkSearchConfig(env, agentId)),
-    safeChecks("platforms", "Platform diagnostics", () => checkPlatformConfig(env, agentId)),
-    safeChecks("workspace", "Workspace diagnostics", () => checkWorkspaceConfig(env, agentId)),
-    safeChecks("mcp", "MCP diagnostics", () => checkMcpConfig(env)),
-    safeChecks("activity", "Activity diagnostics", () => checkActivityConfig(env))
-  ]);
+  const [modelChecks, searchChecks, platformChecks, workspaceChecks, mcpChecks, activityChecks] =
+    await Promise.all([
+      safeChecks("model", "Model diagnostics", () => checkModelConfig(env, agentId)),
+      safeChecks("search", "Search diagnostics", () => checkSearchConfig(env, agentId)),
+      safeChecks("platforms", "Platform diagnostics", () => checkPlatformConfig(env, agentId)),
+      safeChecks("workspace", "Workspace diagnostics", () => checkWorkspaceConfig(env, agentId)),
+      safeChecks("mcp", "MCP diagnostics", () => checkMcpConfig(env)),
+      safeChecks("activity", "Activity diagnostics", () => checkActivityConfig(env))
+    ]);
 
   return [
     ...modelChecks,

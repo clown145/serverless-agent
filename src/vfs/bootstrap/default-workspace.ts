@@ -59,9 +59,7 @@ export async function getVfsWorkspaceBootstrapStatus(
     .all<{ path: string }>();
 
   const existingPaths = new Set((result.results ?? []).map((row) => row.path));
-  const missingPaths = DEFAULT_VFS_DIRECTORIES.filter(
-    (path) => !existingPaths.has(path)
-  );
+  const missingPaths = DEFAULT_VFS_DIRECTORIES.filter((path) => !existingPaths.has(path));
 
   return {
     initialized: missingPaths.length === 0,

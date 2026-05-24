@@ -17,18 +17,13 @@ import {
   zodMessage
 } from "./conversations/conversation-schemas";
 
-export async function handleAdminConversations(
-  request: Request,
-  env: Env
-): Promise<Response> {
+export async function handleAdminConversations(request: Request, env: Env): Promise<Response> {
   if (request.method === "GET") {
     return listConversations(request, env);
   }
 
   if (request.method === "POST") {
-    const parsed = createConversationSchema.safeParse(
-      await request.json().catch(() => ({}))
-    );
+    const parsed = createConversationSchema.safeParse(await request.json().catch(() => ({})));
     if (!parsed.success) {
       return errorResponse(400, "invalid_payload", zodMessage(parsed.error));
     }
@@ -44,10 +39,13 @@ export async function handleAdminConversations(
       title: parsed.data.title
     });
 
-    return jsonResponse({
-      ok: true,
-      conversation: toConversationDto(conversation)
-    }, { status: 201 });
+    return jsonResponse(
+      {
+        ok: true,
+        conversation: toConversationDto(conversation)
+      },
+      { status: 201 }
+    );
   }
 
   return errorResponse(405, "method_not_allowed", "Method not allowed");
@@ -59,10 +57,7 @@ export async function handleAdminConversationDetail(
   conversationId: string
 ): Promise<Response> {
   const url = new URL(request.url);
-  const agentId =
-    url.searchParams.get("agentId") ??
-    env.DEFAULT_AGENT_ID ??
-    "default";
+  const agentId = url.searchParams.get("agentId") ?? env.DEFAULT_AGENT_ID ?? "default";
 
   if (request.method === "GET") {
     const conversation = await getConversationSettings(env.AGENT_DB, agentId, conversationId);
@@ -74,9 +69,7 @@ export async function handleAdminConversationDetail(
   }
 
   if (request.method === "PUT") {
-    const parsed = updateConversationSchema.safeParse(
-      await request.json().catch(() => ({}))
-    );
+    const parsed = updateConversationSchema.safeParse(await request.json().catch(() => ({})));
     if (!parsed.success) {
       return errorResponse(400, "invalid_payload", zodMessage(parsed.error));
     }
@@ -95,9 +88,7 @@ export async function handleAdminConversationDetail(
   }
 
   if (request.method === "POST" && url.pathname.endsWith("/compact")) {
-    const parsed = compactConversationSchema.safeParse(
-      await request.json().catch(() => ({}))
-    );
+    const parsed = compactConversationSchema.safeParse(await request.json().catch(() => ({})));
     if (!parsed.success) {
       return errorResponse(400, "invalid_payload", zodMessage(parsed.error));
     }
@@ -158,11 +149,12 @@ async function listConversations(request: Request, env: Env): Promise<Response> 
 }
 
 function createWebUiConversationId(title: string | undefined): string {
-  const slug = (title ?? "chat")
-    .toLowerCase()
-    .replace(/[^a-z0-9\u4e00-\u9fa5]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 28) || "chat";
+  const slug =
+    (title ?? "chat")
+      .toLowerCase()
+      .replace(/[^a-z0-9\u4e00-\u9fa5]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 28) || "chat";
 
   return `webui:${slug}-${crypto.randomUUID().slice(0, 8)}`;
 }

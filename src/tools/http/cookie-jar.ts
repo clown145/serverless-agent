@@ -19,10 +19,7 @@ export async function resolveCookieHeader(
   url: string,
   cookieJar: HttpCookieJarOptions
 ): Promise<string | undefined> {
-  if (
-    (cookieJar.mode !== "send" && cookieJar.mode !== "send_and_store") ||
-    !cookieJar.id
-  ) {
+  if ((cookieJar.mode !== "send" && cookieJar.mode !== "send_and_store") || !cookieJar.id) {
     return undefined;
   }
 
@@ -52,10 +49,7 @@ export async function storeCookieJarFromResponse(
   cookieJar: HttpCookieJarOptions,
   response: Response
 ): Promise<void> {
-  if (
-    (cookieJar.mode !== "store" && cookieJar.mode !== "send_and_store") ||
-    !cookieJar.id
-  ) {
+  if ((cookieJar.mode !== "store" && cookieJar.mode !== "send_and_store") || !cookieJar.id) {
     return;
   }
 
@@ -103,10 +97,7 @@ async function readCookieJar(
   );
 }
 
-function mergeCookieHeaders(
-  current: string | undefined,
-  setCookies: string[]
-): string | undefined {
+function mergeCookieHeaders(current: string | undefined, setCookies: string[]): string | undefined {
   const jar = new Map<string, string>();
   for (const cookie of parseCookieHeader(current)) {
     jar.set(cookie.name, cookie.value);

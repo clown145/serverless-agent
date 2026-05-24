@@ -95,11 +95,11 @@ https://<worker-subdomain>.workers.dev/ui
 
 `OBJECT_STORAGE_BACKEND` 决定 VFS 大内容、skills、artifacts 和 attachments 存在哪里。
 
-| 后端 | 说明 |
-| --- | --- |
-| `r2` | 默认模式。workflow 会查找或创建 `R2_BUCKET_NAME`，并绑定为 `AGENT_BUCKET`。 |
-| `s3` | 使用 S3-compatible 存储。需要配置 S3 endpoint、bucket 和访问密钥。 |
-| `d1_lite` | 将小对象存入 D1。适合作为 R2/S3 不可用时的最低可用模式，单对象大小受限。 |
+| 后端      | 说明                                                                        |
+| --------- | --------------------------------------------------------------------------- |
+| `r2`      | 默认模式。workflow 会查找或创建 `R2_BUCKET_NAME`，并绑定为 `AGENT_BUCKET`。 |
+| `s3`      | 使用 S3-compatible 存储。需要配置 S3 endpoint、bucket 和访问密钥。          |
+| `d1_lite` | 将小对象存入 D1。适合作为 R2/S3 不可用时的最低可用模式，单对象大小受限。    |
 
 如果 R2 设置失败，workflow 可以回退到 `d1_lite`，让 Worker 仍能部署。
 

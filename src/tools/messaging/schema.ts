@@ -1,6 +1,14 @@
 import { z } from "zod";
 
-export const messagingPlatformSchema = z.enum(["telegram", "qq", "wecom", "weixin_oc", "webhook", "admin", "webui"]);
+export const messagingPlatformSchema = z.enum([
+  "telegram",
+  "qq",
+  "wecom",
+  "weixin_oc",
+  "webhook",
+  "admin",
+  "webui"
+]);
 
 export const sendMessageInputSchema = z.object({
   platform: messagingPlatformSchema,
@@ -52,11 +60,7 @@ export const currentConversationFileInputSchema = z.object({
 
 export type CurrentConversationFileInput = z.infer<typeof currentConversationFileInputSchema>;
 
-export const buttonActionSchema = z.enum([
-  "agent.message",
-  "pending.confirm",
-  "pending.reject"
-]);
+export const buttonActionSchema = z.enum(["agent.message", "pending.confirm", "pending.reject"]);
 
 const buttonSchema = z.object({
   label: z.string().min(1).max(64),
@@ -72,10 +76,7 @@ export const sendButtonsInputSchema = z.object({
   platform: messagingPlatformSchema,
   conversationId: z.string().min(1),
   text: z.string().min(1).max(4096),
-  buttons: z.preprocess(
-    parseJsonString,
-    z.array(buttonSchema).min(1).max(12)
-  ),
+  buttons: z.preprocess(parseJsonString, z.array(buttonSchema).min(1).max(12)),
   layout: buttonLayoutSchema.optional(),
   expiresInSeconds: z.number().int().min(60).max(86_400).optional()
 });

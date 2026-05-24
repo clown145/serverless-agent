@@ -13,10 +13,7 @@ import {
   testQqOfficialIntegration
 } from "./platforms/qq-official-admin-actions";
 import { toQqOfficialIntegrationDto } from "./platforms/qq-official-dto";
-import {
-  updateQqOfficialIntegrationSchema,
-  zodMessage
-} from "./platforms/qq-official-schemas";
+import { updateQqOfficialIntegrationSchema, zodMessage } from "./platforms/qq-official-schemas";
 
 export async function handleAdminQqOfficialIntegrationDetail(
   request: Request,
@@ -29,7 +26,11 @@ export async function handleAdminQqOfficialIntegrationDetail(
 
   const integration = await getPlatformIntegrationRecord(env.AGENT_DB, integrationId);
   if (!integration || integration.platform !== "qq") {
-    return errorResponse(404, "qq_official_integration_not_found", "QQ official integration not found");
+    return errorResponse(
+      404,
+      "qq_official_integration_not_found",
+      "QQ official integration not found"
+    );
   }
 
   const pathname = new URL(request.url).pathname;
@@ -77,7 +78,11 @@ export async function handleAdminQqOfficialIntegrationDetail(
 async function deleteIntegration(env: Env, integrationId: string): Promise<Response> {
   const deleted = await deletePlatformIntegrationRecord(env.AGENT_DB, integrationId);
   if (!deleted) {
-    return errorResponse(404, "qq_official_integration_not_found", "QQ official integration not found");
+    return errorResponse(
+      404,
+      "qq_official_integration_not_found",
+      "QQ official integration not found"
+    );
   }
 
   return jsonResponse({ ok: true, deleted });

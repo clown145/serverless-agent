@@ -90,14 +90,9 @@ describe("skill service file revisions", () => {
 });
 
 function skillMarkdown(label: string): string {
-  return [
-    "---",
-    "name: Demo",
-    "description: Use this for demos.",
-    "---",
-    "",
-    `# ${label}`
-  ].join("\n");
+  return ["---", "name: Demo", "description: Use this for demos.", "---", "", `# ${label}`].join(
+    "\n"
+  );
 }
 
 type VfsEntryRow = {
@@ -158,12 +153,11 @@ function first(
     return contents.get(key(values[0], values[1])) ?? null;
   }
   if (sql.includes("FROM vfs_revisions")) {
-    return revisions.find(
-      (row) =>
-        row.agent_id === values[0] &&
-        row.path === values[1] &&
-        row.version === values[2]
-    ) ?? null;
+    return (
+      revisions.find(
+        (row) => row.agent_id === values[0] && row.path === values[1] && row.version === values[2]
+      ) ?? null
+    );
   }
   if (sql.includes("FROM vfs_entries")) {
     return entries.get(key(values[0], values[1])) ?? null;

@@ -39,10 +39,7 @@ export function sanitizeToolName(name: string): string {
   return /^[a-zA-Z_]/.test(normalized) ? normalized : `tool_${normalized}`;
 }
 
-function makeUniqueWireName(
-  internalName: string,
-  existing: Map<string, string>
-): string {
+function makeUniqueWireName(internalName: string, existing: Map<string, string>): string {
   const base = sanitizeToolName(internalName);
   let candidate = base;
   let suffix = 2;

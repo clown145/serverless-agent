@@ -38,7 +38,7 @@ export function WeixinOcIntegrationForm({
         {t("platforms.agent")}
         <input
           value={draft.agentId}
-          placeholder="default"
+          placeholder={t("platforms.agentPlaceholder")}
           onChange={(event) => onDraftChange({ ...draft, agentId: event.target.value })}
         />
       </label>
@@ -56,15 +56,8 @@ export function WeixinOcIntegrationForm({
       >
         {advancedOpen ? t("platforms.weixinOcHideAdvanced") : t("platforms.weixinOcShowAdvanced")}
       </button>
-      {advancedOpen && (
-        <WeixinOcAdvancedFields draft={draft} onDraftChange={onDraftChange} />
-      )}
-      <button
-        className="primary-button"
-        type="button"
-        onClick={onSubmit}
-        disabled={submitting}
-      >
+      {advancedOpen && <WeixinOcAdvancedFields draft={draft} onDraftChange={onDraftChange} />}
+      <button className="primary-button" type="button" onClick={onSubmit} disabled={submitting}>
         <Plus size={16} />
         {submitting ? t("platforms.weixinOcCreatingLogin") : t("platforms.weixinOcCreateAndLogin")}
       </button>

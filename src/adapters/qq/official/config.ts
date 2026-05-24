@@ -47,9 +47,7 @@ export async function resolveQqOfficialBotByIntegrationId(
   return integration ? integrationQqOfficialConfig(env, integration) : undefined;
 }
 
-export async function listQqOfficialBots(
-  env: Env
-): Promise<QqOfficialBotConfig[]> {
+export async function listQqOfficialBots(env: Env): Promise<QqOfficialBotConfig[]> {
   const integrations = await listPlatformIntegrationRecords(env.AGENT_DB, {
     platform: "qq"
   });
@@ -67,12 +65,10 @@ export async function listQqOfficialBots(
   return fallback.appId || fallback.secret ? [fallback] : [];
 }
 
-export function qqOfficialObjectName(config: Pick<QqOfficialBotConfig, "agentId" | "appId" | "integrationId">): string {
-  return [
-    config.agentId,
-    config.integrationId ?? "env",
-    config.appId ?? "unknown"
-  ].join(":");
+export function qqOfficialObjectName(
+  config: Pick<QqOfficialBotConfig, "agentId" | "appId" | "integrationId">
+): string {
+  return [config.agentId, config.integrationId ?? "env", config.appId ?? "unknown"].join(":");
 }
 
 async function integrationQqOfficialConfig(
@@ -82,8 +78,7 @@ async function integrationQqOfficialConfig(
   const config = integration.config;
   const appId = stringConfig(config.appId) ?? stringConfig(config.appid);
   const secret =
-    (await resolveQqOfficialCredential(env, integration)) ??
-    stringConfig(config.secret);
+    (await resolveQqOfficialCredential(env, integration)) ?? stringConfig(config.secret);
 
   return {
     agentId: integration.agentId,
@@ -91,13 +86,10 @@ async function integrationQqOfficialConfig(
     secret,
     integrationId: integration.id,
     isSandbox: booleanConfig(config.isSandbox) ?? booleanConfig(config.is_sandbox) ?? false,
-    connectionMode:
-      stringConfig(config.connectionMode) === "webhook" ? "webhook" : "gateway",
+    connectionMode: stringConfig(config.connectionMode) === "webhook" ? "webhook" : "gateway",
     intent: qqOfficialIntentMask({
       enableGroupC2c:
-        booleanConfig(config.enableGroupC2c) ??
-        booleanConfig(config.enable_group_c2c) ??
-        true,
+        booleanConfig(config.enableGroupC2c) ?? booleanConfig(config.enable_group_c2c) ?? true,
       enableGuildDirectMessage:
         booleanConfig(config.enableGuildDirectMessage) ??
         booleanConfig(config.enable_guild_direct_message) ??
@@ -121,10 +113,8 @@ function envQqOfficialConfig(env: Env, agentId: string): QqOfficialBotConfig {
     connectionMode: "gateway",
     intent: qqOfficialIntentMask({
       enableGroupC2c: env.QQ_OFFICIAL_ENABLE_GROUP_C2C !== "false",
-      enableGuildDirectMessage:
-        env.QQ_OFFICIAL_ENABLE_GUILD_DIRECT_MESSAGE !== "false",
-      enablePublicGuildMessages:
-        env.QQ_OFFICIAL_ENABLE_PUBLIC_GUILD_MESSAGES !== "false"
+      enableGuildDirectMessage: env.QQ_OFFICIAL_ENABLE_GUILD_DIRECT_MESSAGE !== "false",
+      enablePublicGuildMessages: env.QQ_OFFICIAL_ENABLE_PUBLIC_GUILD_MESSAGES !== "false"
     }),
     source: "env"
   };

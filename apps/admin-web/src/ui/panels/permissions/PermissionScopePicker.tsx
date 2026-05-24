@@ -151,9 +151,7 @@ export function PermissionScopePicker({
                 type="button"
                 onClick={() => toggleTool(tool)}
               >
-                <span className="permission-choice-icon">
-                  {selected && <Check size={14} />}
-                </span>
+                <span className="permission-choice-icon">{selected && <Check size={14} />}</span>
                 <span>
                   <strong>{tool.title ?? tool.name}</strong>
                   <small>{tool.name}</small>

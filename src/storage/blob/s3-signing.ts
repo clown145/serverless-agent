@@ -49,13 +49,7 @@ export async function presignS3Url(input: S3PresignInput): Promise<string> {
   ].join("\n");
   const signingKey = await s3SigningKey(input.secretAccessKey, dateStamp, input.region);
   const signature = bytesToHex(
-    new Uint8Array(
-      await crypto.subtle.sign(
-        "HMAC",
-        signingKey,
-        encoder.encode(stringToSign)
-      )
-    )
+    new Uint8Array(await crypto.subtle.sign("HMAC", signingKey, encoder.encode(stringToSign)))
   );
   query.set("X-Amz-Signature", signature);
 
@@ -100,13 +94,9 @@ async function s3SigningKey(
   const regionKey = await hmacRaw(dateKey, region);
   const serviceKey = await hmacRaw(regionKey, "s3");
   const signingKey = await hmacRaw(serviceKey, "aws4_request");
-  return crypto.subtle.importKey(
-    "raw",
-    signingKey,
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"]
-  );
+  return crypto.subtle.importKey("raw", signingKey, { name: "HMAC", hash: "SHA-256" }, false, [
+    "sign"
+  ]);
 }
 
 async function hmacRaw(keyBytes: Uint8Array, value: string): Promise<Uint8Array> {

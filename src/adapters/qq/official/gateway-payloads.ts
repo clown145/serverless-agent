@@ -1,8 +1,5 @@
 import { QQ_OPCODE } from "./types";
-import type {
-  QqOfficialGatewayIntent,
-  QqOfficialGatewayPayload
-} from "./types";
+import type { QqOfficialGatewayIntent, QqOfficialGatewayPayload } from "./types";
 
 export type QqOfficialIdentifyInput = {
   token: string;

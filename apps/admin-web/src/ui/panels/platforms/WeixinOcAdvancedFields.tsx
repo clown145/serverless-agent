@@ -6,10 +6,7 @@ type WeixinOcAdvancedFieldsProps = {
   onDraftChange: (draft: WeixinOcIntegrationDraft) => void;
 };
 
-export function WeixinOcAdvancedFields({
-  draft,
-  onDraftChange
-}: WeixinOcAdvancedFieldsProps) {
+export function WeixinOcAdvancedFields({ draft, onDraftChange }: WeixinOcAdvancedFieldsProps) {
   const { t } = useI18n();
 
   return (

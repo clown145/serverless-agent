@@ -14,14 +14,14 @@
 
 ## 当前平台
 
-| 路径 | 平台 |
-| --- | --- |
-| `telegram/` | Telegram Bot API webhook 和出站消息。 |
-| `qq/official/` | QQ Official Gateway mode 和 webhook mode。 |
-| `wecom/` | 企业微信客服 callback 和下行。 |
-| `weixin-oc/` | Weixin OC / WeChat Personal 扫码登录、long-poll 和下行。 |
-| `webui/` | 浏览器管理端入口。 |
-| `admin/` | curl、脚本和本地调试入口。 |
+| 路径           | 平台                                                     |
+| -------------- | -------------------------------------------------------- |
+| `telegram/`    | Telegram Bot API webhook 和出站消息。                    |
+| `qq/official/` | QQ Official Gateway mode 和 webhook mode。               |
+| `wecom/`       | 企业微信客服 callback 和下行。                           |
+| `weixin-oc/`   | Weixin OC / WeChat Personal 扫码登录、long-poll 和下行。 |
+| `webui/`       | 浏览器管理端入口。                                       |
+| `admin/`       | curl、脚本和本地调试入口。                               |
 
 ## 边界
 

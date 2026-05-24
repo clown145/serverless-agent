@@ -100,17 +100,14 @@ export function createAdminClient(getToken: () => string) {
           eventId: string;
           result?: { queued?: boolean; status?: string; runId?: string };
         }>
-      >(
-        "/admin/messages",
-        {
-          method: "POST",
-          body: JSON.stringify({
-            ...body,
-            platform: "webui",
-            mode: "sync"
-          })
-        }
-      );
+      >("/admin/messages", {
+        method: "POST",
+        body: JSON.stringify({
+          ...body,
+          platform: "webui",
+          mode: "sync"
+        })
+      });
     },
     listMessages: (body: { conversationId: string; agentId?: string; limit?: number }) => {
       const params = new URLSearchParams({
@@ -131,12 +128,14 @@ export function createAdminClient(getToken: () => string) {
         `/admin/messages/${encodeURIComponent(messageId)}/attachments/${encodeURIComponent(attachmentId)}`
       );
     },
-    listConversations: (body: {
-      agentId?: string;
-      platform?: ConversationSettings["platform"];
-      rootConversationId?: string;
-      limit?: number;
-    } = {}) => {
+    listConversations: (
+      body: {
+        agentId?: string;
+        platform?: ConversationSettings["platform"];
+        rootConversationId?: string;
+        limit?: number;
+      } = {}
+    ) => {
       const params = new URLSearchParams();
       if (body.agentId) {
         params.set("agentId", body.agentId);
@@ -163,13 +162,10 @@ export function createAdminClient(getToken: () => string) {
       rootConversationId?: string;
       title?: string;
     }) => {
-      return request<ApiResult<{ conversation: ConversationSettings }>>(
-        "/admin/conversations",
-        {
-          method: "POST",
-          body: JSON.stringify(body)
-        }
-      );
+      return request<ApiResult<{ conversation: ConversationSettings }>>("/admin/conversations", {
+        method: "POST",
+        body: JSON.stringify(body)
+      });
     },
     updateConversation: (
       conversationId: string,
@@ -262,9 +258,7 @@ export function createAdminClient(getToken: () => string) {
         path: body.path,
         query: body.query
       });
-      return request<ApiResult<{ matches: VfsSearchMatch[] }>>(
-        `/admin/vfs?${params.toString()}`
-      );
+      return request<ApiResult<{ matches: VfsSearchMatch[] }>>(`/admin/vfs?${params.toString()}`);
     },
     runVfsCommand: (body: { command: string; cwd?: string }) => {
       return request<ApiResult<{ result: VfsCommandResult }>>("/admin/vfs", {
@@ -299,10 +293,9 @@ export function createAdminClient(getToken: () => string) {
       );
     },
     deleteSkill: (skillId: string) => {
-      return request<ApiResult<{ ok: boolean }>>(
-        `/admin/skills/${encodeURIComponent(skillId)}`,
-        { method: "DELETE" }
-      );
+      return request<ApiResult<{ ok: boolean }>>(`/admin/skills/${encodeURIComponent(skillId)}`, {
+        method: "DELETE"
+      });
     },
     getSkillSettings: () => {
       return request<ApiResult<{ settings: SkillSettings }>>("/admin/skills/settings");
@@ -453,9 +446,7 @@ export function createAdminClient(getToken: () => string) {
           summary: DiagnosticSummary;
           healthy: boolean;
         }>
-      >(
-        "/admin/diagnostics"
-      );
+      >("/admin/diagnostics");
     },
     getTelegramIntegrations: () => {
       return request<
@@ -490,13 +481,10 @@ export function createAdminClient(getToken: () => string) {
       openKfId?: string;
       webhookSecret?: string;
     }) => {
-      return request<ApiResult<{ integration: WecomIntegration }>>(
-        "/admin/platforms/wecom",
-        {
-          method: "POST",
-          body: JSON.stringify(body)
-        }
-      );
+      return request<ApiResult<{ integration: WecomIntegration }>>("/admin/platforms/wecom", {
+        method: "POST",
+        body: JSON.stringify(body)
+      });
     },
     updateWecomIntegration: (
       integrationId: string,
@@ -532,10 +520,7 @@ export function createAdminClient(getToken: () => string) {
           qrCodeUrl: string;
           contact: unknown;
         }>
-      >(
-        `/admin/platforms/wecom-integrations/${integrationId}/contact-way`,
-        { method: "POST" }
-      );
+      >(`/admin/platforms/wecom-integrations/${integrationId}/contact-way`, { method: "POST" });
     },
     deleteWecomIntegration: (integrationId: string) => {
       return request<ApiResult<{ deleted: boolean }>>(
@@ -683,13 +668,10 @@ export function createAdminClient(getToken: () => string) {
       webhookSecret?: string;
       parseMode?: TelegramIntegration["parseMode"];
     }) => {
-      return request<ApiResult<{ integration: TelegramIntegration }>>(
-        "/admin/platforms/telegram",
-        {
-          method: "POST",
-          body: JSON.stringify(body)
-        }
-      );
+      return request<ApiResult<{ integration: TelegramIntegration }>>("/admin/platforms/telegram", {
+        method: "POST",
+        body: JSON.stringify(body)
+      });
     },
     updateTelegramIntegration: (
       integrationId: string,
@@ -704,10 +686,9 @@ export function createAdminClient(getToken: () => string) {
       );
     },
     testTelegramIntegration: (integrationId: string) => {
-      return request<ApiResult<{ integration: TelegramIntegration; bot: unknown; webhook: unknown }>>(
-        `/admin/platforms/telegram/${integrationId}/test`,
-        { method: "POST" }
-      );
+      return request<
+        ApiResult<{ integration: TelegramIntegration; bot: unknown; webhook: unknown }>
+      >(`/admin/platforms/telegram/${integrationId}/test`, { method: "POST" });
     },
     syncTelegramCommands: (integrationId: string) => {
       return request<ApiResult<{ integration: TelegramIntegration; commands: unknown[] }>>(
@@ -760,9 +741,7 @@ export function createAdminClient(getToken: () => string) {
       );
     },
     listMcpServers: () => {
-      return request<ApiResult<{ servers: McpServer[]; tools: McpTool[] }>>(
-        "/admin/mcp/servers"
-      );
+      return request<ApiResult<{ servers: McpServer[]; tools: McpTool[] }>>("/admin/mcp/servers");
     },
     createMcpServer: (body: {
       name: string;
@@ -854,17 +833,20 @@ export function createAdminClient(getToken: () => string) {
         body: JSON.stringify(body)
       });
     },
-    updateModelProvider: (providerId: string, body: {
-      name: string;
-      providerType: ModelProvider["providerType"];
-      baseUrl?: string;
-      apiKey?: string;
-      authType?: ModelProvider["authType"];
-      authHeader?: string;
-      authQueryParam?: string;
-      modelListStrategy?: ModelProvider["modelListStrategy"];
-      chatProtocol?: ModelProvider["chatProtocol"];
-    }) => {
+    updateModelProvider: (
+      providerId: string,
+      body: {
+        name: string;
+        providerType: ModelProvider["providerType"];
+        baseUrl?: string;
+        apiKey?: string;
+        authType?: ModelProvider["authType"];
+        authHeader?: string;
+        authQueryParam?: string;
+        modelListStrategy?: ModelProvider["modelListStrategy"];
+        chatProtocol?: ModelProvider["chatProtocol"];
+      }
+    ) => {
       return request<ApiResult<{ provider: ModelProvider }>>(
         `/admin/model-providers/${providerId}`,
         {
@@ -874,14 +856,13 @@ export function createAdminClient(getToken: () => string) {
       );
     },
     refreshProviderModels: (providerId: string) => {
-      return request<ApiResult<{
-        models: ModelCatalogItem[];
-        metadataMatched?: number;
-        metadataError?: string;
-      }>>(
-        `/admin/model-providers/${providerId}/refresh`,
-        { method: "POST" }
-      );
+      return request<
+        ApiResult<{
+          models: ModelCatalogItem[];
+          metadataMatched?: number;
+          metadataError?: string;
+        }>
+      >(`/admin/model-providers/${providerId}/refresh`, { method: "POST" });
     },
     refreshProviderModelMetadata: (providerId: string, source = "models.dev") => {
       return request<
@@ -911,22 +892,29 @@ export function createAdminClient(getToken: () => string) {
       });
     },
     getModelRoleSettings: () => {
-      return request<ApiResult<{
-        providers: ModelProvider[];
-        models: ModelCatalogItem[];
-        settings?: ModelSettings;
-        roles: ModelRoleSettings;
-        config: AgentModelConfig;
-      }>>("/admin/model-role-settings");
+      return request<
+        ApiResult<{
+          providers: ModelProvider[];
+          models: ModelCatalogItem[];
+          settings?: ModelSettings;
+          roles: ModelRoleSettings;
+          config: AgentModelConfig;
+        }>
+      >("/admin/model-role-settings");
     },
-    updateModelRoleSettings: (roles: ModelRoleSettingsUpdate, config?: Partial<AgentModelConfig>) => {
-      return request<ApiResult<{
-        providers: ModelProvider[];
-        models: ModelCatalogItem[];
-        settings?: ModelSettings;
-        roles: ModelRoleSettings;
-        config: AgentModelConfig;
-      }>>("/admin/model-role-settings", {
+    updateModelRoleSettings: (
+      roles: ModelRoleSettingsUpdate,
+      config?: Partial<AgentModelConfig>
+    ) => {
+      return request<
+        ApiResult<{
+          providers: ModelProvider[];
+          models: ModelCatalogItem[];
+          settings?: ModelSettings;
+          roles: ModelRoleSettings;
+          config: AgentModelConfig;
+        }>
+      >("/admin/model-role-settings", {
         method: "PUT",
         body: JSON.stringify({ roles, config })
       });

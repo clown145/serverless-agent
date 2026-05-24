@@ -1,10 +1,5 @@
 import type { JsonSchema } from "../../core/model/types";
-import type {
-  RegisteredTool,
-  ToolAnnotations,
-  ToolDefinition,
-  ToolSource
-} from "../types";
+import type { RegisteredTool, ToolAnnotations, ToolDefinition, ToolSource } from "../types";
 
 export type StandardToolDefinition = {
   name: string;
@@ -43,9 +38,7 @@ export function toToolCatalogItem(tool: RegisteredTool): ToolCatalogItem {
   };
 }
 
-export function toStandardToolDefinition(
-  definition: ToolDefinition
-): StandardToolDefinition {
+export function toStandardToolDefinition(definition: ToolDefinition): StandardToolDefinition {
   return {
     name: definition.name,
     title: definition.title,
@@ -57,7 +50,5 @@ export function toStandardToolDefinition(
 }
 
 function compareToolCatalogItems(left: ToolCatalogItem, right: ToolCatalogItem): number {
-  return `${left.source.type}:${left.name}`.localeCompare(
-    `${right.source.type}:${right.name}`
-  );
+  return `${left.source.type}:${left.name}`.localeCompare(`${right.source.type}:${right.name}`);
 }

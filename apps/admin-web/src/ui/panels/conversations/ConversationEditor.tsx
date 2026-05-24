@@ -1,8 +1,4 @@
-import type {
-  ConversationSettings,
-  ModelCatalogItem,
-  ModelProvider
-} from "../../../api/types";
+import type { ConversationSettings, ModelCatalogItem, ModelProvider } from "../../../api/types";
 import { useI18n } from "../../i18n/I18nProvider";
 import { enabledModelOptions, modelKey, modelLabel } from "../models/modelSelection";
 
@@ -55,7 +51,9 @@ export function ConversationEditor({
     <div className="conversation-editor">
       <div className="conversation-meta">
         <strong>{conversation.conversationId}</strong>
-        <span>{conversation.platform} / {conversation.rootConversationId}</span>
+        <span>
+          {conversation.platform} / {conversation.rootConversationId}
+        </span>
       </div>
 
       <div className="conversation-form-grid">
@@ -101,9 +99,7 @@ export function ConversationEditor({
           {t("conversations.summaryModel")}
           <select
             value={draft.summaryModelKey}
-            onChange={(event) =>
-              onDraftChange({ ...draft, summaryModelKey: event.target.value })
-            }
+            onChange={(event) => onDraftChange({ ...draft, summaryModelKey: event.target.value })}
           >
             <option value="">{t("conversations.defaultModel")}</option>
             {enabledModelOptions(models).map((model) => (
@@ -117,9 +113,7 @@ export function ConversationEditor({
           <input
             checked={draft.summaryEnabled}
             type="checkbox"
-            onChange={(event) =>
-              onDraftChange({ ...draft, summaryEnabled: event.target.checked })
-            }
+            onChange={(event) => onDraftChange({ ...draft, summaryEnabled: event.target.checked })}
           />
           {t("conversations.summaryEnabled")}
         </label>

@@ -19,7 +19,9 @@ export async function encryptWeixinOcToken(
 ): Promise<EncryptedWeixinOcToken> {
   const masterKey = resolveCredentialMasterKey(env);
   if (!masterKey) {
-    throw new Error("AGENT_MASTER_KEY or INTERNAL_ADMIN_TOKEN is required to save Weixin OC tokens");
+    throw new Error(
+      "AGENT_MASTER_KEY or INTERNAL_ADMIN_TOKEN is required to save Weixin OC tokens"
+    );
   }
 
   return encryptString(plaintext, masterKey);
@@ -40,7 +42,9 @@ export async function resolveWeixinOcCredential(
 
   const masterKey = resolveCredentialMasterKey(env);
   if (!masterKey) {
-    throw new Error("AGENT_MASTER_KEY or INTERNAL_ADMIN_TOKEN is required to read Weixin OC tokens");
+    throw new Error(
+      "AGENT_MASTER_KEY or INTERNAL_ADMIN_TOKEN is required to read Weixin OC tokens"
+    );
   }
 
   return decryptString(

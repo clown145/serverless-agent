@@ -92,11 +92,7 @@ function requestHeaders(input: {
     headers.set("authorization", `Bearer ${input.auth.credential}`);
   }
 
-  if (
-    input.auth.authType === "api-key-header" &&
-    input.auth.authHeader &&
-    input.auth.credential
-  ) {
+  if (input.auth.authType === "api-key-header" && input.auth.authHeader && input.auth.credential) {
     headers.set(input.auth.authHeader, input.auth.credential);
   }
 
@@ -134,10 +130,7 @@ async function readMcpResponse<T>(
   }
 }
 
-function parseSseResponse<T>(
-  text: string,
-  requestId?: number
-): JsonRpcResponse<T> {
+function parseSseResponse<T>(text: string, requestId?: number): JsonRpcResponse<T> {
   const events = text.split(/\r?\n\r?\n/);
 
   for (const event of events) {

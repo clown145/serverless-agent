@@ -1,8 +1,4 @@
-import type {
-  MessageAttachment,
-  MessageKind,
-  Platform
-} from "../../shared/types/internal-message";
+import type { MessageAttachment, MessageKind, Platform } from "../../shared/types/internal-message";
 
 export type ConversationMessage = {
   id: string;

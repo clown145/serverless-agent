@@ -1,11 +1,4 @@
-export type Platform =
-  | "telegram"
-  | "qq"
-  | "wecom"
-  | "weixin_oc"
-  | "webhook"
-  | "admin"
-  | "webui";
+export type Platform = "telegram" | "qq" | "wecom" | "weixin_oc" | "webhook" | "admin" | "webui";
 
 export type MessageKind = "text" | "command" | "attachment" | "event";
 

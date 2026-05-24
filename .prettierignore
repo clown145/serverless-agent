@@ -1,0 +1,11 @@
+node_modules/
+dist/
+build/
+coverage/
+.wrangler/
+dist-github/
+package-lock.json
+src/prompts/generated.ts
+wrangler.generated.toml
+local-r2/
+local-d1/

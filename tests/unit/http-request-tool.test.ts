@@ -54,7 +54,7 @@ describe("http.request", () => {
     expect(result.output).toMatchObject({
       status: 201,
       ok: true,
-      bodyText: "{\"ok\":true}",
+      bodyText: '{"ok":true}',
       bodyJson: { ok: true },
       headers: {
         "content-type": "application/json"

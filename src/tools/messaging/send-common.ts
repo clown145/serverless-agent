@@ -35,9 +35,5 @@ export async function handlePlatformResult(
 }
 
 export function unsupported(platform: string, capability: string): ToolResult {
-  return failed(
-    "capability_not_supported",
-    `${platform} does not support ${capability}`,
-    false
-  );
+  return failed("capability_not_supported", `${platform} does not support ${capability}`, false);
 }

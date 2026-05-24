@@ -5,12 +5,7 @@ import type {
 } from "../storage/repositories/model-settings-types";
 import type { VfsWorkspaceBootstrapStatus } from "../vfs/bootstrap/default-workspace";
 
-export type SetupStepId =
-  | "provider"
-  | "credential"
-  | "models"
-  | "active_model"
-  | "workspace";
+export type SetupStepId = "provider" | "credential" | "models" | "active_model" | "workspace";
 
 export type SetupStep = {
   id: SetupStepId;
@@ -74,9 +69,10 @@ export function buildSetupStatus(input: {
       id: "active_model",
       label: "Default model",
       status: activeProvider && activeModel ? "done" : "pending",
-      detail: activeProvider && activeModel
-        ? `${activeProvider.name} / ${activeModel.displayName ?? activeModel.modelId}`
-        : "Select a default model"
+      detail:
+        activeProvider && activeModel
+          ? `${activeProvider.name} / ${activeModel.displayName ?? activeModel.modelId}`
+          : "Select a default model"
     }
   ];
 

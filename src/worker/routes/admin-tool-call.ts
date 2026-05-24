@@ -2,18 +2,11 @@ import { createId } from "../../shared/ids";
 import { errorResponse, jsonResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
 import { nowIso } from "../../shared/time";
-import {
-  appendRunStep,
-  completeRun,
-  createRun
-} from "../../storage/repositories/runs-repository";
+import { appendRunStep, completeRun, createRun } from "../../storage/repositories/runs-repository";
 import { createRuntimeToolRegistry } from "../../tools/registry/tool-registry";
 import { callToolSchema, zodMessage } from "./tools/tool-call-schemas";
 
-export async function handleAdminToolCall(
-  request: Request,
-  env: Env
-): Promise<Response> {
+export async function handleAdminToolCall(request: Request, env: Env): Promise<Response> {
   if (request.method !== "POST") {
     return errorResponse(405, "method_not_allowed", "Method not allowed");
   }

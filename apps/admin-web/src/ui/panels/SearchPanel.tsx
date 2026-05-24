@@ -55,7 +55,10 @@ export function SearchPanel({ client, notify }: PanelProps) {
       notify(t("search.providerActivated"), "ok");
       await load();
     } catch (error) {
-      notify(error instanceof Error ? error.message : "Failed to activate search provider", "error");
+      notify(
+        error instanceof Error ? error.message : "Failed to activate search provider",
+        "error"
+      );
     }
   }
 
@@ -130,7 +133,11 @@ export function SearchPanel({ client, notify }: PanelProps) {
             onChange={(event) => setDefaultMaxResults(Number(event.target.value))}
           />
         </label>
-        <button className="secondary-button" type="button" onClick={() => void saveSearchSettings()}>
+        <button
+          className="secondary-button"
+          type="button"
+          onClick={() => void saveSearchSettings()}
+        >
           {t("common.save")}
         </button>
       </div>

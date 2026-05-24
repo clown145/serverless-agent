@@ -32,8 +32,12 @@ export function WecomIntegrationList({
             <div>
               <strong>{integration.name}</strong>
               <span>{integration.agentId}</span>
-              <span>{integration.corpId ? `CorpID ${integration.corpId}` : t("platforms.noCorpId")}</span>
-              <span>{integration.hasSecret ? t("platforms.encryptedSecret") : t("platforms.noSecret")}</span>
+              <span>
+                {integration.corpId ? `CorpID ${integration.corpId}` : t("platforms.noCorpId")}
+              </span>
+              <span>
+                {integration.hasSecret ? t("platforms.encryptedSecret") : t("platforms.noSecret")}
+              </span>
               <span>
                 {[
                   integration.tokenConfigured ? t("platforms.wecomTokenReady") : undefined,

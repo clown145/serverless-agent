@@ -1,17 +1,9 @@
 import type { Env } from "../../shared/types/env";
 import { createId } from "../../shared/ids";
 import { nowIso } from "../../shared/time";
-import {
-  isRootPath,
-  normalizeVfsPath,
-  parentPath
-} from "../core/path";
+import { isRootPath, normalizeVfsPath, parentPath } from "../core/path";
 import { vfsConflict, vfsInvalid, vfsNotFound } from "../core/errors";
-import {
-  mapVfsEntry,
-  type VfsEntry,
-  type VfsEntryRow
-} from "./types";
+import { mapVfsEntry, type VfsEntry, type VfsEntryRow } from "./types";
 import { escapeSqlLike, VFS_ENTRY_COLUMNS } from "./sql";
 
 export type CreateVfsDirectoryInput = {
@@ -51,11 +43,7 @@ export async function getVfsEntry(
   return entry;
 }
 
-export async function listVfsEntries(
-  env: Env,
-  agentId: string,
-  path: string
-): Promise<VfsEntry[]> {
+export async function listVfsEntries(env: Env, agentId: string, path: string): Promise<VfsEntry[]> {
   const normalized = normalizeVfsPath(path);
   const result = await env.AGENT_DB.prepare(
     `SELECT ${VFS_ENTRY_COLUMNS}
@@ -83,13 +71,7 @@ export async function listVfsTree(
      ORDER BY path ASC
      LIMIT ?`
   )
-    .bind(
-      agentId,
-      normalized,
-      normalized,
-      `${escapeSqlLike(normalized)}/%`,
-      limit
-    )
+    .bind(agentId, normalized, normalized, `${escapeSqlLike(normalized)}/%`, limit)
     .all<VfsEntryRow>();
 
   return (result.results ?? []).map(mapVfsEntry);

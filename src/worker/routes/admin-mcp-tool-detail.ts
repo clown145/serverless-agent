@@ -2,10 +2,7 @@ import { errorResponse, jsonResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
 import { updateMcpToolStatus } from "../../storage/repositories/mcp-tools-repository";
 import { toMcpToolDto } from "./mcp/mcp-dto";
-import {
-  updateMcpToolStatusSchema,
-  zodMessage
-} from "./mcp/mcp-tool-schemas";
+import { updateMcpToolStatusSchema, zodMessage } from "./mcp/mcp-tool-schemas";
 
 export async function handleAdminMcpToolDetail(
   request: Request,

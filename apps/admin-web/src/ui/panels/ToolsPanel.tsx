@@ -1,11 +1,6 @@
 import { RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import type {
-  McpServer,
-  McpTool,
-  ToolCallHistoryItem,
-  ToolCatalogItem
-} from "../../api/types";
+import type { McpServer, McpTool, ToolCallHistoryItem, ToolCatalogItem } from "../../api/types";
 import { useI18n } from "../i18n/I18nProvider";
 import { ToolbarButton } from "../ToolbarButton";
 import { McpServerForm, type McpServerDraft } from "./tools/McpServerForm";
@@ -38,8 +33,7 @@ export function ToolsPanel({ client, notify }: PanelProps) {
     }, {});
   }, [mcpTools]);
 
-  const selectedTool =
-    tools.find((tool) => tool.name === selectedToolName) ?? tools[0];
+  const selectedTool = tools.find((tool) => tool.name === selectedToolName) ?? tools[0];
 
   async function load() {
     try {
@@ -144,10 +138,7 @@ export function ToolsPanel({ client, notify }: PanelProps) {
         onExecuted={() => void loadToolCalls()}
       />
 
-      <ToolCallHistoryView
-        calls={toolCalls}
-        onRefresh={() => void loadToolCalls()}
-      />
+      <ToolCallHistoryView calls={toolCalls} onRefresh={() => void loadToolCalls()} />
 
       <McpServerForm
         draft={draft}

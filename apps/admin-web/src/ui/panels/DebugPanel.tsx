@@ -40,7 +40,10 @@ export function DebugPanel({ client, notify, onRun }: DebugPanelProps) {
           <p>{t("common.loadedCount", { count: messages.length })}</p>
         </div>
         <div className="tool-meta">
-          <select value={platform} onChange={(event) => setPlatform(event.target.value as typeof platform)}>
+          <select
+            value={platform}
+            onChange={(event) => setPlatform(event.target.value as typeof platform)}
+          >
             <option value="">{t("debug.allPlatforms")}</option>
             <option value="telegram">Telegram</option>
             <option value="webui">WebUI</option>
@@ -57,7 +60,9 @@ export function DebugPanel({ client, notify, onRun }: DebugPanelProps) {
         {messages.map((message) => (
           <article className="debug-message-row" key={message.id}>
             <div>
-              <strong>{message.platform} / {message.kind}</strong>
+              <strong>
+                {message.platform} / {message.kind}
+              </strong>
               <span>{message.conversationId}</span>
               <p>{message.text || message.rawRef || message.id}</p>
               <span>{message.createdAt}</span>

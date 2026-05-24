@@ -14,11 +14,7 @@ type SearchProviderFormProps = {
   onSubmit: () => void;
 };
 
-export function SearchProviderForm({
-  draft,
-  onDraftChange,
-  onSubmit
-}: SearchProviderFormProps) {
+export function SearchProviderForm({ draft, onDraftChange, onSubmit }: SearchProviderFormProps) {
   const { t } = useI18n();
   const defaultBaseUrl = defaultSearchBaseUrl(draft.providerType);
 
@@ -77,7 +73,5 @@ function defaultSearchName(providerType: SearchProvider["providerType"]): string
 }
 
 function defaultSearchBaseUrl(providerType: SearchProvider["providerType"]): string {
-  return providerType === "exa"
-    ? "https://api.exa.ai/search"
-    : "https://api.tavily.com/search";
+  return providerType === "exa" ? "https://api.exa.ai/search" : "https://api.tavily.com/search";
 }

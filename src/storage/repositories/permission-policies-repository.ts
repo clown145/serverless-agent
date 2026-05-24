@@ -112,10 +112,7 @@ export async function findMatchingPermissionPolicies(
   return matches;
 }
 
-export async function deletePermissionPolicy(
-  db: D1Database,
-  policyId: string
-): Promise<boolean> {
+export async function deletePermissionPolicy(db: D1Database, policyId: string): Promise<boolean> {
   const result = await db
     .prepare("UPDATE permission_policies SET status = 'deleted', updated_at = ? WHERE id = ?")
     .bind(nowIso(), policyId)

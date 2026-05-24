@@ -121,8 +121,7 @@ function createDiagnostics(
       toolCall.status === "needs_confirmation"
   );
   const lastError =
-    [...failedToolCalls].reverse()[0]?.error_code ??
-    [...failedSteps].reverse()[0]?.summary;
+    [...failedToolCalls].reverse()[0]?.error_code ?? [...failedSteps].reverse()[0]?.summary;
 
   return {
     durationMs: elapsedMs(run.created_at, run.updated_at),

@@ -62,9 +62,7 @@ export async function uploadWeixinOcMedia(input: {
   };
 }
 
-export function buildWeixinOcImageItem(
-  uploaded: WeixinOcUploadedMedia
-): WeixinOcImageItem {
+export function buildWeixinOcImageItem(uploaded: WeixinOcUploadedMedia): WeixinOcImageItem {
   return {
     type: 2,
     image_item: {
@@ -118,7 +116,7 @@ async function uploadBufferToWeixinOcCdn(input: {
       });
 
       if (response.status >= 400 && response.status < 500) {
-        const message = response.headers.get("x-error-message") ?? await response.text();
+        const message = response.headers.get("x-error-message") ?? (await response.text());
         throw new Error(`Weixin OC CDN upload client error ${response.status}: ${message}`);
       }
       if (response.status !== 200) {
@@ -139,9 +137,7 @@ async function uploadBufferToWeixinOcCdn(input: {
     }
   }
 
-  throw lastError instanceof Error
-    ? lastError
-    : new Error("Weixin OC CDN upload failed");
+  throw lastError instanceof Error ? lastError : new Error("Weixin OC CDN upload failed");
 }
 
 function buildCdnUploadUrl(input: {

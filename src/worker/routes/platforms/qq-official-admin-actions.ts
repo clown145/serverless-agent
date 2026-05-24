@@ -9,9 +9,7 @@ import { errorResponse, jsonResponse } from "../../../shared/http";
 import type { Env } from "../../../shared/types/env";
 import { toQqOfficialIntegrationDto } from "./qq-official-dto";
 
-type QqOfficialIntegration = NonNullable<
-  Awaited<ReturnType<typeof getPlatformIntegrationRecord>>
->;
+type QqOfficialIntegration = NonNullable<Awaited<ReturnType<typeof getPlatformIntegrationRecord>>>;
 
 export async function testQqOfficialIntegration(
   env: Env,
@@ -53,12 +51,9 @@ export async function connectQqOfficialIntegration(
   }
 
   try {
-    const response = await fetchQqOfficialGateway(
-      env,
-      integration.agentId,
-      "/connect",
-      { method: "POST" }
-    );
+    const response = await fetchQqOfficialGateway(env, integration.agentId, "/connect", {
+      method: "POST"
+    });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) {
       const message = JSON.stringify(payload);
@@ -95,25 +90,21 @@ export async function disconnectQqOfficialIntegration(
   }
 
   try {
-    const response = await fetchQqOfficialGateway(
-      env,
-      integration.agentId,
-      "/disconnect",
-      { method: "POST" }
-    );
+    const response = await fetchQqOfficialGateway(env, integration.agentId, "/disconnect", {
+      method: "POST"
+    });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) {
-      return errorResponse(response.status, "qq_official_disconnect_failed", JSON.stringify(payload));
+      return errorResponse(
+        response.status,
+        "qq_official_disconnect_failed",
+        JSON.stringify(payload)
+      );
     }
 
     return jsonResponse({ ok: true, gateway: payload });
   } catch (error) {
-    return recordQqOfficialActionError(
-      env,
-      integration.id,
-      "qq_official_disconnect_failed",
-      error
-    );
+    return recordQqOfficialActionError(env, integration.id, "qq_official_disconnect_failed", error);
   }
 }
 

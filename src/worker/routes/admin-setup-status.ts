@@ -6,14 +6,9 @@ import { listModelCatalog } from "../../storage/repositories/model-catalog-repos
 import { listModelProviders } from "../../storage/repositories/model-providers-repository";
 import { getVfsWorkspaceBootstrapStatus } from "../../vfs/bootstrap/default-workspace";
 
-export async function handleAdminSetupStatus(
-  request: Request,
-  env: Env
-): Promise<Response> {
+export async function handleAdminSetupStatus(request: Request, env: Env): Promise<Response> {
   const agentId =
-    new URL(request.url).searchParams.get("agentId") ??
-    env.DEFAULT_AGENT_ID ??
-    "default";
+    new URL(request.url).searchParams.get("agentId") ?? env.DEFAULT_AGENT_ID ?? "default";
   const [providers, models, settings, workspace] = await Promise.all([
     listModelProviders(env.AGENT_DB),
     listModelCatalog(env.AGENT_DB),

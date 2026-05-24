@@ -1,11 +1,7 @@
 import { childName, normalizeVfsPath, resolveVfsPath } from "../core/path";
 import type { VfsEntry } from "../storage/types";
 import { parseCommandLine } from "./parser";
-import type {
-  VfsCommandInput,
-  VfsCommandResult,
-  VfsCommandRuntime
-} from "./types";
+import type { VfsCommandInput, VfsCommandResult, VfsCommandRuntime } from "./types";
 
 export async function executeVfsCommand(
   runtime: VfsCommandRuntime,
@@ -40,7 +36,8 @@ export async function executeVfsCommand(
       return {
         command,
         cwd,
-        output: "pwd\nls [path]\ncat <path>\ntree [path]\ngrep <query> [path]\nmkdir <path>\nrm [-r] <path>\nmv <from> <to>"
+        output:
+          "pwd\nls [path]\ncat <path>\ntree [path]\ngrep <query> [path]\nmkdir <path>\nrm [-r] <path>\nmv <from> <to>"
       };
     default:
       throw new Error(`Unsupported VFS command: ${command}`);
@@ -175,9 +172,7 @@ async function runMv(
 
 function formatListEntry(entry: VfsEntry): string {
   const suffix = entry.kind === "directory" ? "/" : "";
-  const size = entry.kind === "file" && entry.size !== undefined
-    ? ` ${entry.size}b`
-    : "";
+  const size = entry.kind === "file" && entry.size !== undefined ? ` ${entry.size}b` : "";
   return `${childName(entry.path)}${suffix}${size}`;
 }
 

@@ -19,16 +19,12 @@ describe("model capabilities", () => {
   });
 
   it("infers common vision and long-context models", () => {
-    expect(inferModelCapabilities("gemini-2.5-flash")).toEqual([
-      "tools",
-      "vision",
-      "long_context"
-    ]);
+    expect(inferModelCapabilities("gemini-2.5-flash")).toEqual(["tools", "vision", "long_context"]);
     expect(inferModelCapabilities("text-only-small")).toEqual(["tools"]);
   });
 
   it("normalizes stored capabilities", () => {
-    expect(normalizeModelCapabilities("[\"vision\",\"reasoning\",\"bad\"]", "text")).toEqual([
+    expect(normalizeModelCapabilities('["vision","reasoning","bad"]', "text")).toEqual([
       "vision",
       "reasoning"
     ]);
@@ -60,11 +56,11 @@ describe("model capabilities", () => {
         provider_id: "provider-1",
         model_id: "openai/gpt-4.1",
         display_name: "GPT",
-        capabilities_json: "[\"tools\",\"structured_output\"]",
+        capabilities_json: '["tools","structured_output"]',
         capabilities_source: "models.dev",
         context_window: 1047576,
         max_output_tokens: 32768,
-        metadata_json: "{\"id\":\"openai/gpt-4.1\"}",
+        metadata_json: '{"id":"openai/gpt-4.1"}',
         metadata_source: "models.dev",
         metadata_confidence: "exact",
         metadata_fetched_at: "2026-01-01T00:00:00.000Z",
@@ -147,10 +143,9 @@ describe("model capabilities", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    const metadata = await fetchModelsDevModelMetadata(
-      geminiProviderRecord(),
-      ["gemini-2.5-flash"]
-    );
+    const metadata = await fetchModelsDevModelMetadata(geminiProviderRecord(), [
+      "gemini-2.5-flash"
+    ]);
 
     expect(metadata.get("gemini-2.5-flash")).toMatchObject({
       source: "models.dev",
@@ -212,10 +207,7 @@ describe("model capabilities", () => {
       })
     );
 
-    const metadata = await fetchModelsDevModelMetadata(
-      customProviderRecord(),
-      ["gpt-4.1-mini"]
-    );
+    const metadata = await fetchModelsDevModelMetadata(customProviderRecord(), ["gpt-4.1-mini"]);
 
     expect(metadata.get("gpt-4.1-mini")).toMatchObject({
       source: "models.dev",
@@ -302,10 +294,7 @@ describe("model capabilities", () => {
       })
     );
 
-    const metadata = await fetchModelsDevModelMetadata(
-      customProviderRecord(),
-      ["gpt-4.1-mini"]
-    );
+    const metadata = await fetchModelsDevModelMetadata(customProviderRecord(), ["gpt-4.1-mini"]);
 
     expect(metadata.size).toBe(0);
   });
@@ -340,10 +329,9 @@ describe("model capabilities", () => {
       })
     );
 
-    const metadata = await fetchModelsDevModelMetadata(
-      customProviderRecord(),
-      ["canonical-model-id"]
-    );
+    const metadata = await fetchModelsDevModelMetadata(customProviderRecord(), [
+      "canonical-model-id"
+    ]);
 
     expect(metadata.get("canonical-model-id")).toMatchObject({
       source: "models.dev",

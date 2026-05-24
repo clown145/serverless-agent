@@ -13,7 +13,9 @@ export async function encryptQqOfficialSecret(
 ): Promise<EncryptedQqOfficialSecret> {
   const masterKey = env.AGENT_MASTER_KEY ?? env.INTERNAL_ADMIN_TOKEN;
   if (!masterKey) {
-    throw new Error("AGENT_MASTER_KEY or INTERNAL_ADMIN_TOKEN is required to save QQ official secrets");
+    throw new Error(
+      "AGENT_MASTER_KEY or INTERNAL_ADMIN_TOKEN is required to save QQ official secrets"
+    );
   }
 
   return encryptString(plaintext, masterKey);

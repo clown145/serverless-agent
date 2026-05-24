@@ -37,12 +37,8 @@ describe("QqOfficialApiClient", () => {
       }
     });
     expect(fetcher).toHaveBeenCalledTimes(2);
-    expect(fetcher.mock.calls[0]?.[0]).toBe(
-      "https://bots.qq.com/app/getAppAccessToken"
-    );
-    expect(fetcher.mock.calls[1]?.[0]).toBe(
-      "https://api.sgroup.qq.com/gateway/bot"
-    );
+    expect(fetcher.mock.calls[0]?.[0]).toBe("https://bots.qq.com/app/getAppAccessToken");
+    expect(fetcher.mock.calls[1]?.[0]).toBe("https://api.sgroup.qq.com/gateway/bot");
   });
 
   it("sends c2c text messages as markdown to the v2 endpoint", async () => {

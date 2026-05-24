@@ -1,19 +1,14 @@
 import { findActivePlatformIntegration } from "../../storage/repositories/platform-integrations-repository";
 import { promptText } from "../../prompts";
 import type { Env } from "../../shared/types/env";
-import {
-  normalizeTelegramParseMode,
-  type TelegramParseMode
-} from "./formatting";
+import { normalizeTelegramParseMode, type TelegramParseMode } from "./formatting";
 import type {
   PlatformContextHints,
   PlatformContextHintsAdapter,
   ResolvePlatformContextHintsInput
 } from "../../platforms/context-hints/types";
 
-export function createTelegramContextHintsAdapter(
-  env: Env
-): PlatformContextHintsAdapter {
+export function createTelegramContextHintsAdapter(env: Env): PlatformContextHintsAdapter {
   return {
     platform: "telegram",
     resolveContextHints: (input) => resolveTelegramContextHints(env, input)

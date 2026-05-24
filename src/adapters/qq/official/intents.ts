@@ -21,9 +21,8 @@ export type QqOfficialIntentOptions = {
 export function qqOfficialIntentMask(
   options: QqOfficialIntentOptions = {}
 ): QqOfficialGatewayIntent {
-  let intents = options.enablePublicGuildMessages === false
-    ? 0
-    : QQ_OFFICIAL_INTENTS.publicGuildMessages;
+  let intents =
+    options.enablePublicGuildMessages === false ? 0 : QQ_OFFICIAL_INTENTS.publicGuildMessages;
 
   if (options.enableGroupC2c ?? true) {
     intents |= QQ_OFFICIAL_INTENTS.publicMessages;

@@ -1,6 +1,12 @@
 import { resolveQqOfficialBotForAgent } from "../../adapters/qq/official/config";
-import { getStoredQqOfficialGatewayStatus, QqOfficialGatewaySession } from "../../adapters/qq/official/gateway-session";
-import { getQqOfficialConversation, targetFromStoredConversation } from "../../adapters/qq/official/conversation-store";
+import {
+  getStoredQqOfficialGatewayStatus,
+  QqOfficialGatewaySession
+} from "../../adapters/qq/official/gateway-session";
+import {
+  getQqOfficialConversation,
+  targetFromStoredConversation
+} from "../../adapters/qq/official/conversation-store";
 import { QqOfficialApiClient } from "../../adapters/qq/official/api";
 import { qqOfficialFileDataBase64, qqOfficialFileType } from "../../adapters/qq/official/media";
 import type { OutboundFile } from "../outbound/types";
@@ -59,9 +65,7 @@ export class QQOfficialGatewayDurableObject {
 
   async alarm(): Promise<void> {
     const agentId =
-      (await this.state.storage.get<string>("agent_id")) ??
-      this.env.DEFAULT_AGENT_ID ??
-      "default";
+      (await this.state.storage.get<string>("agent_id")) ?? this.env.DEFAULT_AGENT_ID ?? "default";
     const session = await this.getSession(agentId);
     await session.ensureConnected();
     await this.state.storage.setAlarm(Date.now() + 5 * 60 * 1000);
@@ -102,10 +106,7 @@ export class QQOfficialGatewayDurableObject {
       return { ok: false, error: "QQ official appId/secret is not configured" };
     }
 
-    const conversation = await getQqOfficialConversation(
-      this.state.storage,
-      input.conversationId
-    );
+    const conversation = await getQqOfficialConversation(this.state.storage, input.conversationId);
     if (!conversation) {
       return {
         ok: false,
@@ -227,9 +228,7 @@ function normalizeSendRequest(input: QqOfficialSendRequest): QqOfficialSendReque
     ...input,
     file: {
       ...input.file,
-      bytes: Array.isArray(input.file.bytes)
-        ? new Uint8Array(input.file.bytes)
-        : input.file.bytes
+      bytes: Array.isArray(input.file.bytes) ? new Uint8Array(input.file.bytes) : input.file.bytes
     }
   };
 }

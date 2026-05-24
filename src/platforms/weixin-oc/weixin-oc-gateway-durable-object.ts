@@ -8,10 +8,7 @@ import {
   clearPlatformIntegrationCredential,
   updatePlatformIntegrationCheck
 } from "../../storage/repositories/platform-integrations-repository";
-import {
-  pollWeixinOcGatewayLogin,
-  startWeixinOcGatewayLogin
-} from "./weixin-oc-gateway-login";
+import { pollWeixinOcGatewayLogin, startWeixinOcGatewayLogin } from "./weixin-oc-gateway-login";
 import { pollWeixinOcGatewayUpdates } from "./weixin-oc-gateway-polling";
 import {
   sendWeixinOcGatewayMessage,
@@ -27,10 +24,7 @@ import {
   requireWeixinOcGatewayConfig,
   resolveWeixinOcGatewayTarget
 } from "./weixin-oc-gateway-state";
-import {
-  getWeixinOcGatewayStatus,
-  type WeixinOcGatewayStatus
-} from "./weixin-oc-gateway-status";
+import { getWeixinOcGatewayStatus, type WeixinOcGatewayStatus } from "./weixin-oc-gateway-status";
 
 export class WeixinOcGatewayDurableObject {
   constructor(
@@ -134,10 +128,7 @@ export class WeixinOcGatewayDurableObject {
     });
   }
 
-  private async pollOnce(
-    agentId: string,
-    integrationId?: string
-  ): Promise<WeixinOcGatewayStatus> {
+  private async pollOnce(agentId: string, integrationId?: string): Promise<WeixinOcGatewayStatus> {
     const config = await this.requireConfig(agentId, integrationId);
     await rememberWeixinOcGatewayTarget(this.state.storage, agentId, config.integrationId);
 
@@ -192,18 +183,12 @@ export class WeixinOcGatewayDurableObject {
     return sendWeixinOcGatewayTyping(config, userId);
   }
 
-  private async status(
-    agentId: string,
-    integrationId?: string
-  ): Promise<WeixinOcGatewayStatus> {
+  private async status(agentId: string, integrationId?: string): Promise<WeixinOcGatewayStatus> {
     const config = await this.requireConfig(agentId, integrationId);
     return getWeixinOcGatewayStatus(this.state.storage, config);
   }
 
-  private async clearLoginState(
-    agentId: string,
-    integrationId?: string
-  ): Promise<void> {
+  private async clearLoginState(agentId: string, integrationId?: string): Promise<void> {
     const config = await this.requireConfig(agentId, integrationId);
     await persistWeixinOcAccountState(this.state.storage, config, {
       token: undefined,
@@ -219,12 +204,7 @@ export class WeixinOcGatewayDurableObject {
   }
 
   private requireConfig(agentId: string, integrationId?: string) {
-    return requireWeixinOcGatewayConfig(
-      this.env,
-      this.state.storage,
-      agentId,
-      integrationId
-    );
+    return requireWeixinOcGatewayConfig(this.env, this.state.storage, agentId, integrationId);
   }
 
   private async dispatchInbound(agentId: string, message: InternalMessage): Promise<void> {

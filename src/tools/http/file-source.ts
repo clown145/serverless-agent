@@ -77,10 +77,7 @@ export async function resolveHttpFile(
       bytes,
       fileName: options.fileName ?? attachment.name ?? `${attachment.id}.bin`,
       mimeType:
-        options.mimeType ??
-        attachment.mimeType ??
-        object.contentType ??
-        "application/octet-stream"
+        options.mimeType ?? attachment.mimeType ?? object.contentType ?? "application/octet-stream"
     };
   }
 
@@ -109,10 +106,7 @@ export async function resolveHttpFile(
   return {
     bytes,
     fileName: options.fileName ?? nameFromUrl(source.url),
-    mimeType:
-      options.mimeType ??
-      response.headers.get("content-type") ??
-      "application/octet-stream"
+    mimeType: options.mimeType ?? response.headers.get("content-type") ?? "application/octet-stream"
   };
 }
 

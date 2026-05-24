@@ -26,8 +26,9 @@ describe("schedule execution profile", () => {
       createdFromConversationId: "telegram:789"
     });
 
-    expect(parseScheduleExecutionProfile(stringifyScheduleExecutionProfile(profile)))
-      .toEqual(profile);
+    expect(parseScheduleExecutionProfile(stringifyScheduleExecutionProfile(profile))).toEqual(
+      profile
+    );
   });
 
   it("follows conversation model when no fixed model is provided", () => {

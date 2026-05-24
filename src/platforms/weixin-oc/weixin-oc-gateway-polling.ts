@@ -22,10 +22,7 @@ export async function pollWeixinOcGatewayUpdates(input: {
   dispatchInbound: (agentId: string, message: InternalMessage) => Promise<void>;
 }): Promise<void> {
   const client = createWeixinOcGatewayClient(input.config);
-  const data = await client.getUpdates(
-    input.config.syncBuf,
-    input.config.longPollTimeoutMs
-  );
+  const data = await client.getUpdates(input.config.syncBuf, input.config.longPollTimeoutMs);
   if (!isSuccessfulWeixinOcPayload(data as Record<string, unknown>)) {
     if (weixinOcApiErrcode(data as Record<string, unknown>) === SESSION_TIMEOUT_ERRCODE) {
       await input.clearLoginState();
@@ -41,9 +38,7 @@ export async function pollWeixinOcGatewayUpdates(input: {
     baseUrl: input.config.baseUrl,
     contextTokens: { ...input.config.contextTokens }
   };
-  let dirty =
-    data.get_updates_buf !== undefined &&
-    data.get_updates_buf !== input.config.syncBuf;
+  let dirty = data.get_updates_buf !== undefined && data.get_updates_buf !== input.config.syncBuf;
 
   for (const message of data.msgs ?? []) {
     const fromUserId = message.from_user_id?.trim();

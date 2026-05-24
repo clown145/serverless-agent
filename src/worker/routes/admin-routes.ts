@@ -1,8 +1,5 @@
 import type { Env } from "../../shared/types/env";
-import {
-  handleAdminConversationDetail,
-  handleAdminConversations
-} from "./admin-conversations";
+import { handleAdminConversationDetail, handleAdminConversations } from "./admin-conversations";
 import { handleAdminDebugMessages } from "./admin-debug-messages";
 import { handleAdminDiagnostics } from "./admin-diagnostics";
 import { handleAdminHeartbeats } from "./admin-heartbeats";
@@ -78,9 +75,7 @@ export async function handleAdminRoute(
 
   if (url.pathname.startsWith("/admin/conversations/")) {
     const conversationPath = url.pathname.replace("/admin/conversations/", "");
-    const conversationId = decodeURIComponent(
-      conversationPath.replace(/\/compact$/, "")
-    );
+    const conversationId = decodeURIComponent(conversationPath.replace(/\/compact$/, ""));
     return handleAdminConversationDetail(request, env, conversationId);
   }
 
@@ -111,10 +106,7 @@ export async function handleAdminRoute(
   }
 
   if (url.pathname.startsWith("/admin/platforms/qq-official-integrations/")) {
-    const qqOfficialPath = url.pathname.replace(
-      "/admin/platforms/qq-official-integrations/",
-      ""
-    );
+    const qqOfficialPath = url.pathname.replace("/admin/platforms/qq-official-integrations/", "");
     const integrationId = decodeURIComponent(qqOfficialPath.split("/")[0] ?? "");
     return handleAdminQqOfficialIntegrationDetail(request, env, integrationId);
   }
@@ -272,11 +264,7 @@ export async function handleAdminRoute(
 
   const skillFilesMatch = url.pathname.match(/^\/admin\/skills\/([^/]+)\/files$/);
   if (skillFilesMatch) {
-    return handleAdminSkillFiles(
-      request,
-      env,
-      decodeURIComponent(skillFilesMatch[1])
-    );
+    return handleAdminSkillFiles(request, env, decodeURIComponent(skillFilesMatch[1]));
   }
 
   const skillRevisionMatch = url.pathname.match(

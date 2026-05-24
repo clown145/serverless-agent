@@ -12,10 +12,7 @@ import {
   withoutWecomSecret
 } from "./platforms/wecom-admin-actions";
 import { toWecomIntegrationDto } from "./platforms/wecom-dto";
-import {
-  updateWecomIntegrationSchema,
-  zodMessage
-} from "./platforms/wecom-schemas";
+import { updateWecomIntegrationSchema, zodMessage } from "./platforms/wecom-schemas";
 
 export async function handleAdminWecomIntegrationDetail(
   request: Request,
@@ -41,9 +38,7 @@ export async function handleAdminWecomIntegrationDetail(
   }
 
   if (request.method === "PUT") {
-    const parsed = updateWecomIntegrationSchema.safeParse(
-      await request.json().catch(() => ({}))
-    );
+    const parsed = updateWecomIntegrationSchema.safeParse(await request.json().catch(() => ({})));
     if (!parsed.success) {
       return errorResponse(400, "invalid_payload", zodMessage(parsed.error));
     }

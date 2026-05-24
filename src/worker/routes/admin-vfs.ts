@@ -35,10 +35,7 @@ type VfsActionPayload =
       action: "initialize";
     };
 
-export async function handleAdminVfs(
-  request: Request,
-  env: Env
-): Promise<Response> {
+export async function handleAdminVfs(request: Request, env: Env): Promise<Response> {
   if (request.method === "GET") {
     return handleReadOrList(request, env);
   }
@@ -131,11 +128,7 @@ async function handleAction(request: Request, env: Env): Promise<Response> {
 
     if (payload.action === "move") {
       if (!payload.fromPath || !payload.toPath) {
-        return errorResponse(
-          400,
-          "invalid_payload",
-          "`fromPath` and `toPath` are required"
-        );
+        return errorResponse(400, "invalid_payload", "`fromPath` and `toPath` are required");
       }
 
       const entry = await workspace.move({
@@ -192,17 +185,9 @@ async function handleDelete(request: Request, env: Env): Promise<Response> {
 
 function vfsErrorResponse(error: unknown, fallback: string): Response {
   if (error instanceof VfsError) {
-    const status = error.code === "vfs_not_found"
-      ? 404
-      : error.code === "vfs_conflict"
-        ? 409
-        : 400;
+    const status = error.code === "vfs_not_found" ? 404 : error.code === "vfs_conflict" ? 409 : 400;
     return errorResponse(status, error.code, error.message);
   }
 
-  return errorResponse(
-    500,
-    "vfs_error",
-    error instanceof Error ? error.message : fallback
-  );
+  return errorResponse(500, "vfs_error", error instanceof Error ? error.message : fallback);
 }

@@ -105,10 +105,7 @@ describe("agent mailbox", () => {
     });
     expect(completed?.expiresAt).toBeDefined();
 
-    await cleanupExpiredMailboxEvents(
-      storage,
-      Date.parse(completed!.expiresAt!) - 1
-    );
+    await cleanupExpiredMailboxEvents(storage, Date.parse(completed!.expiresAt!) - 1);
 
     expect(await getMailboxEventState(storage, "evt_1")).toMatchObject({
       status: "completed"
@@ -153,10 +150,7 @@ describe("agent mailbox", () => {
       error: `fail ${MAILBOX_MAX_ATTEMPTS}`
     });
 
-    const cleanup = await cleanupExpiredMailboxEvents(
-      storage,
-      Date.parse(failed!.expiresAt!) + 1
-    );
+    const cleanup = await cleanupExpiredMailboxEvents(storage, Date.parse(failed!.expiresAt!) + 1);
 
     expect(cleanup.deleted).toBe(1);
     await expect(getMailboxEventState(storage, "evt_1")).resolves.toBeUndefined();

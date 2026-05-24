@@ -1,15 +1,10 @@
 import { saveWeixinOcTokenCredential } from "../../adapters/weixin-oc/credential";
 import { createPlatformIntegrationRecord } from "../../storage/repositories/platform-integrations-repository";
-import {
-  listPlatformIntegrationRecords
-} from "../../storage/repositories/platform-integrations-repository";
+import { listPlatformIntegrationRecords } from "../../storage/repositories/platform-integrations-repository";
 import { errorResponse, jsonResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
 import { toWeixinOcIntegrationDto } from "./platforms/weixin-oc-dto";
-import {
-  createWeixinOcIntegrationSchema,
-  zodMessage
-} from "./platforms/weixin-oc-schemas";
+import { createWeixinOcIntegrationSchema, zodMessage } from "./platforms/weixin-oc-schemas";
 
 export async function handleAdminWeixinOcIntegrations(
   request: Request,
@@ -29,9 +24,7 @@ export async function handleAdminWeixinOcIntegrations(
     return errorResponse(405, "method_not_allowed", "Method not allowed");
   }
 
-  const parsed = createWeixinOcIntegrationSchema.safeParse(
-    await request.json().catch(() => ({}))
-  );
+  const parsed = createWeixinOcIntegrationSchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) {
     return errorResponse(400, "invalid_payload", zodMessage(parsed.error));
   }
@@ -62,4 +55,3 @@ export async function handleAdminWeixinOcIntegrations(
     integration: toWeixinOcIntegrationDto(saved)
   });
 }
-

@@ -39,9 +39,7 @@ function extractHtmlContent(input: {
     metaContent(input.body, "description") ??
     metaContent(input.body, "og:description") ??
     undefined;
-  const links = input.includeLinks
-    ? extractLinks(input.body, input.baseUrl)
-    : undefined;
+  const links = input.includeLinks ? extractLinks(input.body, input.baseUrl) : undefined;
 
   const body = firstMatch(input.body, /<body[^>]*>([\s\S]*?)<\/body>/i) ?? input.body;
   const text = htmlToText(body).slice(0, input.maxChars);
@@ -98,7 +96,11 @@ function extractLinks(html: string, baseUrl: string): PageLink[] {
 }
 
 function isHtml(contentType: string | undefined, body: string): boolean {
-  return contentType?.includes("text/html") === true || /^\s*<!doctype html/i.test(body) || /^\s*<html/i.test(body);
+  return (
+    contentType?.includes("text/html") === true ||
+    /^\s*<!doctype html/i.test(body) ||
+    /^\s*<html/i.test(body)
+  );
 }
 
 function metaContent(html: string, name: string): string | undefined {
@@ -137,7 +139,7 @@ function decodeEntities(input: string): string {
     gt: ">",
     lt: "<",
     nbsp: " ",
-    quot: "\""
+    quot: '"'
   };
 
   return input.replace(/&(#x?[0-9a-f]+|[a-z]+);/gi, (entity, value: string) => {

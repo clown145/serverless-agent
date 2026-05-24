@@ -1,8 +1,5 @@
 import { createId } from "../../shared/ids";
-import type {
-  InternalMessage,
-  MessageAttachment
-} from "../../shared/types/internal-message";
+import type { InternalMessage, MessageAttachment } from "../../shared/types/internal-message";
 import type { TelegramMessage, TelegramUpdate } from "./types";
 
 export function normalizeTelegramUpdate(
@@ -32,9 +29,7 @@ function normalizeTelegramMessage(
   text: string,
   attachments: MessageAttachment[]
 ): InternalMessage {
-  const senderName = [message.from?.first_name, message.from?.last_name]
-    .filter(Boolean)
-    .join(" ");
+  const senderName = [message.from?.first_name, message.from?.last_name].filter(Boolean).join(" ");
 
   return {
     id: createId("msg"),

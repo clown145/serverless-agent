@@ -31,18 +31,18 @@ Webhook mode 不需要维护 Gateway WebSocket，通常更节省 Durable Object 
 
 ## 文件职责
 
-| 文件 | 职责 |
-| --- | --- |
-| `api.ts` | QQ HTTP OpenAPI client。 |
-| `gateway-session.ts` | WebSocket lifecycle、identify/resume、heartbeat。 |
-| `gateway-payloads.ts` | Gateway protocol payload builders。 |
-| `normalize.ts` | Gateway event 到内部消息的转换。 |
+| 文件                    | 职责                                                        |
+| ----------------------- | ----------------------------------------------------------- |
+| `api.ts`                | QQ HTTP OpenAPI client。                                    |
+| `gateway-session.ts`    | WebSocket lifecycle、identify/resume、heartbeat。           |
+| `gateway-payloads.ts`   | Gateway protocol payload builders。                         |
+| `normalize.ts`          | Gateway event 到内部消息的转换。                            |
 | `conversation-store.ts` | Gateway replies 使用的 DO-local conversation target cache。 |
-| `direct-sender.ts` | Webhook mode 使用的 direct OpenAPI sender。 |
-| `webhook.ts` | QQ Official webhook event handling。 |
-| `webhook-validation.ts` | QQ webhook validation signature。 |
-| `outbound.ts` | Platform outbound adapter。 |
-| `keepalive.ts` | scheduled/admin connection management。 |
+| `direct-sender.ts`      | Webhook mode 使用的 direct OpenAPI sender。                 |
+| `webhook.ts`            | QQ Official webhook event handling。                        |
+| `webhook-validation.ts` | QQ webhook validation signature。                           |
+| `outbound.ts`           | Platform outbound adapter。                                 |
+| `keepalive.ts`          | scheduled/admin connection management。                     |
 
 ## 相关文档
 

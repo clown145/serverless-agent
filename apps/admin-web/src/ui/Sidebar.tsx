@@ -12,12 +12,7 @@ type SidebarProps = {
   variant?: "desktop" | "drawer";
 };
 
-export function Sidebar({
-  active,
-  onChange,
-  onNavigate,
-  variant = "desktop"
-}: SidebarProps) {
+export function Sidebar({ active, onChange, onNavigate, variant = "desktop" }: SidebarProps) {
   const { t } = useI18n();
 
   return (

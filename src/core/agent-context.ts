@@ -45,10 +45,7 @@ export function createModelTools(tools: RegisteredTool[]): ModelTool[] {
   }));
 }
 
-function createBaseInstructions(
-  message: InternalMessage,
-  options: AgentContextOptions
-): string {
+function createBaseInstructions(message: InternalMessage, options: AgentContextOptions): string {
   return promptText("agent/base", {
     runtime_context: createRuntimeContext(message, options.timeZone),
     platform_format_instruction:
@@ -56,10 +53,7 @@ function createBaseInstructions(
   });
 }
 
-function createRuntimeContext(
-  message: InternalMessage,
-  timeZone = "UTC"
-): string {
+function createRuntimeContext(message: InternalMessage, timeZone = "UTC"): string {
   const now = new Date();
   return [
     `Current time: ${formatLocalTime(now, timeZone)}`,
@@ -105,8 +99,7 @@ function createConversationMessages(
   history: ConversationContextMessage[]
 ): ModelMessage[] {
   const messages = history.flatMap<ModelMessage>((entry) => {
-    const content =
-      entry.id === message.id && selectedSkill ? selectedSkill.userText : entry.text;
+    const content = entry.id === message.id && selectedSkill ? selectedSkill.userText : entry.text;
 
     if (content === undefined && !entry.attachments?.length) {
       return [];
@@ -156,9 +149,7 @@ function createSkillMessages(selectedSkill?: SelectedSkill): ModelMessage[] {
   ];
 }
 
-function createSkillCatalogMessages(
-  skillCatalog: SkillCatalogItem[] | undefined
-): ModelMessage[] {
+function createSkillCatalogMessages(skillCatalog: SkillCatalogItem[] | undefined): ModelMessage[] {
   const items = (skillCatalog ?? []).slice(0, 40);
   if (!items.length) {
     return [];
@@ -183,10 +174,7 @@ function createSummaryMessages(summary: string | undefined): ModelMessage[] {
   return [
     {
       role: "system",
-      content: [
-        "Conversation summary from earlier messages:",
-        summary.trim()
-      ].join("\n")
+      content: ["Conversation summary from earlier messages:", summary.trim()].join("\n")
     }
   ];
 }
@@ -199,8 +187,5 @@ function contentWithAttachments(
     return text;
   }
 
-  return [
-    { type: "text", text },
-    ...attachments
-  ];
+  return [{ type: "text", text }, ...attachments];
 }

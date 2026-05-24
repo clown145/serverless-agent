@@ -33,7 +33,9 @@ export function ModelProviderForm({
         {t("models.format")}
         <select
           value={draft.providerType}
-          onChange={(event) => onProviderTypeChange(event.target.value as ModelProvider["providerType"])}
+          onChange={(event) =>
+            onProviderTypeChange(event.target.value as ModelProvider["providerType"])
+          }
         >
           {providerTypes.map((type) => (
             <option value={type} key={type}>

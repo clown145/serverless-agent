@@ -53,10 +53,7 @@ export async function fetchWeixinOcGatewayForIntegration(
   pathname: string,
   init?: RequestInit
 ): Promise<Response> {
-  const { object, config } = await getWeixinOcGatewayObjectForIntegration(
-    env,
-    integrationId
-  );
+  const { object, config } = await getWeixinOcGatewayObjectForIntegration(env, integrationId);
   const url = new URL(`https://weixin-oc.local${pathname}`);
   url.searchParams.set("agentId", config.agentId);
   url.searchParams.set("integrationId", config.integrationId);

@@ -31,11 +31,7 @@ export async function buildMultipartFormData(
       fileName: part.fileName,
       mimeType: part.mimeType
     });
-    form.append(
-      part.name,
-      new Blob([file.bytes], { type: file.mimeType }),
-      file.fileName
-    );
+    form.append(part.name, new Blob([file.bytes], { type: file.mimeType }), file.fileName);
   }
   return form;
 }

@@ -5,21 +5,19 @@ import type { Env } from "../../shared/types/env";
 import { diagnosticError, diagnosticOk, diagnosticWarn } from "../check-result";
 import type { DiagnosticCheck } from "../types";
 
-export async function checkSearchConfig(
-  env: Env,
-  agentId: string
-): Promise<DiagnosticCheck[]> {
+export async function checkSearchConfig(env: Env, agentId: string): Promise<DiagnosticCheck[]> {
   const [providers, settings] = await Promise.all([
     listSearchProviderRecords(env.AGENT_DB),
     getSearchSettings(env.AGENT_DB, agentId)
   ]);
   const activeProviders = providers.filter((provider) => provider.status === "active");
-  const activeProvider = activeProviders.find(
-    (provider) => provider.id === settings?.providerId
-  );
+  const activeProvider = activeProviders.find((provider) => provider.id === settings?.providerId);
   const envProvider = env.TAVILY_API_KEY ? "Tavily" : env.EXA_API_KEY ? "Exa" : undefined;
   const activeProviderHasKey = activeProvider
-    ? Boolean(activeProvider.credentialId || envSearchCredentialAvailable(env, activeProvider.providerType))
+    ? Boolean(
+        activeProvider.credentialId ||
+        envSearchCredentialAvailable(env, activeProvider.providerType)
+      )
     : false;
 
   return [
@@ -32,7 +30,12 @@ export async function checkSearchConfig(
 
 function providersCheck(count: number, envProvider?: string): DiagnosticCheck {
   if (count) {
-    return diagnosticOk("search", "search_providers", "Search providers", `${count} active provider(s)`);
+    return diagnosticOk(
+      "search",
+      "search_providers",
+      "Search providers",
+      `${count} active provider(s)`
+    );
   }
 
   return envProvider
@@ -52,11 +55,7 @@ function providersCheck(count: number, envProvider?: string): DiagnosticCheck {
       );
 }
 
-function activeProviderCheck(
-  name?: string,
-  type?: string,
-  envProvider?: string
-): DiagnosticCheck {
+function activeProviderCheck(name?: string, type?: string, envProvider?: string): DiagnosticCheck {
   if (name && type) {
     if (type === "custom") {
       return diagnosticError(

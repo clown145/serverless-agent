@@ -77,7 +77,7 @@ export async function updateMailboxEventState(
   const status = patch.status ?? existing?.status ?? "pending";
   const updatedAt = patch.updatedAt ?? now;
   const expiresAt = isTerminalStatus(status)
-    ? patch.expiresAt ?? existing?.expiresAt ?? retentionExpiresAt(updatedAt)
+    ? (patch.expiresAt ?? existing?.expiresAt ?? retentionExpiresAt(updatedAt))
     : undefined;
 
   await storage.put(eventKey, {
@@ -124,9 +124,7 @@ export async function cleanupExpiredMailboxEvents(
       }
 
       scanned += 1;
-      const state = await txn.get<MailboxEventState>(
-        eventIndexKey(parsed.eventId)
-      );
+      const state = await txn.get<MailboxEventState>(eventIndexKey(parsed.eventId));
 
       if (!state) {
         await txn.delete(gcKey);
@@ -216,9 +214,7 @@ function eventGcKey(expiresAt: string, eventId: string): string {
   return `${EVENT_GC_PREFIX}${expiresAt}:${encodeURIComponent(eventId)}`;
 }
 
-function parseEventGcKey(
-  key: string
-): { expiresAt: string; eventId: string } | undefined {
+function parseEventGcKey(key: string): { expiresAt: string; eventId: string } | undefined {
   if (!key.startsWith(EVENT_GC_PREFIX)) {
     return undefined;
   }

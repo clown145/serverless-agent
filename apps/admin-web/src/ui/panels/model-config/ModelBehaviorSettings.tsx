@@ -6,10 +6,7 @@ type ModelBehaviorSettingsProps = {
   onChange: (config: AgentModelConfig) => void;
 };
 
-export function ModelBehaviorSettings({
-  config,
-  onChange
-}: ModelBehaviorSettingsProps) {
+export function ModelBehaviorSettings({ config, onChange }: ModelBehaviorSettingsProps) {
   const { t } = useI18n();
 
   return (
@@ -22,9 +19,7 @@ export function ModelBehaviorSettings({
         <input
           checked={config.imageCaptionEnabled}
           type="checkbox"
-          onChange={(event) =>
-            onChange({ ...config, imageCaptionEnabled: event.target.checked })
-          }
+          onChange={(event) => onChange({ ...config, imageCaptionEnabled: event.target.checked })}
         />
         {t("modelConfig.imageCaptioningEnabled")}
       </label>

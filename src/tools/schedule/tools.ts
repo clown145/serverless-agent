@@ -110,9 +110,7 @@ function pauseScheduleTool(): RegisteredTool {
     description: "Pause an active schedule.",
     execute: async (context, scheduleId) => {
       const schedule = await pauseScheduleFromTool(context, scheduleId);
-      return schedule
-        ? { schedule: toScheduleToolSummary(schedule) }
-        : undefined;
+      return schedule ? { schedule: toScheduleToolSummary(schedule) } : undefined;
     }
   });
 }
@@ -124,9 +122,7 @@ function resumeScheduleTool(): RegisteredTool {
     description: "Resume a paused or failed schedule.",
     execute: async (context, scheduleId) => {
       const schedule = await resumeScheduleFromTool(context, scheduleId);
-      return schedule
-        ? { schedule: toScheduleToolSummary(schedule) }
-        : undefined;
+      return schedule ? { schedule: toScheduleToolSummary(schedule) } : undefined;
     }
   });
 }

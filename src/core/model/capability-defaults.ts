@@ -13,10 +13,7 @@ export const MODEL_CAPABILITIES: ModelCapability[] = [
   "reasoning"
 ];
 
-export function normalizeModelCapabilities(
-  value: unknown,
-  modelId: string
-): ModelCapability[] {
+export function normalizeModelCapabilities(value: unknown, modelId: string): ModelCapability[] {
   if (Array.isArray(value)) {
     return uniqueCapabilities(value.filter(isModelCapability));
   }

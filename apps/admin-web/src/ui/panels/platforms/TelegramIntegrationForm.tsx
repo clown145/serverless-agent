@@ -29,7 +29,7 @@ export function TelegramIntegrationForm({
         {t("platforms.agent")}
         <input
           value={draft.agentId}
-          placeholder="default"
+          placeholder={t("platforms.agentPlaceholder")}
           onChange={(event) => onDraftChange({ ...draft, agentId: event.target.value })}
         />
       </label>
@@ -52,7 +52,7 @@ export function TelegramIntegrationForm({
         {t("platforms.webhookSecret")}
         <input
           value={draft.webhookSecret}
-          placeholder="auto-generated"
+          placeholder={t("platforms.webhookSecretPlaceholder")}
           onChange={(event) => onDraftChange({ ...draft, webhookSecret: event.target.value })}
         />
       </label>

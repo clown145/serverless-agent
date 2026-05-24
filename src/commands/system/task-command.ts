@@ -65,11 +65,13 @@ export const taskCommand: CommandDefinition = {
   }
 };
 
-function parseTaskArgs(args: string[]): {
-  delaySeconds: number;
-  intervalSeconds?: number;
-  text: string;
-} | undefined {
+function parseTaskArgs(args: string[]):
+  | {
+      delaySeconds: number;
+      intervalSeconds?: number;
+      text: string;
+    }
+  | undefined {
   const mode = args[0]?.toLowerCase();
   if (mode === "in") {
     const delaySeconds = Number(args[1]);

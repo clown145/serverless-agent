@@ -21,7 +21,11 @@ export type BlobHead = {
 
 export type BlobStorage = {
   backend: BlobStorageBackend;
-  put(key: string, value: string | Uint8Array | ArrayBuffer, options?: BlobPutOptions): Promise<void>;
+  put(
+    key: string,
+    value: string | Uint8Array | ArrayBuffer,
+    options?: BlobPutOptions
+  ): Promise<void>;
   get(key: string): Promise<BlobObject | undefined>;
   head(key: string): Promise<BlobHead | undefined>;
   delete(key: string): Promise<void>;

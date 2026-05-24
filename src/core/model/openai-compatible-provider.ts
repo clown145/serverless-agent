@@ -1,10 +1,4 @@
-import type {
-  ModelMessage,
-  ModelProvider,
-  ModelRequest,
-  ModelResponse,
-  ModelTool
-} from "./types";
+import type { ModelMessage, ModelProvider, ModelRequest, ModelResponse, ModelTool } from "./types";
 import { parseJsonObject } from "./json";
 import { openAiChatUrl } from "./provider-endpoints";
 import { applyModelAuth, type ModelAuthConfig } from "./provider-auth";
@@ -135,9 +129,7 @@ function toOpenAiMessages(
   toWireName: (name: string) => string,
   toolResultMode: ToolResultMode
 ): OpenAiMessage[] {
-  return messages.map((message) =>
-    toOpenAiMessage(message, toWireName, toolResultMode)
-  );
+  return messages.map((message) => toOpenAiMessage(message, toWireName, toolResultMode));
 }
 
 function toOpenAiMessage(
@@ -170,10 +162,12 @@ function toOpenAiMessage(
         content: [
           message.content,
           "Requested tools:",
-          ...message.toolCalls.map((toolCall) =>
-            `${toWireName(toolCall.name)} ${JSON.stringify(toolCall.arguments)}`
+          ...message.toolCalls.map(
+            (toolCall) => `${toWireName(toolCall.name)} ${JSON.stringify(toolCall.arguments)}`
           )
-        ].filter(Boolean).join("\n")
+        ]
+          .filter(Boolean)
+          .join("\n")
       };
     }
 
@@ -235,10 +229,7 @@ async function postChatCompletion(
   return payload as OpenAiResponse;
 }
 
-function shouldRetryToolResultsAsText(
-  error: unknown,
-  messages: ModelMessage[]
-): boolean {
+function shouldRetryToolResultsAsText(error: unknown, messages: ModelMessage[]): boolean {
   if (!messages.some((message) => message.role === "tool")) {
     return false;
   }

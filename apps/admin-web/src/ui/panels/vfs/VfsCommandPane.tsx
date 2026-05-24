@@ -9,21 +9,13 @@ type VfsCommandPaneProps = {
   onRun: () => void;
 };
 
-export function VfsCommandPane({
-  command,
-  output,
-  onCommandChange,
-  onRun
-}: VfsCommandPaneProps) {
+export function VfsCommandPane({ command, output, onCommandChange, onRun }: VfsCommandPaneProps) {
   const { t } = useI18n();
 
   return (
     <div className="vfs-command-pane">
       <div className="path-bar">
-        <input
-          value={command}
-          onChange={(event) => onCommandChange(event.target.value)}
-        />
+        <input value={command} onChange={(event) => onCommandChange(event.target.value)} />
         <ToolbarButton label={t("vfs.runCommand")} icon={Play} onClick={onRun} />
       </div>
       <pre className="vfs-command-output">{output}</pre>

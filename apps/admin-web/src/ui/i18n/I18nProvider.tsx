@@ -1,10 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useMemo,
-  useState,
-  type ReactNode
-} from "react";
+import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 import { LOCALES, translations, type Locale } from "./translations";
 
 const localeKey = "serverless-agent:locale";
@@ -56,17 +50,12 @@ function detectInitialLocale(): Locale {
     return stored;
   }
 
-  const browserLocale = navigator.language.toLowerCase().startsWith("zh")
-    ? "zh-CN"
-    : "en-US";
+  const browserLocale = navigator.language.toLowerCase().startsWith("zh") ? "zh-CN" : "en-US";
   document.documentElement.lang = browserLocale;
   return browserLocale;
 }
 
-function format(
-  template: string,
-  vars: Record<string, string | number> = {}
-): string {
+function format(template: string, vars: Record<string, string | number> = {}): string {
   return Object.entries(vars).reduce(
     (text, [key, value]) => text.replaceAll(`{${key}}`, String(value)),
     template

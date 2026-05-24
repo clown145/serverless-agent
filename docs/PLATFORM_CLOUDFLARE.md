@@ -6,17 +6,17 @@
 
 ## 组件映射
 
-| 能力 | Cloudflare 组件 | 用途 |
-| --- | --- | --- |
-| HTTP 入口 | Workers | Telegram、QQ Official Webhook、WeCom、Admin/WebUI API。 |
-| 后台队列 | Queues | 入站消息、异步任务和重试。 |
-| Agent 状态协调 | Durable Objects | per-agent mailbox、串行处理、alarm 和恢复。 |
-| 未来任务 | Cron Triggers / DO Alarms | schedule sweep、heartbeat 和周期任务。 |
-| 文件内容 | Object Storage | VFS 文件、skills、artifacts、attachments。 |
-| 结构化数据 | D1 | runs、messages、tool calls、permissions、schedules、VFS metadata。 |
-| 缓存 | KV | 热配置、短期去重和 catalog cache。 |
-| 入站邮件 | Email Workers / Email Routing | 邮件触发 agent。 |
-| 出站邮件 | Email Service 或第三方 API | 受权限控制的发信工具。 |
+| 能力           | Cloudflare 组件               | 用途                                                               |
+| -------------- | ----------------------------- | ------------------------------------------------------------------ |
+| HTTP 入口      | Workers                       | Telegram、QQ Official Webhook、WeCom、Admin/WebUI API。            |
+| 后台队列       | Queues                        | 入站消息、异步任务和重试。                                         |
+| Agent 状态协调 | Durable Objects               | per-agent mailbox、串行处理、alarm 和恢复。                        |
+| 未来任务       | Cron Triggers / DO Alarms     | schedule sweep、heartbeat 和周期任务。                             |
+| 文件内容       | Object Storage                | VFS 文件、skills、artifacts、attachments。                         |
+| 结构化数据     | D1                            | runs、messages、tool calls、permissions、schedules、VFS metadata。 |
+| 缓存           | KV                            | 热配置、短期去重和 catalog cache。                                 |
+| 入站邮件       | Email Workers / Email Routing | 邮件触发 agent。                                                   |
+| 出站邮件       | Email Service 或第三方 API    | 受权限控制的发信工具。                                             |
 
 ## Worker
 

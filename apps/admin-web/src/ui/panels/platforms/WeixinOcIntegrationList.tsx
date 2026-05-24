@@ -35,8 +35,16 @@ export function WeixinOcIntegrationList({
             <div>
               <strong>{integration.name}</strong>
               <span>{integration.agentId}</span>
-              <span>{integration.accountId ? `Account ${integration.accountId}` : t("platforms.weixinOcNoAccount")}</span>
-              <span>{integration.hasCredential ? t("platforms.weixinOcLoggedIn") : t("platforms.weixinOcNotLoggedIn")}</span>
+              <span>
+                {integration.accountId
+                  ? `Account ${integration.accountId}`
+                  : t("platforms.weixinOcNoAccount")}
+              </span>
+              <span>
+                {integration.hasCredential
+                  ? t("platforms.weixinOcLoggedIn")
+                  : t("platforms.weixinOcNotLoggedIn")}
+              </span>
               <span>
                 {[
                   `ctx ${integration.contextTokenCount}`,
@@ -83,14 +91,12 @@ export function WeixinOcIntegrationList({
             />
             {qr?.qrImageUrl && (
               <div className="weixin-oc-qr-panel">
-                <img
-                  src={qr.qrImageUrl}
-                  alt={t("platforms.weixinOcQrAlt")}
-                  loading="lazy"
-                />
+                <img src={qr.qrImageUrl} alt={t("platforms.weixinOcQrAlt")} loading="lazy" />
                 <div>
                   <strong>{t("platforms.weixinOcScanQr")}</strong>
-                  <span>{t("platforms.weixinOcQrStatus")}: {qr.status}</span>
+                  <span>
+                    {t("platforms.weixinOcQrStatus")}: {qr.status}
+                  </span>
                   <a href={qr.qrImageUrl} target="_blank" rel="noreferrer">
                     <ExternalLink size={14} />
                     {t("platforms.weixinOcOpenQr")}

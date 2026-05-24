@@ -4,11 +4,7 @@ import { builtinTool } from "../../src/tools/builtin/source";
 import type { SelectedSkill } from "../../src/skills/skill-selector";
 import type { RegisteredTool } from "../../src/tools/types";
 
-const tools = [
-  tool("vfs.read_file"),
-  tool("vfs.write_file"),
-  tool("messaging.send_message")
-];
+const tools = [tool("vfs.read_file"), tool("vfs.write_file"), tool("messaging.send_message")];
 
 const selectedSkill: SelectedSkill = {
   userText: "/read /workspace/a.md",

@@ -4,10 +4,7 @@ import { summarizeDiagnostics } from "../../diagnostics/types";
 import { jsonResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
 
-export async function handleAdminDiagnostics(
-  request: Request,
-  env: Env
-): Promise<Response> {
+export async function handleAdminDiagnostics(request: Request, env: Env): Promise<Response> {
   const [bindingChecks, configChecks] = await Promise.all([
     runBindingDiagnostics(env),
     runConfigDiagnostics(env)

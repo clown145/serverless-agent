@@ -155,7 +155,7 @@ export function ModelsPanel({ client, notify, onNavigate }: ModelsPanelProps) {
     try {
       const result = await client.updateModelCapabilities(modelCatalogId, capabilities);
       setModels((current) =>
-        current.map((model) => model.id === result.model.id ? result.model : model)
+        current.map((model) => (model.id === result.model.id ? result.model : model))
       );
       notify(t("models.capabilitiesSaved"), "ok");
     } catch (error) {
@@ -167,7 +167,7 @@ export function ModelsPanel({ client, notify, onNavigate }: ModelsPanelProps) {
     try {
       const result = await client.updateModelStatus(modelCatalogId, status);
       setModels((current) =>
-        current.map((model) => model.id === result.model.id ? result.model : model)
+        current.map((model) => (model.id === result.model.id ? result.model : model))
       );
       notify(status === "enabled" ? t("models.modelEnabled") : t("models.modelDisabled"), "ok");
     } catch (error) {
@@ -195,9 +195,7 @@ export function ModelsPanel({ client, notify, onNavigate }: ModelsPanelProps) {
         <div>
           <h1>{t("models.title")}</h1>
           <p>
-            {activeModelId
-              ? `${activeProviderId} / ${activeModelId}`
-              : t("models.mockFallback")}
+            {activeModelId ? `${activeProviderId} / ${activeModelId}` : t("models.mockFallback")}
           </p>
           <span>{t("models.enabledCount", { count: enabledModels.length })}</span>
         </div>
@@ -223,10 +221,7 @@ export function ModelsPanel({ client, notify, onNavigate }: ModelsPanelProps) {
         onSubmit={(payload) => void saveProvider(payload)}
       />
 
-      <DefaultModelPicker
-        models={enabledModels}
-        onNavigate={() => onNavigate?.("model_config")}
-      />
+      <DefaultModelPicker models={enabledModels} onNavigate={() => onNavigate?.("model_config")} />
 
       {testResult && (
         <div className="model-test-result">

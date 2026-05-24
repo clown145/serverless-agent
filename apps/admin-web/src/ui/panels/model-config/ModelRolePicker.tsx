@@ -1,8 +1,4 @@
-import type {
-  ModelCatalogItem,
-  ModelProvider,
-  ModelRole
-} from "../../../api/types";
+import type { ModelCatalogItem, ModelProvider, ModelRole } from "../../../api/types";
 import { useI18n } from "../../i18n/I18nProvider";
 import { enabledModelOptions, modelKey, modelLabel, parseModelKey } from "../models/modelSelection";
 import type { ModelRoleDefinition } from "./modelRoleDefinitions";
@@ -28,7 +24,9 @@ export function ModelRolePicker({
   const selectedModel = options.find(
     (model) => model.providerId === selected.providerId && model.modelId === selected.modelId
   );
-  const capabilityWarning = definition.preferredCapability && selectedModel &&
+  const capabilityWarning =
+    definition.preferredCapability &&
+    selectedModel &&
     !selectedModel.capabilities.includes(definition.preferredCapability);
 
   return (
@@ -39,10 +37,7 @@ export function ModelRolePicker({
       </div>
       <label>
         {t("modelConfig.selectModel")}
-        <select
-          value={value}
-          onChange={(event) => onChange(definition.role, event.target.value)}
-        >
+        <select value={value} onChange={(event) => onChange(definition.role, event.target.value)}>
           {definition.allowEmpty && <option value="">{t("modelConfig.useFallback")}</option>}
           {!definition.allowEmpty && <option value="">{t("models.selectEnabledModel")}</option>}
           {options.map((model) => (

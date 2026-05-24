@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  createToolNameMapper,
-  sanitizeToolName
-} from "../../src/core/model/tool-name-mapper";
+import { createToolNameMapper, sanitizeToolName } from "../../src/core/model/tool-name-mapper";
 
 describe("tool name mapper", () => {
   it("sanitizes internal dotted names", () => {
@@ -14,9 +11,7 @@ describe("tool name mapper", () => {
 
     expect(mapper.toWireName("vfs.read_file")).toBe("vfs_read_file");
     expect(
-      mapper.mapToolCalls([
-        { id: "call", name: "vfs_read_file", arguments: { path: "/a" } }
-      ])
+      mapper.mapToolCalls([{ id: "call", name: "vfs_read_file", arguments: { path: "/a" } }])
     ).toEqual([{ id: "call", name: "vfs.read_file", arguments: { path: "/a" } }]);
   });
 });

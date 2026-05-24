@@ -21,9 +21,7 @@ export async function startWeixinOcGatewayLogin<TStatus>(input: {
   schedulePoll: (delayMs: number) => Promise<void>;
   status: () => Promise<TStatus>;
 }): Promise<TStatus> {
-  const existing = await input.storage.get<WeixinOcLoginSession>(
-    WEIXIN_OC_LOGIN_SESSION_KEY
-  );
+  const existing = await input.storage.get<WeixinOcLoginSession>(WEIXIN_OC_LOGIN_SESSION_KEY);
   if (!input.forceRefresh && isWeixinOcLoginSessionValid(existing)) {
     await input.schedulePoll(input.config.qrPollIntervalMs);
     return input.status();
@@ -59,19 +57,14 @@ export async function pollWeixinOcGatewayLogin(input: {
   restartLogin: () => Promise<unknown>;
   schedulePoll: (delayMs: number) => Promise<void>;
 }): Promise<boolean> {
-  const loginSession = await input.storage.get<WeixinOcLoginSession>(
-    WEIXIN_OC_LOGIN_SESSION_KEY
-  );
+  const loginSession = await input.storage.get<WeixinOcLoginSession>(WEIXIN_OC_LOGIN_SESSION_KEY);
   if (!isWeixinOcLoginSessionValid(loginSession)) {
     await input.restartLogin();
     return false;
   }
 
   const client = createWeixinOcGatewayClient(input.config);
-  const data = await client.getQrCodeStatus(
-    loginSession.qrcode,
-    input.config.longPollTimeoutMs
-  );
+  const data = await client.getQrCodeStatus(loginSession.qrcode, input.config.longPollTimeoutMs);
   const status = String(data.status ?? "wait").trim();
   const nextSession: WeixinOcLoginSession = {
     ...loginSession,

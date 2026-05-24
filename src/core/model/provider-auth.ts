@@ -7,11 +7,7 @@ export type ModelAuthConfig = {
   authQueryParam?: string;
 };
 
-export function applyModelAuth(
-  url: string,
-  headers: Headers,
-  config: ModelAuthConfig
-): string {
+export function applyModelAuth(url: string, headers: Headers, config: ModelAuthConfig): string {
   if (config.authType === "none" || !config.apiKey) {
     return url;
   }

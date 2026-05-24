@@ -7,9 +7,7 @@ export type SearchProviderDto = Omit<SearchProviderRecord, "credentialId"> & {
   hasCredential: boolean;
 };
 
-export function toSearchProviderDto(
-  provider: SearchProviderRecord
-): SearchProviderDto {
+export function toSearchProviderDto(provider: SearchProviderRecord): SearchProviderDto {
   return {
     id: provider.id,
     name: provider.name,

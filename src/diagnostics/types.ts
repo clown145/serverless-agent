@@ -22,9 +22,7 @@ export type DiagnosticSummary = Record<DiagnosticStatus, number> & {
   total: number;
 };
 
-export function summarizeDiagnostics(
-  checks: DiagnosticCheck[]
-): DiagnosticSummary {
+export function summarizeDiagnostics(checks: DiagnosticCheck[]): DiagnosticSummary {
   return checks.reduce<DiagnosticSummary>(
     (summary, check) => {
       summary[check.status] += 1;

@@ -124,9 +124,6 @@ function receivedAtIso(message: WeixinOcInboundMessage): string {
   return new Date(timestampMs).toISOString();
 }
 
-function encodeWeixinOcCdnSource(input: {
-  media: WeixinOcMediaRef;
-  aeskey?: string;
-}): string {
+function encodeWeixinOcCdnSource(input: { media: WeixinOcMediaRef; aeskey?: string }): string {
   return `weixin-oc:cdn:${btoa(JSON.stringify(input))}`;
 }

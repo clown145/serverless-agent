@@ -40,21 +40,21 @@ internal-message.ts
 类型使用 PascalCase：
 
 ```ts
-type InternalMessage = {}
-type ToolCallRequest = {}
+type InternalMessage = {};
+type ToolCallRequest = {};
 ```
 
 函数和变量使用 camelCase：
 
 ```ts
-normalizeTelegramMessage()
-createRunStep()
+normalizeTelegramMessage();
+createRunStep();
 ```
 
 常量使用 UPPER_SNAKE_CASE：
 
 ```ts
-const MAX_TOOL_RETRIES = 3
+const MAX_TOOL_RETRIES = 3;
 ```
 
 ## 模块依赖
@@ -130,8 +130,8 @@ auditRepository.append(...)
 对象存储 key 必须由统一 builder 生成，避免不同模块各自拼接：
 
 ```ts
-buildAgentWorkspaceKey(agentId, path)
-buildRunArtifactKey(runId, name)
+buildAgentWorkspaceKey(agentId, path);
+buildRunArtifactKey(runId, name);
 ```
 
 ## 错误处理

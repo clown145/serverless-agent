@@ -129,12 +129,19 @@ export function ChatPanel({
       <div className="chat-session-bar">
         <label>
           {t("chat.conversation")}
-          <input value={conversationId} onChange={(event) => setConversationId(event.target.value)} />
+          <input
+            value={conversationId}
+            onChange={(event) => setConversationId(event.target.value)}
+          />
         </label>
         <label>
           {t("chat.switchConversation")}
           <select
-            value={conversations.some((item) => item.conversationId === conversationId) ? conversationId : ""}
+            value={
+              conversations.some((item) => item.conversationId === conversationId)
+                ? conversationId
+                : ""
+            }
             onChange={(event) => {
               if (event.target.value) {
                 setConversationId(event.target.value);

@@ -91,9 +91,7 @@ describe("model request bodies", () => {
       .mockResolvedValueOnce(
         jsonResponse({ error: { message: "Param Incorrect" } }, { status: 400 })
       )
-      .mockResolvedValueOnce(
-        jsonResponse({ choices: [{ message: { content: "done" } }] })
-      );
+      .mockResolvedValueOnce(jsonResponse({ choices: [{ message: { content: "done" } }] }));
     globalThis.fetch = fetchMock as unknown as typeof fetch;
 
     const provider = new OpenAiCompatibleProvider({
@@ -118,7 +116,7 @@ describe("model request bodies", () => {
             role: "tool",
             toolCallId: "call_1",
             toolName: "vfs.list_dir",
-            content: "[{\"path\":\"/workspace\"}]"
+            content: '[{"path":"/workspace"}]'
           }
         ],
         tools: [
@@ -145,9 +143,7 @@ describe("model request bodies", () => {
         })
       ])
     );
-    const retryMessages = fetchBodyAt(fetchMock, 1).messages as Array<
-      Record<string, unknown>
-    >;
+    const retryMessages = fetchBodyAt(fetchMock, 1).messages as Array<Record<string, unknown>>;
     expect(retryMessages.some((message) => message.role === "tool")).toBe(false);
     expect(retryMessages.some((message) => "tool_calls" in message)).toBe(false);
     expect(retryMessages).toEqual(
@@ -187,10 +183,7 @@ describe("model request bodies", () => {
     expect(body.contents).toMatchObject([
       {
         role: "user",
-        parts: [
-          { text: "look" },
-          { inlineData: { mimeType: "image/png", data: "aGVsbG8=" } }
-        ]
+        parts: [{ text: "look" }, { inlineData: { mimeType: "image/png", data: "aGVsbG8=" } }]
       }
     ]);
   });
@@ -200,10 +193,7 @@ function fetchBody(fetchMock: ReturnType<typeof vi.fn>): Record<string, unknown>
   return fetchBodyAt(fetchMock, 0);
 }
 
-function fetchBodyAt(
-  fetchMock: ReturnType<typeof vi.fn>,
-  index: number
-): Record<string, unknown> {
+function fetchBodyAt(fetchMock: ReturnType<typeof vi.fn>, index: number): Record<string, unknown> {
   const init = fetchMock.mock.calls[index]?.[1] as RequestInit | undefined;
   return JSON.parse(String(init?.body ?? "{}")) as Record<string, unknown>;
 }

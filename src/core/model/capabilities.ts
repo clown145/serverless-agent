@@ -3,10 +3,7 @@ import { getModelRoleSetting } from "../../storage/repositories/agent-model-role
 import { getModelSettings } from "../../storage/repositories/agent-model-settings-repository";
 import { getConversationSettings } from "../../storage/repositories/conversation-settings-repository";
 import { listEnabledModelCatalog } from "../../storage/repositories/model-catalog-repository";
-import {
-  inferModelCapabilities,
-  type ModelCapability
-} from "./capability-defaults";
+import { inferModelCapabilities, type ModelCapability } from "./capability-defaults";
 
 export type ActiveModelCapabilities = {
   providerId?: string;
@@ -102,9 +99,7 @@ export async function resolveRoleModelCapabilities(
     source: "agent"
   });
 
-  return capabilities
-    ? { ...capabilities, source: "role" }
-    : undefined;
+  return capabilities ? { ...capabilities, source: "role" } : undefined;
 }
 
 async function resolveCatalogCapabilities(

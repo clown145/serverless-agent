@@ -192,12 +192,8 @@ describe("AgentDurableObject mailbox integration", () => {
 
     const alarm = await storage.getAlarm();
     expect(alarm).not.toBeNull();
-    expect(alarm!).toBeGreaterThanOrEqual(
-      Date.parse(retained.result!.expiresAt!) - 1_000
-    );
-    expect(alarm!).toBeLessThanOrEqual(
-      Date.now() + MAILBOX_EVENT_RETENTION_MS + 1_000
-    );
+    expect(alarm!).toBeGreaterThanOrEqual(Date.parse(retained.result!.expiresAt!) - 1_000);
+    expect(alarm!).toBeLessThanOrEqual(Date.now() + MAILBOX_EVENT_RETENTION_MS + 1_000);
 
     vi.useFakeTimers();
     try {

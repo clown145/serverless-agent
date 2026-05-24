@@ -26,14 +26,14 @@ export function FormDialog({
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="modal-overlay" />
-        <Dialog.Content className={`modal-content${contentClassName ? ` ${contentClassName}` : ""}`}>
+        <Dialog.Content
+          className={`modal-content${contentClassName ? ` ${contentClassName}` : ""}`}
+        >
           <div className="modal-header">
             <div>
               <Dialog.Title className="modal-title">{title}</Dialog.Title>
               {description && (
-                <Dialog.Description className="modal-description">
-                  {description}
-                </Dialog.Description>
+                <Dialog.Description className="modal-description">{description}</Dialog.Description>
               )}
             </div>
             <Dialog.Close asChild>

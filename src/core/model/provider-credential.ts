@@ -52,7 +52,8 @@ export async function resolveProviderApiKey(
       }
 
       throw new Error(
-        "Provider API key could not be decrypted. Restore the AGENT_MASTER_KEY or INTERNAL_ADMIN_TOKEN used when it was saved, or re-save this provider API key in the WebUI."
+        "Provider API key could not be decrypted. Restore the AGENT_MASTER_KEY or INTERNAL_ADMIN_TOKEN used when it was saved, or re-save this provider API key in the WebUI.",
+        { cause: error }
       );
     }
   }
@@ -64,10 +65,7 @@ function resolveCredentialMasterKey(env: Env): string | undefined {
   return env.AGENT_MASTER_KEY ?? env.INTERNAL_ADMIN_TOKEN;
 }
 
-function readLegacyProviderSecret(
-  env: Env,
-  provider: ModelProviderRecord
-): string | undefined {
+function readLegacyProviderSecret(env: Env, provider: ModelProviderRecord): string | undefined {
   const secretName = provider.apiKeySecret || legacySecretName(provider.providerType);
   return (env as unknown as Record<string, string | undefined>)[secretName];
 }

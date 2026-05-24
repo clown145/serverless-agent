@@ -23,10 +23,17 @@ describe("provider endpoints", () => {
     expect(geminiModelsUrl("https://generativelanguage.googleapis.com/v1beta")).toBe(
       "https://generativelanguage.googleapis.com/v1beta/models"
     );
-    expect(geminiGenerateUrl("https://generativelanguage.googleapis.com/v1beta", "gemini-2.5-flash")).toBe(
+    expect(
+      geminiGenerateUrl("https://generativelanguage.googleapis.com/v1beta", "gemini-2.5-flash")
+    ).toBe(
       "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
     );
-    expect(geminiGenerateUrl("https://generativelanguage.googleapis.com/v1beta", "models/gemini-2.5-flash")).toBe(
+    expect(
+      geminiGenerateUrl(
+        "https://generativelanguage.googleapis.com/v1beta",
+        "models/gemini-2.5-flash"
+      )
+    ).toBe(
       "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
     );
   });

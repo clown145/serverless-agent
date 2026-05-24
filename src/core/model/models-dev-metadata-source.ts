@@ -1,15 +1,10 @@
 import type { ModelProviderRecord } from "../../storage/repositories/model-settings-types";
-import {
-  modelCapabilitiesFromMetadata,
-  type ModelMetadataResolution
-} from "./model-metadata";
+import { modelCapabilitiesFromMetadata, type ModelMetadataResolution } from "./model-metadata";
 
 const MODELS_DEV_URL = "https://models.dev/api.json";
 const MODELS_DEV_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 
-let modelsDevIndexCache:
-  | { expiresAt: number; index: Map<string, ModelsDevEntry[]> }
-  | undefined;
+let modelsDevIndexCache: { expiresAt: number; index: Map<string, ModelsDevEntry[]> } | undefined;
 
 export function clearModelsDevMetadataCache(): void {
   modelsDevIndexCache = undefined;
@@ -68,10 +63,7 @@ export async function fetchModelsDevModelMetadata(
     modelIds
       .map((modelId) => {
         const entry = resolveModelsDevEntry(index, modelId);
-        return [
-          modelId,
-          entry ? toModelMetadataResolution(modelId, entry) : undefined
-        ] as const;
+        return [modelId, entry ? toModelMetadataResolution(modelId, entry) : undefined] as const;
       })
       .filter((entry): entry is [string, ModelMetadataResolution] => Boolean(entry[1]))
   );
@@ -96,9 +88,7 @@ async function fetchModelsDevProviders(): Promise<ModelsDevResponse> {
   const response = await fetch(MODELS_DEV_URL, {
     headers: { accept: "application/json" }
   });
-  const payload = (await response.json().catch(() => undefined)) as
-    | ModelsDevResponse
-    | undefined;
+  const payload = (await response.json().catch(() => undefined)) as ModelsDevResponse | undefined;
 
   if (!response.ok) {
     throw new Error(`models.dev metadata failed ${response.status}`);

@@ -1,4 +1,4 @@
-import type { BlobObject, BlobPutOptions, BlobStorage } from "./types";
+import type { BlobObject, BlobStorage } from "./types";
 
 export function createR2BlobStorage(bucket: R2Bucket): BlobStorage {
   return {

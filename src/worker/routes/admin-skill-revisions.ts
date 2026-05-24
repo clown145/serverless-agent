@@ -10,11 +10,7 @@ import {
   skillRevisionsQuerySchema,
   zodMessage
 } from "./skills/skill-schemas";
-import {
-  defaultAgentId,
-  searchParamsObject,
-  skillRouteError
-} from "./skills/route-utils";
+import { defaultAgentId, searchParamsObject, skillRouteError } from "./skills/route-utils";
 
 export async function handleAdminSkillRevisions(
   request: Request,
@@ -37,11 +33,7 @@ export async function handleAdminSkillRevisions(
   return errorResponse(405, "method_not_allowed", "Method not allowed");
 }
 
-async function handleList(
-  request: Request,
-  env: Env,
-  skillId: string
-): Promise<Response> {
+async function handleList(request: Request, env: Env, skillId: string): Promise<Response> {
   const url = new URL(request.url);
   const parsed = skillRevisionsQuerySchema.safeParse(searchParamsObject(url));
   if (!parsed.success) {
@@ -57,11 +49,7 @@ async function handleList(
     });
     return jsonResponse({ ok: true, revisions });
   } catch (error) {
-    return skillRouteError(
-      "skill_revision_failed",
-      error,
-      "Skill revision list failed"
-    );
+    return skillRouteError("skill_revision_failed", error, "Skill revision list failed");
   }
 }
 
@@ -86,11 +74,7 @@ async function handleRead(
     });
     return jsonResponse({ ok: true, revision });
   } catch (error) {
-    return skillRouteError(
-      "skill_revision_failed",
-      error,
-      "Skill revision read failed"
-    );
+    return skillRouteError("skill_revision_failed", error, "Skill revision read failed");
   }
 }
 
@@ -116,10 +100,6 @@ async function handleRollback(
     });
     return jsonResponse({ ok: true, skill });
   } catch (error) {
-    return skillRouteError(
-      "skill_revision_failed",
-      error,
-      "Skill revision rollback failed"
-    );
+    return skillRouteError("skill_revision_failed", error, "Skill revision rollback failed");
   }
 }

@@ -10,10 +10,7 @@ export function parseModelKey(value: string): { providerId?: string; modelId?: s
   return providerId && modelId ? { providerId, modelId } : {};
 }
 
-export function modelLabel(
-  model: ModelCatalogItem,
-  providers: ModelProvider[]
-): string {
+export function modelLabel(model: ModelCatalogItem, providers: ModelProvider[]): string {
   const provider = providers.find((item) => item.id === model.providerId);
   return `${provider?.name ?? model.providerId} / ${modelDisplayLabel(model)}`;
 }

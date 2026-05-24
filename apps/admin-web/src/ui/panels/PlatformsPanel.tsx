@@ -111,10 +111,7 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
         parseMode: draft.parseMode
       });
       if (draft.botToken) {
-        const webhook = await client.setTelegramWebhook(
-          created.integration.id,
-          webhookUrl
-        );
+        const webhook = await client.setTelegramWebhook(created.integration.id, webhookUrl);
         setResult(webhook);
       } else {
         setResult(created);
@@ -122,9 +119,7 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
       setDraft({ ...draft, botToken: "", webhookSecret: "" });
       setAdapterDialog((current) => ({ ...current, open: false }));
       notify(
-        draft.botToken
-          ? t("platforms.telegramSavedWebhook")
-          : t("platforms.telegramSaved"),
+        draft.botToken ? t("platforms.telegramSavedWebhook") : t("platforms.telegramSaved"),
         "ok"
       );
       await load();
@@ -252,10 +247,7 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
     await runAction(() => client.deleteTelegramWebhook(id), t("platforms.webhookDeleted"));
   }
 
-  async function updateParseMode(
-    id: string,
-    parseMode: TelegramIntegration["parseMode"]
-  ) {
+  async function updateParseMode(id: string, parseMode: TelegramIntegration["parseMode"]) {
     await runAction(
       () => client.updateTelegramIntegration(id, { parseMode }),
       t("platforms.integrationUpdated")
@@ -271,7 +263,10 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
   }
 
   async function connectQqIntegration(id: string) {
-    await runAction(() => client.connectQqOfficialIntegration(id), t("platforms.qqGatewayConnected"));
+    await runAction(
+      () => client.connectQqOfficialIntegration(id),
+      t("platforms.qqGatewayConnected")
+    );
   }
 
   async function disconnectQqIntegration(id: string) {
@@ -282,7 +277,10 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
   }
 
   async function getQqStatus(id: string) {
-    await runAction(() => client.getQqOfficialIntegrationStatus(id), t("platforms.qqGatewayStatusLoaded"));
+    await runAction(
+      () => client.getQqOfficialIntegrationStatus(id),
+      t("platforms.qqGatewayStatusLoaded")
+    );
   }
 
   async function deleteQqIntegration(id: string) {
@@ -294,10 +292,7 @@ export function PlatformsPanel({ client, notify }: PanelProps) {
   }
 
   async function createWecomContactWay(id: string) {
-    await runAction(
-      () => client.createWecomContactWay(id),
-      t("platforms.wecomContactWayCreated")
-    );
+    await runAction(() => client.createWecomContactWay(id), t("platforms.wecomContactWayCreated"));
   }
 
   async function deleteWecomIntegration(id: string) {

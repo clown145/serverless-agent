@@ -20,12 +20,12 @@
 
 没有显式策略时，运行时使用保守默认值：
 
-| Actor | Max level | Scopes |
-| --- | ---: | --- |
-| `scheduler` | 3 | `workspace:read`, `workspace:write`, `message:send`, `message:send_file`, `message:send_image`, `message:send_buttons`, `web:search`, `schedule:read`, `schedule:write` |
-| role `owner` / `admin` | 4 | `workspace:read`, `workspace:write`, `message:send`, `message:send_file`, `message:send_image`, `message:send_buttons`, `web:search`, `schedule:read`, `schedule:write` |
-| role `member` | 2 | `workspace:read`, `workspace:write` |
-| unknown | 1 | `workspace:read` |
+| Actor                  | Max level | Scopes                                                                                                                                                                  |
+| ---------------------- | --------: | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `scheduler`            |         3 | `workspace:read`, `workspace:write`, `message:send`, `message:send_file`, `message:send_image`, `message:send_buttons`, `web:search`, `schedule:read`, `schedule:write` |
+| role `owner` / `admin` |         4 | `workspace:read`, `workspace:write`, `message:send`, `message:send_file`, `message:send_image`, `message:send_buttons`, `web:search`, `schedule:read`, `schedule:write` |
+| role `member`          |         2 | `workspace:read`, `workspace:write`                                                                                                                                     |
+| unknown                |         1 | `workspace:read`                                                                                                                                                        |
 
 显式策略会与默认策略合并：`maxLevel` 取最高值，`scopes` 取并集。
 

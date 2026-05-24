@@ -21,10 +21,7 @@ const createPolicySchema = z.object({
   scopes: z.array(z.string().min(1)).default([])
 });
 
-export async function handleAdminPermissionPolicies(
-  request: Request,
-  env: Env
-): Promise<Response> {
+export async function handleAdminPermissionPolicies(request: Request, env: Env): Promise<Response> {
   if (request.method === "GET") {
     const agentId = new URL(request.url).searchParams.get("agentId") ?? undefined;
     const policies = await listPermissionPolicies(env.AGENT_DB, agentId);

@@ -107,12 +107,15 @@ export function ScheduleEditor({
         <input
           value={form.conversationId}
           onChange={(event) => onChange({ conversationId: event.target.value })}
-          placeholder="webui:schedule"
+          placeholder={t("schedules.conversationPlaceholder")}
         />
       </label>
       <label>
         {t("schedules.actor")}
-        <input value={form.actorId} onChange={(event) => onChange({ actorId: event.target.value })} />
+        <input
+          value={form.actorId}
+          onChange={(event) => onChange({ actorId: event.target.value })}
+        />
       </label>
       <label>
         {t("schedules.modelProvider")}

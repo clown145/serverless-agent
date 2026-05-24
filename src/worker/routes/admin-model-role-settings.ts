@@ -1,4 +1,7 @@
-import { getModelSettings, setModelSettings } from "../../storage/repositories/agent-model-settings-repository";
+import {
+  getModelSettings,
+  setModelSettings
+} from "../../storage/repositories/agent-model-settings-repository";
 import {
   getAgentModelConfig,
   setAgentModelConfig
@@ -18,18 +21,13 @@ import {
   toAgentModelConfigDto,
   toModelRoleSettingsDto
 } from "./model-settings/model-role-settings-dto";
-import {
-  updateModelRoleSettingsSchema,
-  zodMessage
-} from "./model-settings/model-settings-schemas";
+import { updateModelRoleSettingsSchema, zodMessage } from "./model-settings/model-settings-schemas";
 
 const MODEL_ROLES: ModelRole[] = ["default", "summary", "vision"];
 
-export async function handleAdminModelRoleSettings(
-  request: Request,
-  env: Env
-): Promise<Response> {
-  const agentId = new URL(request.url).searchParams.get("agentId") ?? env.DEFAULT_AGENT_ID ?? "default";
+export async function handleAdminModelRoleSettings(request: Request, env: Env): Promise<Response> {
+  const agentId =
+    new URL(request.url).searchParams.get("agentId") ?? env.DEFAULT_AGENT_ID ?? "default";
 
   if (request.method === "GET") {
     const [providers, models, defaultSettings, roleSettings, config] = await Promise.all([
@@ -51,9 +49,7 @@ export async function handleAdminModelRoleSettings(
   }
 
   if (request.method === "PUT") {
-    const parsed = updateModelRoleSettingsSchema.safeParse(
-      await request.json().catch(() => ({}))
-    );
+    const parsed = updateModelRoleSettingsSchema.safeParse(await request.json().catch(() => ({})));
     if (!parsed.success) {
       return errorResponse(400, "invalid_payload", zodMessage(parsed.error));
     }

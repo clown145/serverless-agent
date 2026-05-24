@@ -8,11 +8,7 @@ type ChatAttachmentPreviewProps = {
   attachment: MessageAttachment;
 };
 
-export function ChatAttachmentPreview({
-  client,
-  message,
-  attachment
-}: ChatAttachmentPreviewProps) {
+export function ChatAttachmentPreview({ client, message, attachment }: ChatAttachmentPreviewProps) {
   const [objectUrl, setObjectUrl] = useState("");
 
   useEffect(() => {
@@ -43,11 +39,7 @@ export function ChatAttachmentPreview({
 
   if (attachment.type === "image" && objectUrl) {
     return (
-      <img
-        alt={attachment.name ?? "attachment"}
-        className="chat-image-preview"
-        src={objectUrl}
-      />
+      <img alt={attachment.name ?? "attachment"} className="chat-image-preview" src={objectUrl} />
     );
   }
 

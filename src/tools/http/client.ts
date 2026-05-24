@@ -52,9 +52,7 @@ type PreparedBody = {
   body?: BodyInit;
 };
 
-export async function safeHttpRequest(
-  input: SafeHttpRequestInput
-): Promise<SafeHttpResponse> {
+export async function safeHttpRequest(input: SafeHttpRequestInput): Promise<SafeHttpResponse> {
   let url = input.url;
   let method = input.method;
   let body = input.body;
@@ -121,7 +119,12 @@ async function buildRequestInit(input: {
 }): Promise<RequestInit> {
   const prepared = await prepareBody(input.env, input.agentId, input.body, input.headers ?? {});
   const headers = prepared.headers;
-  const cookieHeader = await resolveCookieHeader(input.env, input.agentId, input.url, input.cookieJar);
+  const cookieHeader = await resolveCookieHeader(
+    input.env,
+    input.agentId,
+    input.url,
+    input.cookieJar
+  );
   if (cookieHeader) {
     headers.set("cookie", cookieHeader);
   }

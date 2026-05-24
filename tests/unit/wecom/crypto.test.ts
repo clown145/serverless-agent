@@ -25,7 +25,9 @@ describe("WeCom crypto helpers", () => {
   it("decrypts encrypted callback XML", async () => {
     const token = "token";
     const corpId = "ww123";
-    const encodingAesKey = bytesToBase64(new Uint8Array(Array.from({ length: 32 }, (_, index) => index))).replace(/=+$/g, "");
+    const encodingAesKey = bytesToBase64(
+      new Uint8Array(Array.from({ length: 32 }, (_, index) => index))
+    ).replace(/=+$/g, "");
     const plainXml = "<xml><Event><![CDATA[kf_msg_or_event]]></Event></xml>";
     const encrypted = await encryptForTest(encodingAesKey, plainXml, corpId);
     const timestamp = "12345";

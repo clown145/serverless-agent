@@ -12,5 +12,4 @@ describe("skill selector", () => {
   it("ignores regular messages", () => {
     expect(parseExplicitSkillCommand("/ping")).toBeUndefined();
   });
-
 });

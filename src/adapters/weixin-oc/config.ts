@@ -106,4 +106,3 @@ async function integrationWeixinOcConfig(
     integration
   };
 }
-

@@ -13,10 +13,7 @@ import {
   startWeixinOcLogin
 } from "./platforms/weixin-oc-admin-actions";
 import { toWeixinOcIntegrationDto } from "./platforms/weixin-oc-dto";
-import {
-  updateWeixinOcIntegrationSchema,
-  zodMessage
-} from "./platforms/weixin-oc-schemas";
+import { updateWeixinOcIntegrationSchema, zodMessage } from "./platforms/weixin-oc-schemas";
 
 export async function handleAdminWeixinOcIntegrationDetail(
   request: Request,

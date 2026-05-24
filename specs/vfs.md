@@ -28,20 +28,20 @@ VFS 是 agent 的虚拟文件系统。它不是 Worker 的真实文件系统，�
 
 ```ts
 type VfsEntry = {
-  id: string
-  agentId: string
-  path: string
-  kind: "file" | "directory"
-  storageKind: "d1_text" | "r2_blob" | "legacy_r2" | "directory"
+  id: string;
+  agentId: string;
+  path: string;
+  kind: "file" | "directory";
+  storageKind: "d1_text" | "r2_blob" | "legacy_r2" | "directory";
   // Historical field name. The value is an object-storage key, not necessarily R2.
-  r2Key?: string
-  mimeType?: string
-  size?: number
-  checksum?: string
-  version: number
-  createdAt: string
-  updatedAt: string
-}
+  r2Key?: string;
+  mimeType?: string;
+  size?: number;
+  checksum?: string;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+};
 ```
 
 ## 操作

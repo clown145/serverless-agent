@@ -36,7 +36,7 @@ export function SkillEditor({
         <input
           value={relativePath}
           onChange={(event) => onRelativePathChange(event.target.value)}
-          placeholder="SKILL.md"
+          placeholder={t("skills.rootFilePlaceholder")}
         />
         <ToolbarButton
           label={t("skills.readFile")}

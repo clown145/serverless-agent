@@ -44,10 +44,7 @@ export async function fetchProviderModels(
   return [];
 }
 
-async function providerAuth(
-  env: Env,
-  provider: ModelProviderRecord
-): Promise<ModelAuthConfig> {
+async function providerAuth(env: Env, provider: ModelProviderRecord): Promise<ModelAuthConfig> {
   const apiKey = await resolveProviderApiKey(env, provider);
   if (!apiKey && requiresAuthKey(provider.authType)) {
     throw new Error("Model provider API key is missing");
@@ -61,10 +58,7 @@ async function providerAuth(
   };
 }
 
-async function fetchOpenAiModels(
-  env: Env,
-  provider: ModelProviderRecord
-): Promise<RemoteModel[]> {
+async function fetchOpenAiModels(env: Env, provider: ModelProviderRecord): Promise<RemoteModel[]> {
   const headers = new Headers();
   const endpoint = applyModelAuth(
     openAiModelsUrl(provider.baseUrl),
@@ -91,10 +85,7 @@ async function fetchOpenAiModels(
     .map((id) => ({ modelId: id, displayName: id }));
 }
 
-async function fetchGeminiModels(
-  env: Env,
-  provider: ModelProviderRecord
-): Promise<RemoteModel[]> {
+async function fetchGeminiModels(env: Env, provider: ModelProviderRecord): Promise<RemoteModel[]> {
   const headers = new Headers();
   const endpoint = applyModelAuth(
     geminiModelsUrl(provider.baseUrl),
@@ -129,11 +120,11 @@ async function fetchGeminiModels(
 function extractOpenAiModels(
   payload: OpenAiModelList | { error?: { message?: string } } | undefined
 ): Array<{ id?: string }> {
-  return payload && "data" in payload ? payload.data ?? [] : [];
+  return payload && "data" in payload ? (payload.data ?? []) : [];
 }
 
 function extractGeminiModels(
   payload: GeminiModelList | { error?: { message?: string } } | undefined
 ): NonNullable<GeminiModelList["models"]> {
-  return payload && "models" in payload ? payload.models ?? [] : [];
+  return payload && "models" in payload ? (payload.models ?? []) : [];
 }

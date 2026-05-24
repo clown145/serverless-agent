@@ -4,17 +4,12 @@ import type { Env } from "../../shared/types/env";
 import { diagnosticOk, diagnosticWarn } from "../check-result";
 import type { DiagnosticCheck } from "../types";
 
-export async function checkPlatformConfig(
-  env: Env,
-  agentId: string
-): Promise<DiagnosticCheck[]> {
+export async function checkPlatformConfig(env: Env, agentId: string): Promise<DiagnosticCheck[]> {
   const integrations = await listPlatformIntegrationRecords(env.AGENT_DB, {
     agentId,
     platform: "telegram"
   });
-  const activeIntegrations = integrations.filter(
-    (integration) => integration.status === "active"
-  );
+  const activeIntegrations = integrations.filter((integration) => integration.status === "active");
   const usableIntegrations = activeIntegrations.filter(
     (integration) => integration.credentialId && integration.webhookSecret
   );
@@ -31,10 +26,7 @@ export async function checkPlatformConfig(
   ];
 }
 
-function telegramIntegrationsCheck(
-  count: number,
-  envTelegramConfigured: boolean
-): DiagnosticCheck {
+function telegramIntegrationsCheck(count: number, envTelegramConfigured: boolean): DiagnosticCheck {
   if (count) {
     return diagnosticOk(
       "platforms",
@@ -96,9 +88,7 @@ function telegramCredentialsCheck(input: {
   );
 }
 
-function telegramLastCheck(
-  activeIntegrations: PlatformIntegrationRecord[]
-): DiagnosticCheck {
+function telegramLastCheck(activeIntegrations: PlatformIntegrationRecord[]): DiagnosticCheck {
   const errored = activeIntegrations.filter((integration) => integration.lastError);
   if (errored.length) {
     return diagnosticWarn(

@@ -11,11 +11,11 @@
 
 ## 扩展点
 
-| 文件 | 职责 |
-| --- | --- |
-| `provider-types.ts` | Provider interface 和 normalized result shape。 |
-| `provider-factory.ts` | Active provider resolution。 |
-| `<provider>-provider.ts` | Provider-specific HTTP adapter。 |
+| 文件                            | 职责                                                    |
+| ------------------------------- | ------------------------------------------------------- |
+| `provider-types.ts`             | Provider interface 和 normalized result shape。         |
+| `provider-factory.ts`           | Active provider resolution。                            |
+| `<provider>-provider.ts`        | Provider-specific HTTP adapter。                        |
 | `storage/repositories/search-*` | Provider config、credential 和 active setting storage。 |
 
 ## 权限

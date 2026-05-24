@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  diagnosticError,
-  diagnosticOk,
-  diagnosticWarn
-} from "../../src/diagnostics/check-result";
+import { diagnosticError, diagnosticOk, diagnosticWarn } from "../../src/diagnostics/check-result";
 import { summarizeDiagnostics } from "../../src/diagnostics/types";
 
 describe("diagnostics", () => {

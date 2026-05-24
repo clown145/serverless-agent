@@ -3,10 +3,7 @@ import type { Env } from "../../shared/types/env";
 import { listDebugMessages } from "../../storage/repositories/message-debug-repository";
 import { listDebugMessagesSchema, zodMessage } from "./debug/debug-schemas";
 
-export async function handleAdminDebugMessages(
-  request: Request,
-  env: Env
-): Promise<Response> {
+export async function handleAdminDebugMessages(request: Request, env: Env): Promise<Response> {
   if (request.method !== "GET") {
     return errorResponse(405, "method_not_allowed", "Method not allowed");
   }

@@ -40,9 +40,7 @@ export async function createSearchProviderRecord(
   };
 }
 
-export async function listSearchProviderRecords(
-  db: D1Database
-): Promise<SearchProviderRecord[]> {
+export async function listSearchProviderRecords(db: D1Database): Promise<SearchProviderRecord[]> {
   const result = await db
     .prepare("SELECT * FROM search_providers WHERE status != 'deleted' ORDER BY created_at DESC")
     .all<SearchProviderRow>();
@@ -75,10 +73,7 @@ export async function updateSearchProviderCredential(
   return getSearchProviderRecord(db, id);
 }
 
-export async function deleteSearchProviderRecord(
-  db: D1Database,
-  id: string
-): Promise<boolean> {
+export async function deleteSearchProviderRecord(db: D1Database, id: string): Promise<boolean> {
   const result = await db
     .prepare("UPDATE search_providers SET status = 'deleted', updated_at = ? WHERE id = ?")
     .bind(nowIso(), id)

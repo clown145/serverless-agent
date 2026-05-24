@@ -4,18 +4,9 @@ import {
   QqOfficialIntegrationForm,
   type QqOfficialIntegrationDraft
 } from "./QqOfficialIntegrationForm";
-import {
-  TelegramIntegrationForm,
-  type TelegramIntegrationDraft
-} from "./TelegramIntegrationForm";
-import {
-  WecomIntegrationForm,
-  type WecomIntegrationDraft
-} from "./WecomIntegrationForm";
-import {
-  WeixinOcIntegrationForm,
-  type WeixinOcIntegrationDraft
-} from "./WeixinOcIntegrationForm";
+import { TelegramIntegrationForm, type TelegramIntegrationDraft } from "./TelegramIntegrationForm";
+import { WecomIntegrationForm, type WecomIntegrationDraft } from "./WecomIntegrationForm";
+import { WeixinOcIntegrationForm, type WeixinOcIntegrationDraft } from "./WeixinOcIntegrationForm";
 
 export type PlatformAdapterKind = "weixin_oc" | "qq" | "telegram" | "wecom";
 

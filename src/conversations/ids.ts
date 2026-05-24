@@ -6,10 +6,7 @@ export function rootConversationId(conversationId: string): string {
   return conversationId.split(LOGICAL_SEPARATOR)[0] ?? conversationId;
 }
 
-export function createLogicalConversationId(
-  rootId: string,
-  sessionId: string
-): string {
+export function createLogicalConversationId(rootId: string, sessionId: string): string {
   return `${rootConversationId(rootId)}${LOGICAL_SEPARATOR}${sessionId}`;
 }
 

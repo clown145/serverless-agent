@@ -46,10 +46,7 @@ export function VfsEditorPane({
         />
       </div>
       <div className="path-bar">
-        <input
-          value={moveTarget}
-          onChange={(event) => onMoveTargetChange(event.target.value)}
-        />
+        <input value={moveTarget} onChange={(event) => onMoveTargetChange(event.target.value)} />
         <ToolbarButton label={t("vfs.move")} icon={GitCompareArrows} onClick={onMove} />
       </div>
       {file && (

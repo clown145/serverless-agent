@@ -11,10 +11,7 @@ type ToolCallHistoryViewProps = {
   onRefresh: () => void;
 };
 
-export function ToolCallHistoryView({
-  calls,
-  onRefresh
-}: ToolCallHistoryViewProps) {
+export function ToolCallHistoryView({ calls, onRefresh }: ToolCallHistoryViewProps) {
   const { t } = useI18n();
   const [selectedId, setSelectedId] = useState("");
   const selectedCall = useMemo(
@@ -42,9 +39,7 @@ export function ToolCallHistoryView({
           <div className="tool-call-list">
             {calls.map((call) => (
               <button
-                className={`tool-call-row ${
-                  selectedCall?.id === call.id ? "selected" : ""
-                }`}
+                className={`tool-call-row ${selectedCall?.id === call.id ? "selected" : ""}`}
                 key={call.id}
                 type="button"
                 onClick={() => setSelectedId(call.id)}
@@ -62,9 +57,7 @@ export function ToolCallHistoryView({
             <div className="tool-call-detail">
               <div className="tool-meta">
                 <StatusBadge value={selectedCall.status} />
-                {selectedCall.latencyMs !== undefined && (
-                  <span>{selectedCall.latencyMs}ms</span>
-                )}
+                {selectedCall.latencyMs !== undefined && <span>{selectedCall.latencyMs}ms</span>}
                 {selectedCall.errorCode && <span>{selectedCall.errorCode}</span>}
                 <span>{selectedCall.runId}</span>
               </div>

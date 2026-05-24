@@ -11,11 +11,7 @@ export type ModelMetadata = {
   raw?: Record<string, unknown>;
 };
 
-export type ModelMetadataMatchConfidence =
-  | "exact"
-  | "alias"
-  | "inferred"
-  | "unknown";
+export type ModelMetadataMatchConfidence = "exact" | "alias" | "inferred" | "unknown";
 
 export type ModelMetadataResolution = ModelMetadata & {
   source: "provider" | "models.dev" | "openrouter" | "inferred";
@@ -64,10 +60,9 @@ export function modelCapabilitiesFromMetadata(input: {
     (input.supportedParameters ?? []).map((parameter) => parameter.toLowerCase())
   );
   const inputModalities = new Set(
-    [
-      ...(input.inputModalities ?? []),
-      ...inputModalitiesFromSummary(input.modality)
-    ].map((modality) => modality.toLowerCase())
+    [...(input.inputModalities ?? []), ...inputModalitiesFromSummary(input.modality)].map(
+      (modality) => modality.toLowerCase()
+    )
   );
 
   if (inputModalities.has("image")) {

@@ -15,9 +15,7 @@ export const contextCommand: CommandDefinition = {
   title: "Context",
   description: "Show or update context settings.",
   async execute({ env, message, command }) {
-    const action = command.name === "compact"
-      ? "compact"
-      : command.args[0]?.toLowerCase();
+    const action = command.name === "compact" ? "compact" : command.args[0]?.toLowerCase();
 
     if (!action) {
       return {
@@ -59,7 +57,10 @@ export const contextCommand: CommandDefinition = {
       await updateConversationSettings(env.AGENT_DB, message.agentId, message.conversationId, {
         summaryEnabled: enabled === "on"
       });
-      return { handled: true, responseText: `Automatic compaction ${enabled === "on" ? "enabled" : "disabled"}.` };
+      return {
+        handled: true,
+        responseText: `Automatic compaction ${enabled === "on" ? "enabled" : "disabled"}.`
+      };
     }
 
     if (action === "summary-model") {
@@ -94,7 +95,9 @@ export const contextCommand: CommandDefinition = {
       const summary = await compactConversationNow(env, message);
       return {
         handled: true,
-        responseText: summary ? "Current conversation context compacted." : "Current conversation history does not need compaction."
+        responseText: summary
+          ? "Current conversation context compacted."
+          : "Current conversation history does not need compaction."
       };
     }
 

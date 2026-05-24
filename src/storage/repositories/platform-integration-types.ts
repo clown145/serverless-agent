@@ -1,9 +1,4 @@
-export type PlatformIntegrationPlatform =
-  | "telegram"
-  | "qq"
-  | "wecom"
-  | "weixin_oc"
-  | "webhook";
+export type PlatformIntegrationPlatform = "telegram" | "qq" | "wecom" | "weixin_oc" | "webhook";
 
 export type PlatformIntegrationRecord = {
   id: string;
@@ -57,9 +52,7 @@ export type PlatformCredentialRow = {
   updated_at: string;
 };
 
-export function mapPlatformIntegrationRow(
-  row: PlatformIntegrationRow
-): PlatformIntegrationRecord {
+export function mapPlatformIntegrationRow(row: PlatformIntegrationRow): PlatformIntegrationRecord {
   return {
     id: row.id,
     agentId: row.agent_id,
@@ -76,9 +69,7 @@ export function mapPlatformIntegrationRow(
   };
 }
 
-export function mapPlatformCredentialRow(
-  row: PlatformCredentialRow
-): PlatformCredentialRecord {
+export function mapPlatformCredentialRow(row: PlatformCredentialRow): PlatformCredentialRecord {
   return {
     id: row.id,
     integrationId: row.integration_id,

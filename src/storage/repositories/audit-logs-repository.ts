@@ -11,10 +11,7 @@ export type AuditLogRecord = {
   createdAt: string;
 };
 
-export async function appendAuditLog(
-  db: D1Database,
-  record: AuditLogRecord
-): Promise<void> {
+export async function appendAuditLog(db: D1Database, record: AuditLogRecord): Promise<void> {
   await db
     .prepare(
       `INSERT INTO audit_logs (

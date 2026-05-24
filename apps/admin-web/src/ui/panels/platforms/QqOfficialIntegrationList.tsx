@@ -38,7 +38,9 @@ export function QqOfficialIntegrationList({
                 ? t("platforms.qqWebhookMode")
                 : t("platforms.qqGatewayMode")}
             </span>
-            <span>{integration.hasCredential ? t("platforms.encryptedSecret") : t("platforms.noSecret")}</span>
+            <span>
+              {integration.hasCredential ? t("platforms.encryptedSecret") : t("platforms.noSecret")}
+            </span>
             <span>
               {[
                 integration.enableGroupC2c ? t("platforms.qqGroupC2c") : undefined,

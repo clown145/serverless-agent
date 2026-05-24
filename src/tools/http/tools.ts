@@ -1,10 +1,6 @@
 import { builtinTool } from "../builtin/source";
 import type { RegisteredTool, ToolResult } from "../types";
-import {
-  safeHttpRequest,
-  type HttpRequestBody,
-  type SafeHttpResponse
-} from "./client";
+import { safeHttpRequest, type HttpRequestBody, type SafeHttpResponse } from "./client";
 import {
   httpRequestInputJsonSchema,
   httpRequestInputSchema,

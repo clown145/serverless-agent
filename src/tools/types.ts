@@ -10,11 +10,7 @@ export type PermissionRequirement = {
   confirmationRequired?: boolean;
 };
 
-export type ToolSideEffect =
-  | "none"
-  | "workspace_write"
-  | "external_write"
-  | "dangerous";
+export type ToolSideEffect = "none" | "workspace_write" | "external_write" | "dangerous";
 
 export type ToolSourceType = "builtin" | "mcp";
 
@@ -74,9 +70,7 @@ export type ToolResult = {
   };
 };
 
-export type ToolExecutor = (
-  context: ToolExecutionContext
-) => Promise<ToolResult>;
+export type ToolExecutor = (context: ToolExecutionContext) => Promise<ToolResult>;
 
 export type RegisteredTool = {
   definition: ToolDefinition;

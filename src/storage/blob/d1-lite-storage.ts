@@ -1,11 +1,6 @@
 import { nowIso } from "../../shared/time";
 import type { BlobObject, BlobStorage } from "./types";
-import {
-  base64FromBytes,
-  blobObjectFromBytes,
-  bytesFromBase64,
-  bytesFromBlobValue
-} from "./utils";
+import { base64FromBytes, blobObjectFromBytes, bytesFromBase64, bytesFromBlobValue } from "./utils";
 
 export const D1_LITE_OBJECT_LIMIT_BYTES = 256 * 1024;
 
@@ -42,14 +37,7 @@ export function createD1LiteBlobStorage(db: D1Database): BlobStorage {
             size = excluded.size,
             updated_at = excluded.updated_at`
         )
-        .bind(
-          key,
-          base64FromBytes(bytes),
-          options?.contentType ?? null,
-          bytes.byteLength,
-          now,
-          now
-        )
+        .bind(key, base64FromBytes(bytes), options?.contentType ?? null, bytes.byteLength, now, now)
         .run();
     },
     async get(key) {

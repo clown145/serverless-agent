@@ -32,9 +32,7 @@ export async function checkToolPolicy(
   return { allowed: true, resolved };
 }
 
-async function resolvePolicy(
-  context: ToolExecutionContext
-): Promise<ResolvedPolicy> {
+async function resolvePolicy(context: ToolExecutionContext): Promise<ResolvedPolicy> {
   const baseline = resolveDefaultPolicy(context);
   const db = context.env.AGENT_DB;
   if (!db) {

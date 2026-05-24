@@ -10,10 +10,7 @@ import { filterToolsForSkill } from "../skills/skill-tools";
 import { getAgentModelConfig } from "../storage/repositories/agent-model-config-repository";
 import { filterToolsForPlatform } from "../tools/platform-availability";
 import type { RegisteredTool } from "../tools/types";
-import {
-  createRuntimeToolRegistry,
-  type ToolRegistry
-} from "../tools/registry/tool-registry";
+import { createRuntimeToolRegistry, type ToolRegistry } from "../tools/registry/tool-registry";
 import type { ConversationContextMessage } from "./agent-context";
 import { createModelProvider } from "./model/provider-factory";
 import type { ModelProvider } from "./model/types";

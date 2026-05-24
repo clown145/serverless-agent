@@ -55,10 +55,7 @@ function sendMessageTool(): RegisteredTool {
         return failed("invalid_input", parsed.error.message, false);
       }
 
-      const adapter = getPlatformOutboundAdapter(
-        context.env,
-        parsed.data.platform as Platform
-      );
+      const adapter = getPlatformOutboundAdapter(context.env, parsed.data.platform as Platform);
       if (adapter?.sendText) {
         const result = await adapter.sendText({
           agentId: context.agentId,
@@ -114,10 +111,7 @@ function sendFileTool(): RegisteredTool {
         return failed("invalid_input", parsed.error.message, false);
       }
 
-      const adapter = getPlatformOutboundAdapter(
-        context.env,
-        parsed.data.platform as Platform
-      );
+      const adapter = getPlatformOutboundAdapter(context.env, parsed.data.platform as Platform);
       if (!adapter?.sendFile) {
         return unsupported(parsed.data.platform, "send files");
       }
@@ -165,10 +159,7 @@ function sendImageTool(): RegisteredTool {
         return failed("invalid_input", parsed.error.message, false);
       }
 
-      const adapter = getPlatformOutboundAdapter(
-        context.env,
-        parsed.data.platform as Platform
-      );
+      const adapter = getPlatformOutboundAdapter(context.env, parsed.data.platform as Platform);
       if (!adapter?.sendImage) {
         return unsupported(parsed.data.platform, "send images");
       }
@@ -216,10 +207,7 @@ function sendButtonsTool(): RegisteredTool {
         return failed("invalid_input", parsed.error.message, false);
       }
 
-      const adapter = getPlatformOutboundAdapter(
-        context.env,
-        parsed.data.platform as Platform
-      );
+      const adapter = getPlatformOutboundAdapter(context.env, parsed.data.platform as Platform);
       if (!adapter?.sendButtons) {
         return unsupported(parsed.data.platform, "send buttons");
       }

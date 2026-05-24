@@ -55,8 +55,7 @@ export async function handleAdminMcpServerDetail(
         tools: tools.map(toMcpToolDto)
       });
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Failed to discover MCP tools";
+      const message = error instanceof Error ? error.message : "Failed to discover MCP tools";
       await recordMcpServerDiscovery(env.AGENT_DB, serverId, { error: message });
       return errorResponse(502, "mcp_discovery_failed", message);
     }

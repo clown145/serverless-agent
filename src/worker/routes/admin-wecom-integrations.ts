@@ -8,15 +8,9 @@ import {
 import { errorResponse, jsonResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
 import { toWecomIntegrationDto } from "./platforms/wecom-dto";
-import {
-  createWecomIntegrationSchema,
-  zodMessage
-} from "./platforms/wecom-schemas";
+import { createWecomIntegrationSchema, zodMessage } from "./platforms/wecom-schemas";
 
-export async function handleAdminWecomIntegrations(
-  request: Request,
-  env: Env
-): Promise<Response> {
+export async function handleAdminWecomIntegrations(request: Request, env: Env): Promise<Response> {
   if (request.method === "GET") {
     const integrations = await listPlatformIntegrationRecords(env.AGENT_DB, {
       platform: "wecom"
@@ -32,9 +26,7 @@ export async function handleAdminWecomIntegrations(
     return errorResponse(405, "method_not_allowed", "Method not allowed");
   }
 
-  const parsed = createWecomIntegrationSchema.safeParse(
-    await request.json().catch(() => ({}))
-  );
+  const parsed = createWecomIntegrationSchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) {
     return errorResponse(400, "invalid_payload", zodMessage(parsed.error));
   }
@@ -64,11 +56,7 @@ export async function handleAdminWecomIntegrations(
   });
 }
 
-export async function saveWecomSecret(
-  env: Env,
-  integrationId: string,
-  secret: string
-) {
+export async function saveWecomSecret(env: Env, integrationId: string, secret: string) {
   const encrypted = await encryptWecomSecret(env, secret);
   const credential = await createPlatformCredentialRecord(env.AGENT_DB, {
     integrationId,

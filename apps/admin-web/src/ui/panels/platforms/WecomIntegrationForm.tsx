@@ -33,7 +33,7 @@ export function WecomIntegrationForm({
         {t("platforms.agent")}
         <input
           value={draft.agentId}
-          placeholder="default"
+          placeholder={t("platforms.agentPlaceholder")}
           onChange={(event) => onDraftChange({ ...draft, agentId: event.target.value })}
         />
       </label>
@@ -71,18 +71,14 @@ export function WecomIntegrationForm({
         <input
           type="password"
           value={draft.encodingAesKey}
-          onChange={(event) =>
-            onDraftChange({ ...draft, encodingAesKey: event.target.value })
-          }
+          onChange={(event) => onDraftChange({ ...draft, encodingAesKey: event.target.value })}
         />
       </label>
       <label>
         {t("platforms.wecomKfName")}
         <input
           value={draft.customerServiceName}
-          onChange={(event) =>
-            onDraftChange({ ...draft, customerServiceName: event.target.value })
-          }
+          onChange={(event) => onDraftChange({ ...draft, customerServiceName: event.target.value })}
         />
       </label>
       <label>
@@ -96,7 +92,7 @@ export function WecomIntegrationForm({
         {t("platforms.webhookSecret")}
         <input
           value={draft.webhookSecret}
-          placeholder="auto-generated"
+          placeholder={t("platforms.webhookSecretPlaceholder")}
           onChange={(event) => onDraftChange({ ...draft, webhookSecret: event.target.value })}
         />
       </label>

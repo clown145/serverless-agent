@@ -19,7 +19,9 @@ export async function resolveQqOfficialCredential(
 
   const masterKey = env.AGENT_MASTER_KEY ?? env.INTERNAL_ADMIN_TOKEN;
   if (!masterKey) {
-    throw new Error("AGENT_MASTER_KEY or INTERNAL_ADMIN_TOKEN is required to read QQ official secrets");
+    throw new Error(
+      "AGENT_MASTER_KEY or INTERNAL_ADMIN_TOKEN is required to read QQ official secrets"
+    );
   }
 
   return decryptString(

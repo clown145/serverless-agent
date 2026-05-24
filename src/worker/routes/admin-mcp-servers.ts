@@ -11,10 +11,7 @@ import { listMcpToolCatalog } from "../../storage/repositories/mcp-tools-reposit
 import { toMcpServerDto, toMcpToolDto } from "./mcp/mcp-dto";
 import { createMcpServerSchema, zodMessage } from "./mcp/mcp-schemas";
 
-export async function handleAdminMcpServers(
-  request: Request,
-  env: Env
-): Promise<Response> {
+export async function handleAdminMcpServers(request: Request, env: Env): Promise<Response> {
   if (request.method === "GET") {
     const [servers, tools] = await Promise.all([
       listMcpServerRecords(env.AGENT_DB),
@@ -34,10 +31,7 @@ export async function handleAdminMcpServers(
       return errorResponse(400, "invalid_payload", zodMessage(parsed.error));
     }
 
-    if (
-      parsed.data.authType === "api-key-header" &&
-      !parsed.data.authHeader?.trim()
-    ) {
+    if (parsed.data.authType === "api-key-header" && !parsed.data.authHeader?.trim()) {
       return errorResponse(
         400,
         "missing_auth_header",
@@ -70,8 +64,7 @@ export async function handleAdminMcpServers(
           algorithm: encrypted.algorithm
         });
         server =
-          (await updateMcpServerCredential(env.AGENT_DB, server.id, credential.id)) ??
-          server;
+          (await updateMcpServerCredential(env.AGENT_DB, server.id, credential.id)) ?? server;
       } catch (error) {
         return errorResponse(
           400,

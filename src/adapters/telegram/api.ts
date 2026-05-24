@@ -1,11 +1,13 @@
-export type TelegramApiResult<T> = {
-  ok: true;
-  result: T;
-} | {
-  ok: false;
-  error_code?: number;
-  description?: string;
-};
+export type TelegramApiResult<T> =
+  | {
+      ok: true;
+      result: T;
+    }
+  | {
+      ok: false;
+      error_code?: number;
+      description?: string;
+    };
 
 export type TelegramMe = {
   id: number;
@@ -33,9 +35,7 @@ export async function getTelegramMe(token: string): Promise<TelegramMe> {
   return callTelegramApi<TelegramMe>(token, "getMe");
 }
 
-export async function getTelegramWebhookInfo(
-  token: string
-): Promise<TelegramWebhookInfo> {
+export async function getTelegramWebhookInfo(token: string): Promise<TelegramWebhookInfo> {
   return callTelegramApi<TelegramWebhookInfo>(token, "getWebhookInfo");
 }
 
@@ -82,7 +82,7 @@ export async function callTelegramMultipartApi<T>(
   if (!response.ok || !payload?.ok) {
     throw new Error(
       payload && !payload.ok
-        ? payload.description ?? `Telegram API error ${payload.error_code ?? response.status}`
+        ? (payload.description ?? `Telegram API error ${payload.error_code ?? response.status}`)
         : `Telegram API error ${response.status}`
     );
   }
@@ -107,7 +107,7 @@ export async function callTelegramApi<T>(
   if (!response.ok || !payload?.ok) {
     throw new Error(
       payload && !payload.ok
-        ? payload.description ?? `Telegram API error ${payload.error_code ?? response.status}`
+        ? (payload.description ?? `Telegram API error ${payload.error_code ?? response.status}`)
         : `Telegram API error ${response.status}`
     );
   }

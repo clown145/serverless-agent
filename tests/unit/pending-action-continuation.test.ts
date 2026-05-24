@@ -24,7 +24,7 @@ describe("pending action continuation", () => {
       role: "owner"
     });
     expect(message?.text).toContain("Tool: skills.write_file");
-    expect(message?.text).toContain("\"path\":\"/skills/demo/SKILL.md\"");
+    expect(message?.text).toContain('"path":"/skills/demo/SKILL.md"');
   });
 
   it("enqueues continuation jobs through the agent queue", async () => {

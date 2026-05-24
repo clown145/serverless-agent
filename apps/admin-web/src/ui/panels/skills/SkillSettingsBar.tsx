@@ -6,10 +6,7 @@ type SkillSettingsBarProps = {
   onToggleConfirmation: (required: boolean) => void;
 };
 
-export function SkillSettingsBar({
-  settings,
-  onToggleConfirmation
-}: SkillSettingsBarProps) {
+export function SkillSettingsBar({ settings, onToggleConfirmation }: SkillSettingsBarProps) {
   const { t } = useI18n();
 
   return (

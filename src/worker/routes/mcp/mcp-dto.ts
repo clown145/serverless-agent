@@ -1,7 +1,4 @@
-import type {
-  McpServerRecord,
-  McpToolRecord
-} from "../../../storage/repositories/mcp-types";
+import type { McpServerRecord, McpToolRecord } from "../../../storage/repositories/mcp-types";
 
 export type McpServerDto = Omit<McpServerRecord, "credentialId"> & {
   hasCredential: boolean;

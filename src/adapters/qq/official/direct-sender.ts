@@ -1,8 +1,5 @@
 import { QqOfficialApiClient } from "./api";
-import {
-  resolveQqOfficialBotByIntegrationId,
-  resolveQqOfficialBotForAgent
-} from "./config";
+import { resolveQqOfficialBotByIntegrationId, resolveQqOfficialBotForAgent } from "./config";
 import { qqOfficialFileDataBase64, qqOfficialFileType } from "./media";
 import type { QqOfficialConversationRecord } from "../../../storage/repositories/qq-official-conversations-repository";
 import {

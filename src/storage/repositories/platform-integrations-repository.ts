@@ -66,18 +66,15 @@ export async function listPlatformIntegrationRecords(
            ORDER BY created_at DESC`
         )
         .bind(input.platform)
-    : db
-        .prepare(
-          `SELECT * FROM platform_integrations
+    : db.prepare(
+        `SELECT * FROM platform_integrations
            WHERE status != 'deleted'
            ORDER BY platform ASC, created_at DESC`
-        );
+      );
   const result = await query.all<PlatformIntegrationRow>();
   const records = (result.results ?? []).map(mapPlatformIntegrationRow);
 
-  return input.agentId
-    ? records.filter((record) => record.agentId === input.agentId)
-    : records;
+  return input.agentId ? records.filter((record) => record.agentId === input.agentId) : records;
 }
 
 export async function getPlatformIntegrationRecord(

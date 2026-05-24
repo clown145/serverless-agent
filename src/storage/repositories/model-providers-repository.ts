@@ -84,9 +84,7 @@ export async function createModelProviderRecord(
   };
 }
 
-export async function listModelProviders(
-  db: D1Database
-): Promise<ModelProviderRecord[]> {
+export async function listModelProviders(db: D1Database): Promise<ModelProviderRecord[]> {
   const result = await db
     .prepare("SELECT * FROM model_providers WHERE status != 'deleted' ORDER BY created_at DESC")
     .all<ModelProviderRow>();
@@ -157,10 +155,7 @@ export async function updateModelProviderRecord(
   return getModelProviderRecord(db, id);
 }
 
-export async function deleteModelProviderRecord(
-  db: D1Database,
-  id: string
-): Promise<boolean> {
+export async function deleteModelProviderRecord(db: D1Database, id: string): Promise<boolean> {
   const result = await db
     .prepare("UPDATE model_providers SET status = 'deleted', updated_at = ? WHERE id = ?")
     .bind(nowIso(), id)

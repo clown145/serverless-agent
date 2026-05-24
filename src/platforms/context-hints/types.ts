@@ -10,7 +10,5 @@ export type ResolvePlatformContextHintsInput = {
 
 export type PlatformContextHintsAdapter = {
   platform: Platform;
-  resolveContextHints(
-    input: ResolvePlatformContextHintsInput
-  ): Promise<PlatformContextHints>;
+  resolveContextHints(input: ResolvePlatformContextHintsInput): Promise<PlatformContextHints>;
 };

@@ -24,12 +24,9 @@ export function listCommands(platform: Platform): CommandDefinition[] {
   return COMMANDS.filter((command) => commandSupportsPlatform(command, platform));
 }
 
-export function findCommand(
-  name: string,
-  platform: Platform
-): CommandDefinition | undefined {
-  return listCommands(platform).find((command) =>
-    command.name === name || command.aliases?.includes(name)
+export function findCommand(name: string, platform: Platform): CommandDefinition | undefined {
+  return listCommands(platform).find(
+    (command) => command.name === name || command.aliases?.includes(name)
   );
 }
 

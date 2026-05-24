@@ -2,16 +2,11 @@ import { createId } from "../shared/ids";
 import type { Env } from "../shared/types/env";
 import type { InternalMessage } from "../shared/types/internal-message";
 import type { SelectedSkill } from "../skills/skill-selector";
-import type {
-  ToolRegistry
-} from "../tools/registry/tool-registry";
+import type { ToolRegistry } from "../tools/registry/tool-registry";
 import type { ToolResult } from "../tools/types";
 import type { ModelMessage, ModelToolCall } from "./model/types";
 import { stringifyToolResult } from "./model/json";
-import {
-  recordToolCompletedStep,
-  recordToolRequestedStep
-} from "./run-step-recorder";
+import { recordToolCompletedStep, recordToolRequestedStep } from "./run-step-recorder";
 
 export type AgentToolExecution = {
   result: ToolResult;
@@ -99,10 +94,7 @@ async function executeToolCall(
   };
 }
 
-function createDisallowedToolResult(
-  toolName: string,
-  selectedSkill?: SelectedSkill
-): ToolResult {
+function createDisallowedToolResult(toolName: string, selectedSkill?: SelectedSkill): ToolResult {
   return {
     status: "permission_denied",
     error: {
@@ -115,10 +107,7 @@ function createDisallowedToolResult(
   };
 }
 
-function createToolResultMessage(
-  toolCall: ModelToolCall,
-  result: unknown
-): ModelMessage {
+function createToolResultMessage(toolCall: ModelToolCall, result: unknown): ModelMessage {
   return {
     role: "tool",
     toolCallId: toolCall.id,

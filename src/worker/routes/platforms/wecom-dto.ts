@@ -1,7 +1,5 @@
 import { buildQrCodeUrl } from "../../../adapters/wecom/contact";
-import {
-  normalizeApiBaseUrl
-} from "../../../adapters/wecom/api";
+import { normalizeApiBaseUrl } from "../../../adapters/wecom/api";
 import type { PlatformIntegrationRecord } from "../../../storage/repositories/platform-integration-types";
 
 export type WecomIntegrationDto = {
@@ -26,9 +24,7 @@ export type WecomIntegrationDto = {
   updatedAt: string;
 };
 
-export function toWecomIntegrationDto(
-  integration: PlatformIntegrationRecord
-): WecomIntegrationDto {
+export function toWecomIntegrationDto(integration: PlatformIntegrationRecord): WecomIntegrationDto {
   const contactUrl = stringConfig(integration.config.contactUrl);
   return {
     id: integration.id,
@@ -37,16 +33,14 @@ export function toWecomIntegrationDto(
     status: integration.status,
     corpId: stringConfig(integration.config.corpId) ?? stringConfig(integration.config.corpid),
     apiBaseUrl: normalizeApiBaseUrl(
-      stringConfig(integration.config.apiBaseUrl) ??
-      stringConfig(integration.config.api_base_url)
+      stringConfig(integration.config.apiBaseUrl) ?? stringConfig(integration.config.api_base_url)
     ),
     customerServiceName:
       stringConfig(integration.config.customerServiceName) ??
       stringConfig(integration.config.kfName) ??
       stringConfig(integration.config.kf_name),
     openKfId:
-      stringConfig(integration.config.openKfId) ??
-      stringConfig(integration.config.open_kfid),
+      stringConfig(integration.config.openKfId) ?? stringConfig(integration.config.open_kfid),
     hasSecret: Boolean(integration.credentialId),
     tokenConfigured: Boolean(stringConfig(integration.config.token)),
     encodingAesKeyConfigured: Boolean(

@@ -1,8 +1,6 @@
 import type { WeixinOcAccountState } from "./types";
 
-export function getWeixinOcAccountState(
-  config: Record<string, unknown>
-): WeixinOcAccountState {
+export function getWeixinOcAccountState(config: Record<string, unknown>): WeixinOcAccountState {
   return {
     token: stringConfig(config.token),
     accountId: stringConfig(config.accountId),
@@ -52,4 +50,3 @@ export function stringConfig(value: unknown): string | undefined {
 export function numberConfig(value: unknown): number | undefined {
   return typeof value === "number" && Number.isFinite(value) ? value : undefined;
 }
-

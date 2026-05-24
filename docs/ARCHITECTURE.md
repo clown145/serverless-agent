@@ -1,34 +1,34 @@
-# 架构概览
+# Architecture Overview
 
-## 背景
+## Background
 
-`serverless-agent` 把 agent 设计成可恢复的 serverless 状态机，而不是依赖常驻进程、本地磁盘状态或进程内队列。
+`serverless-agent` models an agent as a recoverable serverless state machine. It does not depend on a resident process, local disk state, or in-process queues.
 
-运行时基于 Cloudflare Workers、Queues、Durable Objects、D1、KV 和对象存储。
+The runtime is built on Cloudflare Workers, Queues, Durable Objects, D1, KV, and object storage.
 
-## 职责
+## Responsibilities
 
-架构拆分为几个明确的运行边界：
+The architecture is split across explicit runtime boundaries:
 
-- 接收平台和 admin 输入；
-- 将输入规范化为内部消息；
-- 通过 Cloudflare Queues 缓冲任务；
-- 通过 Durable Objects 串行处理同一 agent 的任务；
-- 执行平台无关的 agent loop；
-- 通过权限和审计边界处理工具调用；
-- 将结构化状态保存到 D1，将较大内容保存到对象存储。
+- Receive platform and admin input.
+- Normalize input into internal messages.
+- Buffer work through Cloudflare Queues.
+- Process one agent's work serially through a Durable Object.
+- Execute the platform-neutral agent loop.
+- Run tool calls through permission and audit boundaries.
+- Store structured state in D1 and larger content in object storage.
 
-## 非职责
+## Non-Goals
 
-核心运行时不负责：
+The core runtime does not:
 
-- 执行任意 shell 命令；
-- 依赖真实可写文件系统；
-- 让模型直接接触平台 token 或供应商密钥；
-- 只把业务状态保存在内存里；
-- 在 `src/core` 中处理平台协议细节。
+- Execute arbitrary shell commands.
+- Depend on a real writable filesystem.
+- Expose platform tokens or provider secrets directly to the model.
+- Keep business state only in memory.
+- Handle platform protocol details inside `src/core`.
 
-## 运行拓扑
+## Runtime Topology
 
 ```text
 Telegram / QQ / WeCom / Weixin OC / WebUI / Admin
@@ -63,35 +63,36 @@ Tools / Storage / Scheduler
   - D1 / KV / object storage
 ```
 
-## 模块边界
+## Module Boundaries
 
-| 模块 | 路径 | 职责 |
-| --- | --- | --- |
-| Worker | `src/worker` | HTTP 路由、webhook 校验、admin API、Queue 和 Cron 入口。 |
-| Adapters | `src/adapters` | 平台 payload 解析、规范化和出站协议调用。 |
-| Agents | `src/agents` | Durable Object 协调、mailbox 状态、alarm 和恢复。 |
-| Core | `src/core` | 平台无关的 agent loop、上下文构造、模型调度和工具调用流程。 |
-| Tools | `src/tools` | 模型可调用工具、schema、权限和副作用执行。 |
-| Storage | `src/storage` | D1 repository、对象存储抽象和持久化边界。 |
-| Scheduler | `src/scheduler` | 未来任务、周期任务、Cron 扫描和 heartbeat。 |
-| Permissions | `src/permissions` | 权限策略解析和 pending action 执行。 |
+| Module      | Path              | Responsibility                                                                        |
+| ----------- | ----------------- | ------------------------------------------------------------------------------------- |
+| Worker      | `src/worker`      | HTTP routes, webhook verification, admin API, Queue, and Cron entrypoints.            |
+| Adapters    | `src/adapters`    | Platform payload parsing, normalization, and outbound protocol calls.                 |
+| Agents      | `src/agents`      | Durable Object coordination, mailbox state, alarms, and recovery.                     |
+| Core        | `src/core`        | Platform-neutral agent loop, context preparation, model dispatch, and tool-call flow. |
+| Tools       | `src/tools`       | Model-callable tools, schemas, permissions, and side-effect execution.                |
+| Storage     | `src/storage`     | D1 repositories, object storage abstraction, and persistence boundaries.              |
+| Scheduler   | `src/scheduler`   | Future tasks, recurring tasks, Cron sweeps, and heartbeats.                           |
+| Permissions | `src/permissions` | Permission policy resolution and pending action execution.                            |
 
-## 失败模式
+## Failure Model
 
-运行时假设平台请求、Queue 投递、模型调用和工具调用都可能独立失败。
+The runtime assumes platform requests, Queue delivery, model calls, and tool calls can fail independently.
 
-主要恢复机制：
+Primary recovery mechanisms:
 
-- Queue retry 缓冲临时入口失败。
-- Durable Object mailbox 按 agent 串行化事件。
-- mailbox event state 提供有限幂等窗口，并在保留期后清理。
-- runs 和 run steps 持久化到 D1，便于检查和恢复。
-- 高风险工具调用可以在发生副作用前停在 pending confirmation。
+- Queue retry buffers transient ingress failures.
+- The Agent Durable Object serializes events per agent.
+- Mailbox event state provides a bounded idempotency window and is cleaned after its retention period.
+- Runs and run steps are persisted in D1 for inspection and recovery.
+- High-risk tool calls can stop at pending confirmation before executing side effects.
+- VFS blob writes use best-effort cleanup when D1 metadata writes fail after object storage writes.
 
-## 相关文档
+## Related Documents
 
-- [运行流程](architecture/RUNTIME_FLOW.md)
-- [存储模型](architecture/STORAGE_MODEL.md)
-- [工具与边界](architecture/TOOLS_AND_BOUNDARIES.md)
-- [失败与并发](architecture/FAILURE_AND_CONCURRENCY.md)
-- [平台接入](architecture/PLATFORM_INTEGRATIONS.md)
+- [Runtime flow](architecture/RUNTIME_FLOW.md)
+- [Storage model](architecture/STORAGE_MODEL.md)
+- [Tools and boundaries](architecture/TOOLS_AND_BOUNDARIES.md)
+- [Failure and concurrency](architecture/FAILURE_AND_CONCURRENCY.md)
+- [Platform integrations](architecture/PLATFORM_INTEGRATIONS.md)

@@ -1,18 +1,8 @@
 import type { Env } from "../../shared/types/env";
 import { nowIso } from "../../shared/time";
-import {
-  isDescendantPath,
-  isRootPath,
-  normalizeVfsPath,
-  parentPath
-} from "../core/path";
+import { isDescendantPath, isRootPath, normalizeVfsPath, parentPath } from "../core/path";
 import { vfsConflict, vfsInvalid } from "../core/errors";
-import {
-  ensureParentDirectories,
-  findVfsEntry,
-  getVfsEntry,
-  listVfsTree
-} from "./entry-store";
+import { ensureParentDirectories, findVfsEntry, getVfsEntry, listVfsTree } from "./entry-store";
 import type { VfsEntry } from "./types";
 
 export type MoveVfsEntryInput = {
@@ -22,10 +12,7 @@ export type MoveVfsEntryInput = {
   actorId: string;
 };
 
-export async function moveVfsEntry(
-  env: Env,
-  input: MoveVfsEntryInput
-): Promise<VfsEntry> {
+export async function moveVfsEntry(env: Env, input: MoveVfsEntryInput): Promise<VfsEntry> {
   const fromPath = normalizeVfsPath(input.fromPath);
   const toPath = normalizeVfsPath(input.toPath);
 

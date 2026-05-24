@@ -1,7 +1,4 @@
-import {
-  formatWeixinOcApiError,
-  isSuccessfulWeixinOcPayload
-} from "../../adapters/weixin-oc/api";
+import { formatWeixinOcApiError, isSuccessfulWeixinOcPayload } from "../../adapters/weixin-oc/api";
 import type { WeixinOcBotConfig } from "../../adapters/weixin-oc/config";
 import { buildWeixinOcTextItem } from "../../adapters/weixin-oc/normalize";
 import {
@@ -147,11 +144,15 @@ async function sendItems(
   };
 }
 
-function parseGatewayFile(input: {
-  bytes?: number[];
-  fileName?: string;
-  mimeType?: string;
-} | undefined): { bytes: Uint8Array; fileName: string; mimeType: string } | undefined {
+function parseGatewayFile(
+  input:
+    | {
+        bytes?: number[];
+        fileName?: string;
+        mimeType?: string;
+      }
+    | undefined
+): { bytes: Uint8Array; fileName: string; mimeType: string } | undefined {
   const fileName = input?.fileName?.trim();
   const mimeType = input?.mimeType?.trim();
   if (!fileName || !mimeType || !Array.isArray(input?.bytes)) {

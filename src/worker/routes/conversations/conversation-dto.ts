@@ -23,9 +23,7 @@ export type ConversationDto = {
   updatedAt: string;
 };
 
-export function toConversationDto(
-  record: ConversationSettingsRecord
-): ConversationDto {
+export function toConversationDto(record: ConversationSettingsRecord): ConversationDto {
   return {
     id: record.id,
     agentId: record.agentId,

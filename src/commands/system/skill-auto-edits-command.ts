@@ -15,8 +15,7 @@ export const skillAutoEditsCommand: CommandDefinition = {
       return {
         handled: true,
         responseText: formatStatus(
-          (await getSkillSettings(env.AGENT_DB, message.agentId))
-            .editConfirmationRequired
+          (await getSkillSettings(env.AGENT_DB, message.agentId)).editConfirmationRequired
         )
       };
     }
@@ -28,7 +27,8 @@ export const skillAutoEditsCommand: CommandDefinition = {
       });
       return {
         handled: true,
-        responseText: "Skill auto edits enabled: the model can update Skill documents directly. Validation, audit logs, and VFS revisions are still preserved."
+        responseText:
+          "Skill auto edits enabled: the model can update Skill documents directly. Validation, audit logs, and VFS revisions are still preserved."
       };
     }
 
@@ -39,7 +39,8 @@ export const skillAutoEditsCommand: CommandDefinition = {
       });
       return {
         handled: true,
-        responseText: "Skill auto edits disabled: model updates to Skill documents require confirmation."
+        responseText:
+          "Skill auto edits disabled: model updates to Skill documents require confirmation."
       };
     }
 

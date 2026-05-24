@@ -45,9 +45,7 @@ export class TavilySearchProvider implements SearchProvider {
       | undefined;
 
     if (!response.ok) {
-      throw new Error(
-        payload?.error?.message ?? `Tavily search failed with ${response.status}`
-      );
+      throw new Error(payload?.error?.message ?? `Tavily search failed with ${response.status}`);
     }
 
     return {

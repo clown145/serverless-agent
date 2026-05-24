@@ -3,10 +3,7 @@ import type { Env } from "../../shared/types/env";
 import { listRecentToolCalls } from "../../storage/repositories/tool-calls-repository";
 import { listToolCallsSchema, zodMessage } from "./tools/tool-call-schemas";
 
-export async function handleAdminToolCalls(
-  request: Request,
-  env: Env
-): Promise<Response> {
+export async function handleAdminToolCalls(request: Request, env: Env): Promise<Response> {
   if (request.method !== "GET") {
     return errorResponse(405, "method_not_allowed", "Method not allowed");
   }

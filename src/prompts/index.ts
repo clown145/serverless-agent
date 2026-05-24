@@ -5,10 +5,7 @@ type GeneratedPrompts = typeof GENERATED_PROMPTS;
 export type PromptId = keyof GeneratedPrompts;
 export type PromptSource = GeneratedPrompts[PromptId]["source"];
 
-export type PromptVariables = Record<
-  string,
-  string | number | boolean | null | undefined
->;
+export type PromptVariables = Record<string, string | number | boolean | null | undefined>;
 
 export type ResolvedPrompt = {
   id: PromptId;
@@ -29,10 +26,7 @@ export function resolvePrompt(id: PromptId): ResolvedPrompt {
   };
 }
 
-export function renderPrompt(
-  id: PromptId,
-  variables: PromptVariables = {}
-): ResolvedPrompt {
+export function renderPrompt(id: PromptId, variables: PromptVariables = {}): ResolvedPrompt {
   const prompt = resolvePrompt(id);
   return {
     ...prompt,
@@ -40,19 +34,15 @@ export function renderPrompt(
   };
 }
 
-export function promptText(
-  id: PromptId,
-  variables: PromptVariables = {}
-): string {
+export function promptText(id: PromptId, variables: PromptVariables = {}): string {
   return renderPrompt(id, variables).content;
 }
 
-export function renderPromptTemplate(
-  template: string,
-  variables: PromptVariables
-): string {
-  return template.replace(TEMPLATE_VARIABLE_PATTERN, (_match, key: string) => {
-    const value = variables[key];
-    return value === null || value === undefined ? "" : String(value);
-  }).trimEnd();
+export function renderPromptTemplate(template: string, variables: PromptVariables): string {
+  return template
+    .replace(TEMPLATE_VARIABLE_PATTERN, (_match, key: string) => {
+      const value = variables[key];
+      return value === null || value === undefined ? "" : String(value);
+    })
+    .trimEnd();
 }

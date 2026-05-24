@@ -125,11 +125,7 @@ async function syncAndDispatchKfMessages(
   await env.AGENT_QUEUE.send(job);
 }
 
-async function syncLatestKfMessage(
-  client: WecomApiClient,
-  openKfId: string,
-  token?: string
-) {
+async function syncLatestKfMessage(client: WecomApiClient, openKfId: string, token?: string) {
   let cursor = "";
   let latest;
   for (let page = 0; page < 10; page += 1) {

@@ -1,4 +1,7 @@
-import { getConversationSettings, updateConversationSettings } from "../../storage/repositories/conversation-settings-repository";
+import {
+  getConversationSettings,
+  updateConversationSettings
+} from "../../storage/repositories/conversation-settings-repository";
 import { getModelSettings } from "../../storage/repositories/agent-model-settings-repository";
 import { listEnabledModelCatalog } from "../../storage/repositories/model-catalog-repository";
 import { listModelProviders } from "../../storage/repositories/model-providers-repository";
@@ -62,15 +65,18 @@ export const modelCommand: CommandDefinition = {
       if (!models.length) {
         return {
           handled: true,
-          responseText: "No enabled models found. Refresh models in the WebUI model page and enable the models you want to use."
+          responseText:
+            "No enabled models found. Refresh models in the WebUI model page and enable the models you want to use."
         };
       }
 
       const lines = [
         bold("Available Models", message.platform),
-        ...models.slice(0, 20).map((model) =>
-          `${code(modelKey(model.providerId, model.modelId), message.platform)} ${model.displayName ? `- ${model.displayName}` : ""}`.trim()
-        )
+        ...models
+          .slice(0, 20)
+          .map((model) =>
+            `${code(modelKey(model.providerId, model.modelId), message.platform)} ${model.displayName ? `- ${model.displayName}` : ""}`.trim()
+          )
       ];
       return { handled: true, responseText: lines.join("\n") };
     }
@@ -94,7 +100,8 @@ async function showModel(
   const providerId = settings?.modelProviderId ?? globalSettings?.providerId;
   const modelId = settings?.modelId ?? globalSettings?.modelId;
   const provider = providers.find((item) => item.id === providerId);
-  const source = settings?.modelProviderId && settings.modelId ? "current conversation" : "global default";
+  const source =
+    settings?.modelProviderId && settings.modelId ? "current conversation" : "global default";
 
   return [
     bold("Current Model", message.platform),

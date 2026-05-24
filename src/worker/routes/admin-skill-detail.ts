@@ -9,9 +9,8 @@ export async function handleAdminSkillDetail(
   env: Env,
   skillId: string
 ): Promise<Response> {
-  const agentId = new URL(request.url).searchParams.get("agentId") ??
-    env.DEFAULT_AGENT_ID ??
-    "default";
+  const agentId =
+    new URL(request.url).searchParams.get("agentId") ?? env.DEFAULT_AGENT_ID ?? "default";
 
   if (request.method === "GET") {
     try {

@@ -1,14 +1,7 @@
 import { createId } from "../../../shared/ids";
-import type {
-  InternalMessage,
-  MessageAttachment
-} from "../../../shared/types/internal-message";
+import type { InternalMessage, MessageAttachment } from "../../../shared/types/internal-message";
 import { nowIso } from "../../../shared/time";
-import type {
-  QqOfficialAttachment,
-  QqOfficialEventType,
-  QqOfficialMessagePayload
-} from "./types";
+import type { QqOfficialAttachment, QqOfficialEventType, QqOfficialMessagePayload } from "./types";
 
 export type QqOfficialNormalizedEvent = {
   message?: InternalMessage;
@@ -41,9 +34,7 @@ export function normalizeQqOfficialGatewayEvent(
 
   const senderId = senderPlatformId(eventType, payload);
   const senderName = payload.author?.username;
-  const receivedAt = payload.timestamp
-    ? new Date(payload.timestamp).toISOString()
-    : nowIso();
+  const receivedAt = payload.timestamp ? new Date(payload.timestamp).toISOString() : nowIso();
 
   return {
     conversationBinding: {
@@ -132,10 +123,7 @@ function senderPlatformId(
   return payload.author?.id ?? "unknown";
 }
 
-function stripBotMention(
-  content: string,
-  mentions: QqOfficialMessagePayload["mentions"]
-): string {
+function stripBotMention(content: string, mentions: QqOfficialMessagePayload["mentions"]): string {
   let normalized = content.trim();
   for (const mention of mentions ?? []) {
     if (!mention.id) {
@@ -146,9 +134,7 @@ function stripBotMention(
   return normalized.trim();
 }
 
-function extractAttachments(
-  attachments: QqOfficialAttachment[] | undefined
-): MessageAttachment[] {
+function extractAttachments(attachments: QqOfficialAttachment[] | undefined): MessageAttachment[] {
   const normalized: MessageAttachment[] = [];
 
   for (const [index, attachment] of (attachments ?? []).entries()) {
@@ -183,9 +169,7 @@ function normalizeAttachmentUrl(url: string | undefined): string | undefined {
   if (!url) {
     return undefined;
   }
-  return url.startsWith("http://") || url.startsWith("https://")
-    ? url
-    : `https://${url}`;
+  return url.startsWith("http://") || url.startsWith("https://") ? url : `https://${url}`;
 }
 
 function escapeRegExp(value: string): string {

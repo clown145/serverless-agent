@@ -29,9 +29,7 @@ export type GeminiResponse = {
   }>;
 };
 
-export function buildSystemInstruction(
-  messages: ModelMessage[]
-): GeminiContent | undefined {
+export function buildSystemInstruction(messages: ModelMessage[]): GeminiContent | undefined {
   const text = messages
     .filter((message) => message.role === "system")
     .map((message) => message.content)

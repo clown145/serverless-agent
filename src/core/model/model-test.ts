@@ -54,10 +54,7 @@ function selectTestModel(input: {
     return input.modelId.trim();
   }
 
-  if (
-    input.settings?.providerId === input.provider.id &&
-    input.settings.modelId?.trim()
-  ) {
+  if (input.settings?.providerId === input.provider.id && input.settings.modelId?.trim()) {
     return input.settings.modelId.trim();
   }
 

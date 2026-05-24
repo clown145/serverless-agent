@@ -4,9 +4,5 @@ import { createVfsFileTools } from "./file-tools";
 import { createVfsMutationTools } from "./mutation-tools";
 
 export function createVfsTools(): RegisteredTool[] {
-  return [
-    ...createVfsFileTools(),
-    ...createVfsMutationTools(),
-    createVfsCommandTool()
-  ];
+  return [...createVfsFileTools(), ...createVfsMutationTools(), createVfsCommandTool()];
 }

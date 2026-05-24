@@ -5,24 +5,13 @@ import {
 
 export type ModelProviderType = "openai" | "gemini" | "mock" | "custom";
 
-export type ModelAuthType =
-  | "none"
-  | "bearer"
-  | "x-goog-api-key"
-  | "api-key-header"
-  | "query-param";
+export type ModelAuthType = "none" | "bearer" | "x-goog-api-key" | "api-key-header" | "query-param";
 
 export type ModelListStrategy = "openai" | "gemini" | "static";
 
-export type ChatProtocol =
-  | "openai-chat-completions"
-  | "gemini-generate-content";
+export type ChatProtocol = "openai-chat-completions" | "gemini-generate-content";
 
-export type ModelCatalogStatus =
-  | "available"
-  | "enabled"
-  | "disabled"
-  | "unavailable";
+export type ModelCatalogStatus = "available" | "enabled" | "disabled" | "unavailable";
 
 export type ModelCapabilitiesSource =
   | "manual"
@@ -31,17 +20,9 @@ export type ModelCapabilitiesSource =
   | "openrouter"
   | "inferred";
 
-export type ModelMetadataSource =
-  | "provider"
-  | "models.dev"
-  | "openrouter"
-  | "inferred";
+export type ModelMetadataSource = "provider" | "models.dev" | "openrouter" | "inferred";
 
-export type ModelMetadataConfidence =
-  | "exact"
-  | "alias"
-  | "inferred"
-  | "unknown";
+export type ModelMetadataConfidence = "exact" | "alias" | "inferred" | "unknown";
 
 export type ModelRole = "default" | "summary" | "vision";
 
@@ -230,9 +211,7 @@ function normalizeModelCatalogStatus(value: string): ModelCatalogStatus {
   }
 }
 
-function normalizeCapabilitiesSource(
-  value: string | null | undefined
-): ModelCapabilitiesSource {
+function normalizeCapabilitiesSource(value: string | null | undefined): ModelCapabilitiesSource {
   if (
     value === "manual" ||
     value === "provider" ||
@@ -264,12 +243,7 @@ function normalizeMetadataSource(
 function normalizeMetadataConfidence(
   value: string | null | undefined
 ): ModelMetadataConfidence | undefined {
-  if (
-    value === "exact" ||
-    value === "alias" ||
-    value === "inferred" ||
-    value === "unknown"
-  ) {
+  if (value === "exact" || value === "alias" || value === "inferred" || value === "unknown") {
     return value;
   }
 
@@ -310,7 +284,9 @@ export function mapModelSettingsRow(row: ModelSettingsRow): ModelSettingsRecord 
   };
 }
 
-export function mapModelRoleSettingRow(row: ModelRoleSettingRow): ModelRoleSettingRecord | undefined {
+export function mapModelRoleSettingRow(
+  row: ModelRoleSettingRow
+): ModelRoleSettingRecord | undefined {
   const role = normalizeModelRole(row.role);
   if (!role) {
     return undefined;

@@ -1,8 +1,5 @@
 import { appendAuditLog } from "../../storage/repositories/audit-logs-repository";
-import {
-  completeToolCall,
-  recordToolCall
-} from "../../storage/repositories/tool-calls-repository";
+import { completeToolCall, recordToolCall } from "../../storage/repositories/tool-calls-repository";
 import { createId } from "../../shared/ids";
 import type { Env } from "../../shared/types/env";
 import { nowIso } from "../../shared/time";
@@ -11,10 +8,7 @@ import { createEnabledMcpTools } from "../mcp/runtime-tools";
 import { evaluateToolPermission } from "../permissions/policy";
 import { toolAllowsPlatform } from "../platform-availability";
 import type { RegisteredTool, ToolResult } from "../types";
-import {
-  createPendingToolResult,
-  initialToolCallStatus
-} from "./pending-tool-result";
+import { createPendingToolResult, initialToolCallStatus } from "./pending-tool-result";
 
 export type ToolRegistry = {
   execute(name: string, input: RegistryExecuteInput): Promise<ToolResult>;
@@ -39,10 +33,7 @@ type RegistryExecuteInput = {
   confirmedActionId?: string;
 };
 
-export function createToolRegistry(
-  env: Env,
-  options: ToolRegistryOptions = {}
-): ToolRegistry {
+export function createToolRegistry(env: Env, options: ToolRegistryOptions = {}): ToolRegistry {
   const tools = [...createBuiltinTools(), ...(options.externalTools ?? [])];
   const byName = new Map(tools.map((tool) => [tool.definition.name, tool]));
 
@@ -125,8 +116,7 @@ export function createToolRegistry(
       const result = await executeToolSafely(tool, context);
       await completeToolCall(env.AGENT_DB, toolCallId, {
         status: result.status,
-        outputJson:
-          result.output !== undefined ? JSON.stringify(result.output) : undefined,
+        outputJson: result.output !== undefined ? JSON.stringify(result.output) : undefined,
         errorCode: result.error?.code,
         completedAt: nowIso()
       });

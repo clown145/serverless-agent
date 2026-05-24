@@ -3,10 +3,7 @@ import { connectConfiguredQqOfficialGateways } from "../../adapters/qq/official/
 import type { Env } from "../../shared/types/env";
 import { errorResponse, jsonResponse } from "../../shared/http";
 
-export async function handleQqOfficialGatewayAdmin(
-  request: Request,
-  env: Env
-): Promise<Response> {
+export async function handleQqOfficialGatewayAdmin(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
   const agentId = url.searchParams.get("agentId") ?? env.DEFAULT_AGENT_ID ?? "default";
   const action = url.pathname.replace("/admin/platforms/qq-official/", "");
@@ -39,9 +36,7 @@ async function proxyGateway(
   });
 }
 
-export async function handleQqOfficialGatewayConnectAll(
-  env: Env
-): Promise<Response> {
+export async function handleQqOfficialGatewayConnectAll(env: Env): Promise<Response> {
   const results = await connectConfiguredQqOfficialGateways(env);
   return jsonResponse({ ok: results.every((result) => result.ok), results });
 }

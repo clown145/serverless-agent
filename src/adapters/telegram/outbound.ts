@@ -20,8 +20,7 @@ import {
 export function createTelegramOutboundAdapter(env: Env): PlatformOutboundAdapter {
   return {
     platform: "telegram",
-    sendText: (input) =>
-      sendTelegramText(env, input.agentId, input.conversationId, input.text),
+    sendText: (input) => sendTelegramText(env, input.agentId, input.conversationId, input.text),
     sendFile: (input) =>
       sendTelegramDocument(env, input.agentId, input.conversationId, input.file, {
         caption: input.caption
@@ -37,12 +36,7 @@ export function createTelegramOutboundAdapter(env: Env): PlatformOutboundAdapter
         expiresInSeconds: input.expiresInSeconds
       }),
     sendActivity: (input) =>
-      sendTelegramChatAction(
-        env,
-        input.agentId,
-        input.conversationId,
-        input.activity
-      )
+      sendTelegramChatAction(env, input.agentId, input.conversationId, input.activity)
   };
 }
 
@@ -80,14 +74,11 @@ export async function sendTelegramText(
     return messageResult(payload);
   } catch (error) {
     if (parseMode !== "none") {
-      const fallback = await sendPlainTextFallback(token, chatId, text).catch(
-        (fallbackError) => ({
-          ok: false as const,
-          error: fallbackError instanceof Error
-            ? fallbackError.message
-            : "Telegram fallback send failed"
-        })
-      );
+      const fallback = await sendPlainTextFallback(token, chatId, text).catch((fallbackError) => ({
+        ok: false as const,
+        error:
+          fallbackError instanceof Error ? fallbackError.message : "Telegram fallback send failed"
+      }));
       if (fallback.ok) {
         return fallback;
       }
@@ -116,11 +107,10 @@ export async function sendTelegramDocument(
     caption: options.caption
   });
 
-  return callTelegramMultipartApi<{ message_id?: number }>(
-    bot.token,
-    "sendDocument",
-    form
-  ).then(messageResult, sendError);
+  return callTelegramMultipartApi<{ message_id?: number }>(bot.token, "sendDocument", form).then(
+    messageResult,
+    sendError
+  );
 }
 
 export async function sendTelegramPhoto(
@@ -142,11 +132,10 @@ export async function sendTelegramPhoto(
     caption: options.caption
   });
 
-  return callTelegramMultipartApi<{ message_id?: number }>(
-    bot.token,
-    "sendPhoto",
-    form
-  ).then(messageResult, sendError);
+  return callTelegramMultipartApi<{ message_id?: number }>(bot.token, "sendPhoto", form).then(
+    messageResult,
+    sendError
+  );
 }
 
 export async function sendTelegramButtons(
@@ -166,9 +155,7 @@ export async function sendTelegramButtons(
   }
   const token = bot.token;
 
-  const expiresAt = new Date(
-    Date.now() + (input.expiresInSeconds ?? 600) * 1000
-  ).toISOString();
+  const expiresAt = new Date(Date.now() + (input.expiresInSeconds ?? 600) * 1000).toISOString();
   const buttons = await Promise.all(
     input.buttons.map(async (button) => {
       const callback = await createPlatformCallback(env.AGENT_DB, {
@@ -203,21 +190,20 @@ export async function sendTelegramButtons(
     body.parse_mode = parseModePayload;
   }
 
-  return callTelegramApi<{ message_id?: number }>(
-    token,
-    "sendMessage",
-    body
-  ).then(messageResult, async (error) => {
-    if (parseMode === "none") {
-      return sendError(error);
-    }
+  return callTelegramApi<{ message_id?: number }>(token, "sendMessage", body).then(
+    messageResult,
+    async (error) => {
+      if (parseMode === "none") {
+        return sendError(error);
+      }
 
-    return callTelegramApi<{ message_id?: number }>(token, "sendMessage", {
-      ...body,
-      text: stripTelegramMarkup(text),
-      parse_mode: undefined
-    }).then(messageResult, sendError);
-  });
+      return callTelegramApi<{ message_id?: number }>(token, "sendMessage", {
+        ...body,
+        text: stripTelegramMarkup(text),
+        parse_mode: undefined
+      }).then(messageResult, sendError);
+    }
+  );
 }
 
 export async function sendTelegramChatAction(
@@ -292,24 +278,17 @@ async function sendPlainTextFallback(
   chatId: string,
   text: string
 ): Promise<PlatformSendResult> {
-  const payload = await callTelegramApi<{ message_id?: number }>(
-    token,
-    "sendMessage",
-    {
-      chat_id: chatId,
-      text: stripTelegramMarkup(text),
-      disable_web_page_preview: true
-    }
-  );
+  const payload = await callTelegramApi<{ message_id?: number }>(token, "sendMessage", {
+    chat_id: chatId,
+    text: stripTelegramMarkup(text),
+    disable_web_page_preview: true
+  });
 
   return messageResult(payload);
 }
 
 function telegramChatId(conversationId: string): string {
-  return physicalConversationForPlatform("telegram", conversationId).replace(
-    /^telegram:/,
-    ""
-  );
+  return physicalConversationForPlatform("telegram", conversationId).replace(/^telegram:/, "");
 }
 
 function messageResult(payload: { message_id?: number }): PlatformSendResult {

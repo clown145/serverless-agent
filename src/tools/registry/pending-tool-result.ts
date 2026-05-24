@@ -29,11 +29,7 @@ export async function createPendingToolResult(
   }
 ): Promise<ToolResult> {
   const reason = input.decisionReason ?? "Tool call requires confirmation";
-  const pending = await createToolPendingAction(
-    input.tool,
-    input.context,
-    reason
-  );
+  const pending = await createToolPendingAction(input.tool, input.context, reason);
 
   await completeToolCall(env.AGENT_DB, input.toolCallId, {
     status: "needs_confirmation",

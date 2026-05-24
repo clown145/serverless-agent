@@ -32,10 +32,7 @@ type ToolCallRow = {
   completed_at?: string | null;
 };
 
-export async function recordToolCall(
-  db: D1Database,
-  record: ToolCallRecord
-): Promise<void> {
+export async function recordToolCall(db: D1Database, record: ToolCallRecord): Promise<void> {
   await db
     .prepare(
       `INSERT INTO tool_calls (
@@ -75,13 +72,7 @@ export async function completeToolCall(
        SET status = ?, output_json = ?, error_code = ?, completed_at = ?
        WHERE id = ?`
     )
-    .bind(
-      input.status,
-      input.outputJson ?? null,
-      input.errorCode ?? null,
-      input.completedAt,
-      id
-    )
+    .bind(input.status, input.outputJson ?? null, input.errorCode ?? null, input.completedAt, id)
     .run();
 }
 

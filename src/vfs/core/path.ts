@@ -20,9 +20,7 @@ export function resolveVfsPath(cwd: string, path: string): string {
     throw new Error("VFS path cannot contain null bytes");
   }
 
-  const baseParts = path.startsWith("/")
-    ? []
-    : normalizeVfsPath(cwd).split("/").filter(Boolean);
+  const baseParts = path.startsWith("/") ? [] : normalizeVfsPath(cwd).split("/").filter(Boolean);
 
   for (const part of path.split("/")) {
     if (!part || part === ".") {
@@ -67,8 +65,5 @@ export function isRootPath(path: string): boolean {
 export function isDescendantPath(path: string, parent: string): boolean {
   const normalized = normalizeVfsPath(path);
   const normalizedParent = normalizeVfsPath(parent);
-  return (
-    normalizedParent !== "/" &&
-    normalized.startsWith(`${normalizedParent}/`)
-  );
+  return normalizedParent !== "/" && normalized.startsWith(`${normalizedParent}/`);
 }

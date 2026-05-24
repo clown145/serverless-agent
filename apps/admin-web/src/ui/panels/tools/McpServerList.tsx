@@ -35,7 +35,8 @@ export function McpServerList({
                 <strong>{server.name}</strong>
                 <span>{server.url}</span>
                 <span>
-                  {server.authType} / {server.hasCredential ? t("common.secretSaved") : t("common.noSecret")}
+                  {server.authType} /{" "}
+                  {server.hasCredential ? t("common.secretSaved") : t("common.noSecret")}
                 </span>
                 {server.lastError && <span>{server.lastError}</span>}
               </div>
@@ -62,21 +63,18 @@ export function McpServerList({
                   </div>
                   <StatusBadge value={tool.status} />
                   <ToolbarButton
-                    label={tool.status === "enabled" ? t("tools.disableTool") : t("tools.enableTool")}
+                    label={
+                      tool.status === "enabled" ? t("tools.disableTool") : t("tools.enableTool")
+                    }
                     icon={tool.status === "enabled" ? PowerOff : Power}
                     disabled={tool.status === "unavailable"}
                     onClick={() => {
-                      onToolStatus(
-                        tool.id,
-                        tool.status === "enabled" ? "disabled" : "enabled"
-                      );
+                      onToolStatus(tool.id, tool.status === "enabled" ? "disabled" : "enabled");
                     }}
                   />
                 </div>
               ))}
-              {tools.length === 0 && (
-                <EmptyState label={t("tools.discoverEmpty")} />
-              )}
+              {tools.length === 0 && <EmptyState label={t("tools.discoverEmpty")} />}
             </div>
           </div>
         );

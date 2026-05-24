@@ -18,8 +18,7 @@ export type VfsWorkspaceContext = {
 
 export function createVfsWorkspace(context: VfsWorkspaceContext) {
   return {
-    readFile: (path: string) =>
-      getVfsFile(context.env, context.agentId, path),
+    readFile: (path: string) => getVfsFile(context.env, context.agentId, path),
     writeFile: (input: { path: string; content: string; mimeType?: string }) =>
       putVfsFile(context.env, {
         agentId: context.agentId,
@@ -28,8 +27,7 @@ export function createVfsWorkspace(context: VfsWorkspaceContext) {
         mimeType: input.mimeType,
         createdBy: context.actorId
       }),
-    listDir: (path: string) =>
-      listVfsEntries(context.env, context.agentId, path),
+    listDir: (path: string) => listVfsEntries(context.env, context.agentId, path),
     listTree: (path: string, limit?: number) =>
       listVfsTree(context.env, context.agentId, path, limit),
     mkdir: (path: string) =>

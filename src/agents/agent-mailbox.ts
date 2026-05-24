@@ -106,10 +106,7 @@ export async function recoverStaleRunningEvent(
     }
 
     const startedAtMs = Date.parse(running.startedAt);
-    if (
-      Number.isFinite(startedAtMs) &&
-      nowMs - startedAtMs < MAILBOX_RUNNING_STALE_MS
-    ) {
+    if (Number.isFinite(startedAtMs) && nowMs - startedAtMs < MAILBOX_RUNNING_STALE_MS) {
       return "active";
     }
 
@@ -298,10 +295,7 @@ async function getNextMailboxWorkAlarmTime(
     return nowMs + MAILBOX_RECOVERY_ALARM_DELAY_MS;
   }
 
-  return Math.max(
-    nowMs + MAILBOX_RECOVERY_ALARM_DELAY_MS,
-    startedAtMs + MAILBOX_RUNNING_STALE_MS
-  );
+  return Math.max(nowMs + MAILBOX_RECOVERY_ALARM_DELAY_MS, startedAtMs + MAILBOX_RUNNING_STALE_MS);
 }
 
 export async function getMailboxEventState(
@@ -311,9 +305,7 @@ export async function getMailboxEventState(
   return getMailboxEventStateFromIndex(storage, eventId);
 }
 
-export async function hasMailboxWork(
-  storage: DurableObjectStorage
-): Promise<boolean> {
+export async function hasMailboxWork(storage: DurableObjectStorage): Promise<boolean> {
   const running = await storage.get<RunningMailboxEvent>(RUNNING_KEY);
   if (running) {
     return true;

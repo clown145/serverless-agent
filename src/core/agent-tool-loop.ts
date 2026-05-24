@@ -1,17 +1,11 @@
 import type { Env } from "../shared/types/env";
 import type { InternalMessage } from "../shared/types/internal-message";
-import {
-  completeRun
-} from "../storage/repositories/runs-repository";
+import { completeRun } from "../storage/repositories/runs-repository";
 import { createInitialModelMessages, createModelTools } from "./agent-context";
 import { prepareAgentLoopContext } from "./agent-loop-context";
 import { executeAgentToolCall } from "./agent-tool-executor";
 import { sendFinalMessage } from "./agent-final-message";
-import {
-  recordContextStep,
-  recordModelStep,
-  recordRunCompletedStep
-} from "./run-step-recorder";
+import { recordContextStep, recordModelStep, recordRunCompletedStep } from "./run-step-recorder";
 
 const MAX_MODEL_STEPS = 6;
 
@@ -34,7 +28,13 @@ export async function executeAgentToolLoop(
 
   for (let index = 0; index < MAX_MODEL_STEPS; index += 1) {
     const response = await context.provider.complete({ messages, tools });
-    await recordModelStep(env, runId, message.agentId, context.provider.name, response.toolCalls.length);
+    await recordModelStep(
+      env,
+      runId,
+      message.agentId,
+      context.provider.name,
+      response.toolCalls.length
+    );
 
     if (response.toolCalls.length === 0) {
       await finishRun(env, runId, message, response.content, sentMessageTool);

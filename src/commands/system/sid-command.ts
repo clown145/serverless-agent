@@ -8,7 +8,8 @@ export const sidCommand: CommandDefinition = {
   title: "Session ID",
   description: "Show IDs for this session and permission configuration.",
   async execute({ message, rootConversationId }) {
-    const rootId = rootConversationId || message.conversationId.split("#")[0] || message.conversationId;
+    const rootId =
+      rootConversationId || message.conversationId.split("#")[0] || message.conversationId;
     const lines = [
       bold("Current Session IDs", message.platform),
       `agentId: ${code(message.agentId, message.platform)}`,

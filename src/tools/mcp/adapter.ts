@@ -1,9 +1,4 @@
-import type {
-  PermissionRequirement,
-  RegisteredTool,
-  ToolSideEffect,
-  ToolSource
-} from "../types";
+import type { PermissionRequirement, RegisteredTool, ToolSideEffect, ToolSource } from "../types";
 import { mcpToolInternalName } from "./names";
 import { mapMcpToolResult } from "./result";
 import type { McpCallTool, McpTool } from "./types";
@@ -71,9 +66,7 @@ function sideEffectFromAnnotations(tool: McpTool): ToolSideEffect {
     return "dangerous";
   }
 
-  return tool.annotations?.openWorldHint === false
-    ? "workspace_write"
-    : "external_write";
+  return tool.annotations?.openWorldHint === false ? "workspace_write" : "external_write";
 }
 
 function asArguments(input: unknown): Record<string, unknown> {

@@ -1137,7 +1137,11 @@
 
 .weixin-oc-qr-panel input {
   grid-column: 1 / -1;
-  font-family: SFMono-Regular, Consolas, Liberation Mono, monospace;
+  font-family:
+    SFMono-Regular,
+    Consolas,
+    Liberation Mono,
+    monospace;
   font-size: 12px;
 }
 
@@ -1454,7 +1458,10 @@
   font-size: 12px;
   font-weight: 600;
   padding: 2px 9px 2px 6px;
-  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease;
 }
 
 .model-capability-chip:hover {

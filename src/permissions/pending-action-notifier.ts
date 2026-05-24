@@ -3,10 +3,7 @@ import type { Env } from "../shared/types/env";
 import type { Platform } from "../shared/types/internal-message";
 import type { PendingActionRecord } from "../storage/repositories/pending-actions-types";
 
-export async function notifyPendingAction(
-  env: Env,
-  action: PendingActionRecord
-): Promise<boolean> {
+export async function notifyPendingAction(env: Env, action: PendingActionRecord): Promise<boolean> {
   const platform = normalizePlatform(action.platform);
   if (!platform || !action.conversationId) {
     return false;
@@ -24,7 +21,9 @@ export async function notifyPendingAction(
       "Tool call confirmation required",
       `Tool: ${action.toolName}`,
       action.reason ? `Reason: ${action.reason}` : undefined
-    ].filter(Boolean).join("\n"),
+    ]
+      .filter(Boolean)
+      .join("\n"),
     buttons: [
       {
         label: "Confirm",

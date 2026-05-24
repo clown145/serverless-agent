@@ -8,51 +8,51 @@
 
 ```ts
 type ToolDefinition = {
-  name: string
-  title?: string
-  description: string
-  inputSchema: JsonSchema
-  outputSchema?: JsonSchema
-  annotations?: ToolAnnotations
-  platforms?: Platform[]
-  behavior?: ToolExecutionBehavior
-  permission: PermissionRequirement
-  sideEffect: "none" | "workspace_write" | "external_write" | "dangerous"
-  timeoutMs: number
-}
+  name: string;
+  title?: string;
+  description: string;
+  inputSchema: JsonSchema;
+  outputSchema?: JsonSchema;
+  annotations?: ToolAnnotations;
+  platforms?: Platform[];
+  behavior?: ToolExecutionBehavior;
+  permission: PermissionRequirement;
+  sideEffect: "none" | "workspace_write" | "external_write" | "dangerous";
+  timeoutMs: number;
+};
 ```
 
 `platforms` 为空时表示所有平台可用；设置后 registry 会在执行前拒绝不匹配的平台。`behavior.preventsFinalResponse` 用于标记工具已经完成最终出站消息，agent loop 不再补发最终回复。
 
 ```ts
 type ToolAnnotations = {
-  title?: string
-  readOnlyHint?: boolean
-  destructiveHint?: boolean
-  idempotentHint?: boolean
-  openWorldHint?: boolean
-}
+  title?: string;
+  readOnlyHint?: boolean;
+  destructiveHint?: boolean;
+  idempotentHint?: boolean;
+  openWorldHint?: boolean;
+};
 
 type ToolExecutionBehavior = {
-  preventsFinalResponse?: boolean
-}
+  preventsFinalResponse?: boolean;
+};
 ```
 
 ## ToolCallRequest
 
 ```ts
 type ToolCallRequest = {
-  runId: string
-  stepId: string
-  toolName: string
-  input: unknown
-  actorId: string
-  actorRole?: string
-  platform?: string
-  conversationId?: string
-  allowDangerous?: boolean
-  confirmedActionId?: string
-}
+  runId: string;
+  stepId: string;
+  toolName: string;
+  input: unknown;
+  actorId: string;
+  actorRole?: string;
+  platform?: string;
+  conversationId?: string;
+  allowDangerous?: boolean;
+  confirmedActionId?: string;
+};
 ```
 
 Tool call id、created/completed timestamps 和 audit records 由 registry/repository 层生成和持久化，不由模型传入。
@@ -61,24 +61,24 @@ Tool call id、created/completed timestamps 和 audit records 由 registry/repos
 
 ```ts
 type ToolResult = {
-  status: "success" | "failed" | "permission_denied" | "needs_confirmation"
-  output?: unknown
+  status: "success" | "failed" | "permission_denied" | "needs_confirmation";
+  output?: unknown;
   error?: {
-    code: string
-    message: string
-    retryable: boolean
-  }
-}
+    code: string;
+    message: string;
+    retryable: boolean;
+  };
+};
 ```
 
 ## PermissionRequirement
 
 ```ts
 type PermissionRequirement = {
-  level: 0 | 1 | 2 | 3 | 4 | 5
-  scopes: string[]
-  confirmationRequired?: boolean
-}
+  level: 0 | 1 | 2 | 3 | 4 | 5;
+  scopes: string[];
+  confirmationRequired?: boolean;
+};
 ```
 
 ## 实现要求

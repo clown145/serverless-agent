@@ -85,7 +85,12 @@ export function PermissionsPanel({ client, notify }: PanelProps) {
       <div className="form-grid policy-form">
         <label>
           {t("permissions.subject")}
-          <select value={subjectType} onChange={(event) => setSubjectType(event.target.value as PermissionPolicy["subjectType"])}>
+          <select
+            value={subjectType}
+            onChange={(event) =>
+              setSubjectType(event.target.value as PermissionPolicy["subjectType"])
+            }
+          >
             {subjectTypes.map((type) => (
               <option key={type} value={type}>
                 {type}
@@ -125,7 +130,9 @@ export function PermissionsPanel({ client, notify }: PanelProps) {
         {policies.map((policy) => (
           <div className="table-row" key={policy.id}>
             <div>
-              <strong>{policy.subjectType}:{policy.subjectId}</strong>
+              <strong>
+                {policy.subjectType}:{policy.subjectId}
+              </strong>
               <span>{policy.scopes.join(", ") || t("permissions.noScopes")}</span>
             </div>
             <StatusBadge value={policy.status} />

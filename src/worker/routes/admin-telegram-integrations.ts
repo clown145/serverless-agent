@@ -29,9 +29,7 @@ export async function handleAdminTelegramIntegrations(
     return errorResponse(405, "method_not_allowed", "Method not allowed");
   }
 
-  const parsed = createTelegramIntegrationSchema.safeParse(
-    await request.json().catch(() => ({}))
-  );
+  const parsed = createTelegramIntegrationSchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) {
     return errorResponse(400, "invalid_payload", zodMessage(parsed.error));
   }
@@ -56,11 +54,7 @@ export async function handleAdminTelegramIntegrations(
   });
 }
 
-async function saveBotToken(
-  env: Env,
-  integrationId: string,
-  token: string
-) {
+async function saveBotToken(env: Env, integrationId: string, token: string) {
   const encrypted = await encryptTelegramCredential(env, token);
   const credential = await createPlatformCredentialRecord(env.AGENT_DB, {
     integrationId,

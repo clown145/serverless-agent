@@ -55,8 +55,7 @@ export async function integrationWecomConfig(
     agentId: integration.agentId,
     corpId: stringConfig(integration.config.corpId) ?? stringConfig(integration.config.corpid),
     secret:
-      (await resolveWecomCredential(env, integration)) ??
-      stringConfig(integration.config.secret),
+      (await resolveWecomCredential(env, integration)) ?? stringConfig(integration.config.secret),
     token: stringConfig(integration.config.token),
     encodingAesKey:
       stringConfig(integration.config.encodingAesKey) ??
@@ -70,8 +69,7 @@ export async function integrationWecomConfig(
       stringConfig(integration.config.kfName) ??
       stringConfig(integration.config.kf_name),
     openKfId:
-      stringConfig(integration.config.openKfId) ??
-      stringConfig(integration.config.open_kfid),
+      stringConfig(integration.config.openKfId) ?? stringConfig(integration.config.open_kfid),
     webhookSecret: integration.webhookSecret,
     integrationId: integration.id,
     source: "platform_integration",

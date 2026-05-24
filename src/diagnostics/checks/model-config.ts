@@ -6,10 +6,7 @@ import type { Env } from "../../shared/types/env";
 import { diagnosticError, diagnosticOk, diagnosticWarn } from "../check-result";
 import type { DiagnosticCheck } from "../types";
 
-export async function checkModelConfig(
-  env: Env,
-  agentId: string
-): Promise<DiagnosticCheck[]> {
+export async function checkModelConfig(env: Env, agentId: string): Promise<DiagnosticCheck[]> {
   const [providers, models, settings] = await Promise.all([
     listModelProviders(env.AGENT_DB),
     listModelCatalog(env.AGENT_DB),
@@ -20,18 +17,12 @@ export async function checkModelConfig(
   const configuredProviders = activeProviders.filter(
     (provider) => provider.authType === "none" || providerCredentialAvailable(env, provider)
   );
-  const activeProvider = activeProviders.find(
-    (provider) => provider.id === settings?.providerId
-  );
+  const activeProvider = activeProviders.find((provider) => provider.id === settings?.providerId);
   const activeModel = models.find(
-    (model) =>
-      model.providerId === settings?.providerId && model.modelId === settings?.modelId
+    (model) => model.providerId === settings?.providerId && model.modelId === settings?.modelId
   );
   const envModelProvider = Boolean(
-    env.MODEL_PROVIDER === "mock" ||
-      env.OPENAI_API_KEY ||
-      env.GEMINI_API_KEY ||
-      env.MODEL_NAME
+    env.MODEL_PROVIDER === "mock" || env.OPENAI_API_KEY || env.GEMINI_API_KEY || env.MODEL_NAME
   );
 
   return [
@@ -71,7 +62,12 @@ function legacySecretName(type: ModelProviderRecord["providerType"]): string {
 
 function modelProvidersCheck(count: number, envModelProvider: boolean): DiagnosticCheck {
   if (count) {
-    return diagnosticOk("model", "model_providers", "Model providers", `${count} active provider(s)`);
+    return diagnosticOk(
+      "model",
+      "model_providers",
+      "Model providers",
+      `${count} active provider(s)`
+    );
   }
 
   return envModelProvider

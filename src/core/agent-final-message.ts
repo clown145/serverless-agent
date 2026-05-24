@@ -2,10 +2,7 @@ import { createId } from "../shared/ids";
 import type { Env } from "../shared/types/env";
 import type { InternalMessage } from "../shared/types/internal-message";
 import { createToolRegistry } from "../tools/registry/tool-registry";
-import {
-  recordToolCompletedStep,
-  recordToolRequestedStep
-} from "./run-step-recorder";
+import { recordToolCompletedStep, recordToolRequestedStep } from "./run-step-recorder";
 
 export async function sendFinalMessage(
   env: Env,

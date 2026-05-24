@@ -6,10 +6,7 @@ import { ToolbarButton } from "../../ToolbarButton";
 
 type TelegramIntegrationListProps = {
   integrations: TelegramIntegration[];
-  onUpdateParseMode: (
-    integrationId: string,
-    parseMode: TelegramIntegration["parseMode"]
-  ) => void;
+  onUpdateParseMode: (integrationId: string, parseMode: TelegramIntegration["parseMode"]) => void;
   onTest: (integrationId: string) => void;
   onSyncCommands: (integrationId: string) => void;
   onSetWebhook: (integrationId: string) => void;
@@ -35,7 +32,9 @@ export function TelegramIntegrationList({
           <div>
             <strong>{integration.name}</strong>
             <span>{integration.agentId}</span>
-            <span>{integration.hasCredential ? t("platforms.encryptedToken") : t("platforms.noToken")}</span>
+            <span>
+              {integration.hasCredential ? t("platforms.encryptedToken") : t("platforms.noToken")}
+            </span>
             <span>
               {integration.webhookSecretConfigured
                 ? t("platforms.webhookSecretReady")

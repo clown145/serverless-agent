@@ -4,8 +4,7 @@ export const SKILL_CREATOR_ID = "skill-creator";
 
 export const SKILL_CREATOR_MARKDOWN = createSkillMarkdown({
   name: "skill-creator",
-  description:
-    "Create, update, validate, package, or improve serverless-agent skills.",
+  description: "Create, update, validate, package, or improve serverless-agent skills.",
   body: `# Skill Creator
 
 Use this skill when the user wants to create, edit, upload, validate, or improve a skill.

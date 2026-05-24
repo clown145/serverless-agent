@@ -53,7 +53,11 @@ export function SetupPanel({ client, notify, onNavigate }: SetupPanelProps) {
           <SlidersHorizontal size={16} />
           {t("nav.models")}
         </button>
-        <button className="secondary-button" type="button" onClick={() => onNavigate("diagnostics")}>
+        <button
+          className="secondary-button"
+          type="button"
+          onClick={() => onNavigate("diagnostics")}
+        >
           <Wrench size={16} />
           {t("nav.diagnostics")}
         </button>

@@ -46,6 +46,4 @@ export type McpCallToolResult = {
   [key: string]: unknown;
 };
 
-export type McpCallTool = (
-  input: McpCallToolInput
-) => Promise<McpCallToolResult>;
+export type McpCallTool = (input: McpCallToolInput) => Promise<McpCallToolResult>;

@@ -27,10 +27,7 @@ type HeartbeatRow = {
   details_json?: string;
 };
 
-export async function upsertHeartbeat(
-  db: D1Database,
-  input: HeartbeatInput
-): Promise<void> {
+export async function upsertHeartbeat(db: D1Database, input: HeartbeatInput): Promise<void> {
   const id = `${input.agentId}:${input.source}`;
 
   await db
@@ -56,14 +53,9 @@ export async function upsertHeartbeat(
     .run();
 }
 
-export async function listHeartbeats(
-  db: D1Database,
-  agentId?: string
-): Promise<HeartbeatRecord[]> {
+export async function listHeartbeats(db: D1Database, agentId?: string): Promise<HeartbeatRecord[]> {
   const query = agentId
-    ? db
-        .prepare("SELECT * FROM heartbeats WHERE agent_id = ? ORDER BY source ASC")
-        .bind(agentId)
+    ? db.prepare("SELECT * FROM heartbeats WHERE agent_id = ? ORDER BY source ASC").bind(agentId)
     : db.prepare("SELECT * FROM heartbeats ORDER BY agent_id ASC, source ASC");
   const result = await query.all<HeartbeatRow>();
 

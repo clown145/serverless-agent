@@ -98,10 +98,7 @@ export async function listPendingActions(
   return (result.results ?? []).map(mapPendingActionRow);
 }
 
-export async function markPendingActionConfirmed(
-  db: D1Database,
-  id: string
-): Promise<boolean> {
+export async function markPendingActionConfirmed(db: D1Database, id: string): Promise<boolean> {
   const now = nowIso();
   const result = await db
     .prepare(
@@ -115,10 +112,7 @@ export async function markPendingActionConfirmed(
   return Boolean(result.meta.changes);
 }
 
-export async function markPendingActionCancelled(
-  db: D1Database,
-  id: string
-): Promise<boolean> {
+export async function markPendingActionCancelled(db: D1Database, id: string): Promise<boolean> {
   const now = nowIso();
   const result = await db
     .prepare(

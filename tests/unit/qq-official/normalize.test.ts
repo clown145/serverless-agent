@@ -83,8 +83,6 @@ describe("normalizeQqOfficialGatewayEvent", () => {
 
 describe("qqOfficialConversationId", () => {
   it("preserves target kind in the conversation id", () => {
-    expect(qqOfficialConversationId("direct", "guild-id")).toBe(
-      "qq:direct:guild-id"
-    );
+    expect(qqOfficialConversationId("direct", "guild-id")).toBe("qq:direct:guild-id");
   });
 });

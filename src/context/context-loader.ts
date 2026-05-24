@@ -16,7 +16,6 @@ import { promptText } from "../prompts";
 import { imagePartFromAttachment } from "./image-captioning";
 
 const CONTEXT_SCAN_LIMIT = 100;
-const MAX_INLINE_IMAGES = 4;
 const MAX_INLINE_IMAGE_BYTES = 10 * 1024 * 1024;
 
 export type LoadedAgentContext = {
@@ -147,9 +146,7 @@ async function summarizeAndStore(
       {
         role: "user",
         content: [
-          settings.summaryText
-            ? `Existing summary:\n${settings.summaryText}\n`
-            : "",
+          settings.summaryText ? `Existing summary:\n${settings.summaryText}\n` : "",
           "Messages to merge into the summary:",
           messages.map(formatMessageForSummary).join("\n")
         ].join("\n")

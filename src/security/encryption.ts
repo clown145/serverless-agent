@@ -46,10 +46,7 @@ async function importAesKey(
   masterKey: string,
   usages: Array<"encrypt" | "decrypt">
 ): Promise<CryptoKey> {
-  const digest = await crypto.subtle.digest(
-    "SHA-256",
-    textEncoder.encode(masterKey)
-  );
+  const digest = await crypto.subtle.digest("SHA-256", textEncoder.encode(masterKey));
 
   return crypto.subtle.importKey("raw", digest, "AES-GCM", false, usages);
 }

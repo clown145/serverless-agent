@@ -16,9 +16,7 @@ const OWNER_SCOPES = [
 const MEMBER_SCOPES = ["workspace:read", "workspace:write"];
 const UNKNOWN_SCOPES = ["workspace:read"];
 
-export function resolveDefaultPolicy(
-  context: ToolExecutionContext
-): ResolvedPolicy {
+export function resolveDefaultPolicy(context: ToolExecutionContext): ResolvedPolicy {
   if (context.actorId === "scheduler") {
     return policy(3, OWNER_SCOPES, "default:scheduler");
   }
@@ -34,11 +32,7 @@ export function resolveDefaultPolicy(
   return policy(1, UNKNOWN_SCOPES, "default:unknown");
 }
 
-function policy(
-  maxLevel: PermissionLevel,
-  scopes: string[],
-  source: string
-): ResolvedPolicy {
+function policy(maxLevel: PermissionLevel, scopes: string[], source: string): ResolvedPolicy {
   return {
     maxLevel,
     scopes,

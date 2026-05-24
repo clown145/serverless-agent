@@ -32,7 +32,7 @@ export function QqOfficialIntegrationForm({
         {t("platforms.agent")}
         <input
           value={draft.agentId}
-          placeholder="default"
+          placeholder={t("platforms.agentPlaceholder")}
           onChange={(event) => onDraftChange({ ...draft, agentId: event.target.value })}
         />
       </label>
@@ -85,9 +85,7 @@ export function QqOfficialIntegrationForm({
         <input
           type="checkbox"
           checked={draft.enableGroupC2c}
-          onChange={(event) =>
-            onDraftChange({ ...draft, enableGroupC2c: event.target.checked })
-          }
+          onChange={(event) => onDraftChange({ ...draft, enableGroupC2c: event.target.checked })}
         />
         {t("platforms.qqGroupC2c")}
       </label>

@@ -59,7 +59,8 @@ export const skillAutoEditsInputJsonSchema = {
   properties: {
     enabled: {
       type: "boolean",
-      description: "true allows skill document edits without confirmation; false requires confirmation."
+      description:
+        "true allows skill document edits without confirmation; false requires confirmation."
     }
   },
   required: ["enabled"],

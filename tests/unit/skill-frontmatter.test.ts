@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  createSkillMarkdown,
-  parseSkillMarkdown
-} from "../../src/skills/skill-frontmatter";
+import { createSkillMarkdown, parseSkillMarkdown } from "../../src/skills/skill-frontmatter";
 
 describe("skill frontmatter", () => {
   it("parses standard SKILL.md frontmatter", () => {

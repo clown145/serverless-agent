@@ -15,8 +15,9 @@ type LatestToolCallRow = {
 
 export async function checkActivityConfig(env: Env): Promise<DiagnosticCheck[]> {
   const [runsResult, latestToolCall] = await Promise.all([
-    env.AGENT_DB.prepare("SELECT status, updated_at FROM runs ORDER BY created_at DESC LIMIT 20")
-      .all<LatestRunRow>(),
+    env.AGENT_DB.prepare(
+      "SELECT status, updated_at FROM runs ORDER BY created_at DESC LIMIT 20"
+    ).all<LatestRunRow>(),
     env.AGENT_DB.prepare(
       "SELECT status, tool_name, completed_at FROM tool_calls ORDER BY created_at DESC LIMIT 1"
     ).first<LatestToolCallRow>()

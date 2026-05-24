@@ -28,9 +28,7 @@ export type PlatformCallbackRow = {
   used_at?: string | null;
 };
 
-export function mapPlatformCallbackRow(
-  row: PlatformCallbackRow
-): PlatformCallbackRecord {
+export function mapPlatformCallbackRow(row: PlatformCallbackRow): PlatformCallbackRecord {
   return {
     id: row.id,
     agentId: row.agent_id,

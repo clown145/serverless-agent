@@ -2,11 +2,7 @@ import { errorResponse, jsonResponse } from "../../shared/http";
 import { createId } from "../../shared/ids";
 import { nowIso } from "../../shared/time";
 import type { Env } from "../../shared/types/env";
-import type {
-  MessageAttachment,
-  Platform,
-  SenderRole
-} from "../../shared/types/internal-message";
+import type { MessageAttachment, Platform, SenderRole } from "../../shared/types/internal-message";
 import { createAdminMessage } from "../../adapters/admin/normalize";
 import { createWebUiMessage } from "../../adapters/webui/normalize";
 import type { QueueMessageBody } from "../../shared/types/queue";

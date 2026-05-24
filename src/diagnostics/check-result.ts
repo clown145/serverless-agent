@@ -1,8 +1,4 @@
-import type {
-  DiagnosticCategory,
-  DiagnosticCheck,
-  DiagnosticStatus
-} from "./types";
+import type { DiagnosticCategory, DiagnosticCheck, DiagnosticStatus } from "./types";
 
 export function diagnosticOk(
   category: DiagnosticCategory,

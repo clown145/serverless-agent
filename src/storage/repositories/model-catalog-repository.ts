@@ -5,10 +5,7 @@ import {
   uniqueCapabilities,
   type ModelCapability
 } from "../../core/model/capability-defaults";
-import {
-  mergeModelMetadata,
-  type ModelMetadataResolution
-} from "../../core/model/model-metadata";
+import { mergeModelMetadata, type ModelMetadataResolution } from "../../core/model/model-metadata";
 import {
   mapModelCatalogRow,
   type ModelCatalogRecord,
@@ -44,8 +41,7 @@ export async function upsertModelCatalog(
   for (const model of input.models) {
     const id = createId("model");
     const status = refreshedModelStatus(existingStatusByModelId.get(model.modelId));
-    const capabilitiesSource =
-      existingCapabilitiesSourceByModelId.get(model.modelId) ?? "inferred";
+    const capabilitiesSource = existingCapabilitiesSourceByModelId.get(model.modelId) ?? "inferred";
     await db
       .prepare(
         `INSERT INTO model_catalog (
@@ -152,18 +148,15 @@ export async function updateModelCatalogMetadata(
       continue;
     }
 
-    const metadata = mergeModelMetadata(
-      model.modelId,
-      matchedMetadata
-    );
+    const metadata = mergeModelMetadata(model.modelId, matchedMetadata);
     const capabilities =
       model.capabilitiesSource === "manual" ? model.capabilities : metadata.capabilities;
-    const capabilitiesSource =
-      model.capabilitiesSource === "manual" ? "manual" : metadata.source;
+    const capabilitiesSource = model.capabilitiesSource === "manual" ? "manual" : metadata.source;
 
     statements.push(
-      db.prepare(
-        `UPDATE model_catalog
+      db
+        .prepare(
+          `UPDATE model_catalog
          SET
            capabilities_json = ?,
            capabilities_source = ?,
@@ -175,19 +168,19 @@ export async function updateModelCatalogMetadata(
            metadata_fetched_at = ?,
             updated_at = ?
           WHERE id = ?`
-      )
-      .bind(
-        JSON.stringify(uniqueCapabilities(capabilities)),
-        capabilitiesSource,
-        metadata.contextWindow ?? null,
-        metadata.maxOutputTokens ?? null,
-        metadata.raw ? JSON.stringify(metadata.raw) : null,
-        metadata.source,
-        metadata.confidence,
-        now,
-        now,
-        model.id
-      )
+        )
+        .bind(
+          JSON.stringify(uniqueCapabilities(capabilities)),
+          capabilitiesSource,
+          metadata.contextWindow ?? null,
+          metadata.maxOutputTokens ?? null,
+          metadata.raw ? JSON.stringify(metadata.raw) : null,
+          metadata.source,
+          metadata.confidence,
+          now,
+          now,
+          model.id
+        )
     );
   }
 

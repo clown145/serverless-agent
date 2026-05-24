@@ -16,9 +16,7 @@ import type { Env } from "../../../shared/types/env";
 import { toTelegramIntegrationDto } from "./telegram-dto";
 import { setTelegramWebhookSchema, zodMessage } from "./telegram-schemas";
 
-type TelegramIntegration = NonNullable<
-  Awaited<ReturnType<typeof getPlatformIntegrationRecord>>
->;
+type TelegramIntegration = NonNullable<Awaited<ReturnType<typeof getPlatformIntegrationRecord>>>;
 
 export async function testTelegramIntegration(
   env: Env,
@@ -99,12 +97,7 @@ export async function syncTelegramIntegrationCommands(
       commands
     });
   } catch (error) {
-    return recordTelegramActionError(
-      env,
-      integration.id,
-      "telegram_commands_sync_failed",
-      error
-    );
+    return recordTelegramActionError(env, integration.id, "telegram_commands_sync_failed", error);
   }
 }
 
@@ -123,12 +116,7 @@ export async function deleteTelegramIntegrationWebhook(
     await updatePlatformIntegrationCheck(env.AGENT_DB, integration.id, {});
     return jsonResponse({ ok: true, webhook });
   } catch (error) {
-    return recordTelegramActionError(
-      env,
-      integration.id,
-      "telegram_webhook_delete_failed",
-      error
-    );
+    return recordTelegramActionError(env, integration.id, "telegram_webhook_delete_failed", error);
   }
 }
 

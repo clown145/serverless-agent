@@ -176,9 +176,7 @@ export class QqOfficialGatewaySession {
     );
   }
 
-  private async handleDispatch(
-    payload: QqOfficialGatewayPayload
-  ): Promise<void> {
+  private async handleDispatch(payload: QqOfficialGatewayPayload): Promise<void> {
     if (payload.t === "READY") {
       const ready = payload.d as QqOfficialReadyPayload | undefined;
       this.session.sessionId = ready?.session_id;
@@ -208,10 +206,7 @@ export class QqOfficialGatewaySession {
       this.options.agentId
     );
     if (normalized.conversationBinding) {
-      await rememberQqOfficialConversation(
-        this.state.storage,
-        normalized.conversationBinding
-      );
+      await rememberQqOfficialConversation(this.state.storage, normalized.conversationBinding);
     }
     if (!normalized.message) {
       return;

@@ -5,9 +5,7 @@ describe("schedule time", () => {
   const now = new Date("2026-04-30T00:00:00.000Z");
 
   it("resolves delay seconds", () => {
-    expect(resolveDueAt(now, { delaySeconds: 60 })).toBe(
-      "2026-04-30T00:01:00.000Z"
-    );
+    expect(resolveDueAt(now, { delaySeconds: 60 })).toBe("2026-04-30T00:01:00.000Z");
   });
 
   it("uses explicit dueAt", () => {

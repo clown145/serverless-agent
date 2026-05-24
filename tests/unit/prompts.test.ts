@@ -1,10 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  promptText,
-  renderPrompt,
-  renderPromptTemplate,
-  resolvePrompt
-} from "../../src/prompts";
+import { promptText, renderPrompt, renderPromptTemplate, resolvePrompt } from "../../src/prompts";
 
 describe("prompts", () => {
   it("resolves generated prompt metadata", () => {

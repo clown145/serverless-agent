@@ -32,12 +32,8 @@ export async function getWeixinOcGatewayStatus(
   storage: DurableObjectStorage,
   config: WeixinOcBotConfig
 ): Promise<WeixinOcGatewayStatus> {
-  const loginSession = await storage.get<WeixinOcLoginSession>(
-    WEIXIN_OC_LOGIN_SESSION_KEY
-  );
-  const runtimeStatus = await storage.get<WeixinOcRuntimeStatus>(
-    WEIXIN_OC_RUNTIME_STATUS_KEY
-  );
+  const loginSession = await storage.get<WeixinOcLoginSession>(WEIXIN_OC_LOGIN_SESSION_KEY);
+  const runtimeStatus = await storage.get<WeixinOcRuntimeStatus>(WEIXIN_OC_RUNTIME_STATUS_KEY);
 
   return {
     agentId: config.agentId,

@@ -6,10 +6,7 @@ type DefaultModelPickerProps = {
   onNavigate: () => void;
 };
 
-export function DefaultModelPicker({
-  models,
-  onNavigate
-}: DefaultModelPickerProps) {
+export function DefaultModelPicker({ models, onNavigate }: DefaultModelPickerProps) {
   const { t } = useI18n();
 
   return (

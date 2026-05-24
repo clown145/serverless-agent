@@ -9,14 +9,9 @@ type RegisteredToolsViewProps = {
   onSelect: (name: string) => void;
 };
 
-export function RegisteredToolsView({
-  tools,
-  selectedName,
-  onSelect
-}: RegisteredToolsViewProps) {
+export function RegisteredToolsView({ tools, selectedName, onSelect }: RegisteredToolsViewProps) {
   const { t } = useI18n();
-  const selectedTool =
-    tools.find((tool) => tool.name === selectedName) ?? tools[0];
+  const selectedTool = tools.find((tool) => tool.name === selectedName) ?? tools[0];
 
   return (
     <div className="tools-layout">

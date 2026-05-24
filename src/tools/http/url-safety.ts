@@ -35,15 +35,15 @@ export function isBlockedHostname(hostname: string): boolean {
 }
 
 function normalizeHostname(hostname: string): string {
-  return hostname.trim().toLowerCase().replace(/^\[|\]$/g, "");
+  return hostname
+    .trim()
+    .toLowerCase()
+    .replace(/^\[|\]$/g, "");
 }
 
 function isBlockedIpv4(host: string): boolean {
   const rawParts = host.split(".");
-  if (
-    rawParts.length !== 4 ||
-    rawParts.some((part) => !/^\d{1,3}$/.test(part))
-  ) {
+  if (rawParts.length !== 4 || rawParts.some((part) => !/^\d{1,3}$/.test(part))) {
     return false;
   }
 
@@ -90,10 +90,7 @@ function isBlockedIpv6(host: string): boolean {
   }
 
   // ::ffff:0:0/96 IPv4-mapped IPv6 addresses.
-  if (
-    expanded.slice(0, 5).every((segment) => segment === 0) &&
-    expanded[5] === 0xffff
-  ) {
+  if (expanded.slice(0, 5).every((segment) => segment === 0) && expanded[5] === 0xffff) {
     const ipv4 = `${(expanded[6] ?? 0) >> 8}.${(expanded[6] ?? 0) & 0xff}.${(expanded[7] ?? 0) >> 8}.${(expanded[7] ?? 0) & 0xff}`;
     return isBlockedIpv4(ipv4);
   }
@@ -140,12 +137,15 @@ function parseIpv6Segments(input: string | undefined): number[] | undefined {
     return [];
   }
 
-  return input.split(":").map((segment) => {
-    if (!/^[0-9a-f]{1,4}$/i.test(segment)) {
-      return Number.NaN;
-    }
-    return Number.parseInt(segment, 16);
-  }).every((segment) => Number.isFinite(segment))
+  return input
+    .split(":")
+    .map((segment) => {
+      if (!/^[0-9a-f]{1,4}$/i.test(segment)) {
+        return Number.NaN;
+      }
+      return Number.parseInt(segment, 16);
+    })
+    .every((segment) => Number.isFinite(segment))
     ? input.split(":").map((segment) => Number.parseInt(segment, 16))
     : undefined;
 }

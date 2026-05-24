@@ -19,12 +19,7 @@ import {
 } from "./schema";
 
 export function createSkillTools(): RegisteredTool[] {
-  return [
-    listSkillsTool(),
-    readSkillTool(),
-    writeSkillFileTool(),
-    setSkillAutoEditsTool()
-  ];
+  return [listSkillsTool(), readSkillTool(), writeSkillFileTool(), setSkillAutoEditsTool()];
 }
 
 function listSkillsTool(): RegisteredTool {
@@ -160,6 +155,5 @@ function setSkillAutoEditsTool(): RegisteredTool {
 export async function skillEditConfirmationRequired(
   context: Parameters<RegisteredTool["execute"]>[0]
 ): Promise<boolean> {
-  return (await getSkillSettings(context.env.AGENT_DB, context.agentId))
-    .editConfirmationRequired;
+  return (await getSkillSettings(context.env.AGENT_DB, context.agentId)).editConfirmationRequired;
 }
