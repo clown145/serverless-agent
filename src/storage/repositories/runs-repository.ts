@@ -1,5 +1,5 @@
-import type { RunStatus, RunStepInput } from "../../core/run-state";
 import { nowIso } from "../../shared/time";
+import type { RunStatus, RunStepInput } from "../../shared/types/run";
 
 export type CreateRunInput = {
   id: string;

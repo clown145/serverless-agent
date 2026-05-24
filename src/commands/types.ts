@@ -1,6 +1,6 @@
-import type { RunStatus } from "../core/run-state";
 import type { Env } from "../shared/types/env";
 import type { InternalMessage, Platform } from "../shared/types/internal-message";
+import type { RunStatus } from "../shared/types/run";
 
 export type ParsedCommand = {
   raw: string;

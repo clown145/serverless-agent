@@ -1,0 +1,20 @@
+export type RunStatus = "queued" | "running" | "completed" | "failed";
+
+export type RunStepKind =
+  | "received"
+  | "command_handled"
+  | "context_loaded"
+  | "model_called"
+  | "tool_requested"
+  | "tool_completed"
+  | "failed"
+  | "completed";
+
+export type RunStepInput = {
+  id: string;
+  runId: string;
+  agentId: string;
+  kind: RunStepKind;
+  status: RunStatus;
+  summary?: string;
+};

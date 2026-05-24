@@ -29,7 +29,13 @@ describe("agent context", () => {
       { ...message("msg-1", "hello"), platform: "telegram", conversationId: "telegram:123" },
       undefined,
       [],
-      { timeZone: "Asia/Shanghai" }
+      {
+        timeZone: "Asia/Shanghai",
+        platformFormatInstruction: [
+          "Telegram formatting: messages are sent with Telegram parse_mode HTML by default.",
+          "Use only Telegram-supported HTML tags."
+        ].join("\n")
+      }
     );
 
     expect(system.content).toContain("Configured timezone: Asia/Shanghai");

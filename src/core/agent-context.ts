@@ -3,7 +3,6 @@ import type { InternalMessage } from "../shared/types/internal-message";
 import type { SelectedSkill } from "../skills/skill-selector";
 import type { SkillCatalogItem } from "../skills/skill-loader";
 import type { ModelContentPart, ModelMessage, ModelTool } from "./model/types";
-import type { TelegramParseMode } from "../adapters/telegram/formatting";
 
 export type ConversationContextMessage = {
   id: string;
@@ -14,7 +13,7 @@ export type ConversationContextMessage = {
 
 export type AgentContextOptions = {
   timeZone?: string;
-  telegramParseMode?: TelegramParseMode;
+  platformFormatInstruction?: string;
   conversationSummary?: string;
   skillCatalog?: SkillCatalogItem[];
 };
@@ -55,7 +54,7 @@ function createBaseInstructions(
     "Use tools when a task requires reading or writing the virtual filesystem, sending messages, or performing external actions.",
     "Use search.web to find candidate pages, then use web.fetch_page to read and verify pages when the user asks for details, latest information, or claims that need support.",
     "Do not force a search result count unless the user explicitly requests one; the system search settings control the normal result count.",
-    platformFormatInstruction(message.platform, options),
+    options.platformFormatInstruction ?? defaultPlatformFormatInstruction(message.platform),
     "When the task is complete, answer concisely in the user's language.",
     "Do not claim a tool action succeeded unless a tool result confirms it."
   ].join("\n");
@@ -96,35 +95,7 @@ function normalizeTimeZone(timeZone?: string): string {
   return timeZone?.trim() || "UTC";
 }
 
-function platformFormatInstruction(
-  platform: InternalMessage["platform"],
-  options: AgentContextOptions
-): string {
-  if (platform === "telegram") {
-    if (options.telegramParseMode === "none") {
-      return [
-        "Telegram formatting: messages are sent as plain text.",
-        "Avoid Markdown tables, HTML tags, and formatting that requires Telegram parse mode.",
-        "Use short sections, numbered lines, plain URLs, and compact text."
-      ].join("\n");
-    }
-
-    if (options.telegramParseMode === "MarkdownV2") {
-      return [
-        "Telegram formatting: messages are sent with Telegram parse_mode MarkdownV2.",
-        "MarkdownV2 requires escaping reserved characters: _ * [ ] ( ) ~ ` > # + - = | { } . !",
-        "Prefer simple bold/italic/code only when you can escape correctly; avoid tables and complex formatting."
-      ].join("\n");
-    }
-
-    return [
-      "Telegram formatting: messages are sent with Telegram parse_mode HTML by default.",
-      "Use only Telegram-supported HTML tags when useful: <b>, <i>, <u>, <s>, <code>, <pre>, <a href=\"https://...\">text</a>.",
-      "Escape literal <, >, and & when they are not part of supported tags.",
-      "Avoid Markdown tables and MarkdownV2-specific syntax; use short sections, numbered lines, plain URLs, and compact text."
-    ].join("\n");
-  }
-
+function defaultPlatformFormatInstruction(platform: InternalMessage["platform"]): string {
   if (platform === "webui" || platform === "admin") {
     return "WebUI formatting: concise Markdown-style text is acceptable, but avoid very wide tables.";
   }

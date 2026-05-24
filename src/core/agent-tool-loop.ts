@@ -10,15 +10,14 @@ import type { SelectedSkill } from "../skills/skill-selector";
 import {
   completeRun
 } from "../storage/repositories/runs-repository";
-import { findActivePlatformIntegration } from "../storage/repositories/platform-integrations-repository";
 import {
   createRuntimeToolRegistry,
   type ToolRegistry
 } from "../tools/registry/tool-registry";
 import type { ToolResult } from "../tools/types";
-import { normalizeTelegramParseMode } from "../adapters/telegram/formatting";
 import { loadAgentContext } from "../context/context-loader";
 import { replaceImagesWithCaptions } from "../context/image-captioning";
+import { resolvePlatformContextHints } from "../platforms/context-hints";
 import { getAgentModelConfig } from "../storage/repositories/agent-model-config-repository";
 import { createInitialModelMessages, createModelTools } from "./agent-context";
 import { sendFinalMessage } from "./agent-final-message";
@@ -51,6 +50,7 @@ export async function executeAgentToolLoop(
   const skillCatalog = await listSkillCatalog(env, message.agentId);
   const context = await loadAgentContext(env, message);
   const modelConfig = await getAgentModelConfig(env.AGENT_DB, message.agentId);
+  const platformHints = await resolvePlatformContextHints(env, message);
   const history = modelConfig.imageCaptionEnabled
     ? await replaceImagesWithCaptions(env, message.agentId, context.history)
     : context.history;
@@ -65,7 +65,7 @@ export async function executeAgentToolLoop(
   );
   const messages = createInitialModelMessages(message, selectedSkill, history, {
     timeZone: env.AGENT_TIMEZONE,
-    telegramParseMode: await resolveTelegramParseMode(env, message),
+    platformFormatInstruction: platformHints.formatInstruction,
     conversationSummary: context.summary,
     skillCatalog
   });
@@ -104,22 +104,6 @@ export async function executeAgentToolLoop(
 
   await sendFinalMessage(env, runId, message, "任务已停止：超过最大工具调用步数。");
   await completeRun(env.AGENT_DB, runId, "failed");
-}
-
-async function resolveTelegramParseMode(
-  env: Env,
-  message: InternalMessage
-) {
-  if (message.platform !== "telegram") {
-    return undefined;
-  }
-
-  const integration = await findActivePlatformIntegration(env.AGENT_DB, {
-    agentId: message.agentId,
-    platform: "telegram"
-  });
-
-  return normalizeTelegramParseMode(integration?.config.parseMode);
 }
 
 async function executeToolCall(
