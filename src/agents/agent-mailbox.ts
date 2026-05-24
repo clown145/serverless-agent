@@ -1,33 +1,32 @@
 import { nowIso } from "../shared/time";
 import type { QueueMessageBody } from "../shared/types/queue";
 import type { AgentEventResult } from "./agent-event-handler";
+import {
+  MAILBOX_EVENT_RETENTION_MS,
+  cleanupExpiredMailboxEvents,
+  getMailboxEventState as getMailboxEventStateFromIndex,
+  getNextMailboxEventCleanupTime,
+  putInitialMailboxEventState,
+  updateMailboxEventState,
+  type CleanupExpiredMailboxEventsResult,
+  type MailboxEventState,
+  type MailboxEventStatus
+} from "./agent-mailbox-event-index";
 
 const META_KEY = "mailbox:meta";
 const RUNNING_KEY = "mailbox:running";
 const PENDING_PREFIX = "mailbox:pending:";
-const EVENT_PREFIX = "mailbox:event:";
 const SEQUENCE_WIDTH = 20;
 
 export const MAILBOX_RECOVERY_ALARM_DELAY_MS = 60_000;
 export const MAILBOX_RUNNING_STALE_MS = 30 * 60 * 1000;
 export const MAILBOX_MAX_ATTEMPTS = 3;
+export { MAILBOX_EVENT_RETENTION_MS, cleanupExpiredMailboxEvents };
+export type { MailboxEventState, MailboxEventStatus };
+export type { CleanupExpiredMailboxEventsResult };
 
 type MailboxMeta = {
   nextSequence: number;
-};
-
-export type MailboxEventStatus = "pending" | "running" | "completed" | "failed";
-
-export type MailboxEventState = {
-  eventId: string;
-  status: MailboxEventStatus;
-  sequence?: number;
-  attemptCount: number;
-  runId?: string;
-  error?: string;
-  createdAt: string;
-  updatedAt: string;
-  completedAt?: string;
 };
 
 export type MailboxEventRecord = {
@@ -56,8 +55,7 @@ export async function enqueueMailboxEvent(
   const now = nowIso();
 
   return storage.transaction(async (txn) => {
-    const eventKey = eventIndexKey(event.eventId);
-    const existing = await txn.get<MailboxEventState>(eventKey);
+    const existing = await getMailboxEventStateFromIndex(txn, event.eventId);
     if (existing) {
       return {
         accepted: false,
@@ -79,14 +77,11 @@ export async function enqueueMailboxEvent(
 
     await txn.put(pendingKey(sequence), record);
     await txn.put(META_KEY, { nextSequence: sequence + 1 } satisfies MailboxMeta);
-    await txn.put(eventKey, {
+    await putInitialMailboxEventState(txn, {
       eventId: event.eventId,
-      status: "pending",
       sequence,
-      attemptCount: 0,
-      createdAt: now,
-      updatedAt: now
-    } satisfies MailboxEventState);
+      now
+    });
 
     return {
       accepted: true,
@@ -120,7 +115,7 @@ export async function recoverStaleRunningEvent(
 
     if (running.attemptCount >= MAILBOX_MAX_ATTEMPTS) {
       await txn.delete(RUNNING_KEY);
-      await updateEventIndex(txn, running.event.eventId, {
+      await updateMailboxEventState(txn, running.event.eventId, {
         status: "failed",
         attemptCount: running.attemptCount,
         error: "Mailbox event exceeded retry attempts after stale running recovery",
@@ -139,7 +134,7 @@ export async function recoverStaleRunningEvent(
 
     await txn.put(pendingKey(running.sequence), record);
     await txn.delete(RUNNING_KEY);
-    await updateEventIndex(txn, running.event.eventId, {
+    await updateMailboxEventState(txn, running.event.eventId, {
       status: "pending",
       sequence: running.sequence,
       attemptCount: running.attemptCount,
@@ -180,7 +175,7 @@ export async function claimNextMailboxEvent(
 
     await txn.delete(key);
     await txn.put(RUNNING_KEY, runningRecord);
-    await updateEventIndex(txn, record.event.eventId, {
+    await updateMailboxEventState(txn, record.event.eventId, {
       status: "running",
       sequence: record.sequence,
       attemptCount: runningRecord.attemptCount,
@@ -206,7 +201,7 @@ export async function completeMailboxEvent(
     }
 
     await txn.delete(RUNNING_KEY);
-    await updateEventIndex(txn, running.event.eventId, {
+    await updateMailboxEventState(txn, running.event.eventId, {
       status: "completed",
       sequence: running.sequence,
       attemptCount: running.attemptCount,
@@ -235,7 +230,7 @@ export async function failMailboxEvent(
     await txn.delete(RUNNING_KEY);
 
     if (running.attemptCount >= MAILBOX_MAX_ATTEMPTS) {
-      await updateEventIndex(txn, running.event.eventId, {
+      await updateMailboxEventState(txn, running.event.eventId, {
         status: "failed",
         sequence: running.sequence,
         attemptCount: running.attemptCount,
@@ -254,7 +249,7 @@ export async function failMailboxEvent(
     };
 
     await txn.put(pendingKey(running.sequence), retryRecord);
-    await updateEventIndex(txn, running.event.eventId, {
+    await updateMailboxEventState(txn, running.event.eventId, {
       status: "pending",
       sequence: running.sequence,
       attemptCount: running.attemptCount,
@@ -267,6 +262,23 @@ export async function failMailboxEvent(
 export async function getNextMailboxAlarmTime(
   storage: DurableObjectStorage,
   nowMs = Date.now()
+): Promise<number | undefined> {
+  const workAlarmTime = await getNextMailboxWorkAlarmTime(storage, nowMs);
+  const cleanupAlarmTime = await getNextMailboxEventCleanupTime(storage, nowMs);
+
+  if (workAlarmTime === undefined) {
+    return cleanupAlarmTime;
+  }
+  if (cleanupAlarmTime === undefined) {
+    return workAlarmTime;
+  }
+
+  return Math.min(workAlarmTime, cleanupAlarmTime);
+}
+
+async function getNextMailboxWorkAlarmTime(
+  storage: DurableObjectStorage,
+  nowMs: number
 ): Promise<number | undefined> {
   const pending = await storage.list<MailboxEventRecord>({
     prefix: PENDING_PREFIX,
@@ -296,7 +308,7 @@ export async function getMailboxEventState(
   storage: DurableObjectStorage,
   eventId: string
 ): Promise<MailboxEventState | undefined> {
-  return storage.get<MailboxEventState>(eventIndexKey(eventId));
+  return getMailboxEventStateFromIndex(storage, eventId);
 }
 
 export async function hasMailboxWork(
@@ -314,39 +326,6 @@ export async function hasMailboxWork(
   return pending.size > 0;
 }
 
-async function nextSequence(txn: DurableObjectTransaction): Promise<number> {
-  const meta = (await txn.get<MailboxMeta>(META_KEY)) ?? { nextSequence: 1 };
-  const sequence = meta.nextSequence;
-  await txn.put(META_KEY, { nextSequence: sequence + 1 } satisfies MailboxMeta);
-  return sequence;
-}
-
-async function updateEventIndex(
-  txn: DurableObjectTransaction,
-  eventId: string,
-  patch: Partial<MailboxEventState>
-): Promise<void> {
-  const eventKey = eventIndexKey(eventId);
-  const existing = await txn.get<MailboxEventState>(eventKey);
-  const now = nowIso();
-
-  await txn.put(eventKey, {
-    eventId,
-    status: patch.status ?? existing?.status ?? "pending",
-    sequence: patch.sequence ?? existing?.sequence,
-    attemptCount: patch.attemptCount ?? existing?.attemptCount ?? 0,
-    runId: patch.runId ?? existing?.runId,
-    error: patch.error,
-    createdAt: existing?.createdAt ?? now,
-    updatedAt: patch.updatedAt ?? now,
-    completedAt: patch.completedAt ?? existing?.completedAt
-  } satisfies MailboxEventState);
-}
-
 function pendingKey(sequence: number): string {
   return `${PENDING_PREFIX}${String(sequence).padStart(SEQUENCE_WIDTH, "0")}`;
-}
-
-function eventIndexKey(eventId: string): string {
-  return `${EVENT_PREFIX}${eventId}`;
 }

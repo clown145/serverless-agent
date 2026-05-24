@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  MAILBOX_EVENT_RETENTION_MS,
   MAILBOX_MAX_ATTEMPTS,
   claimNextMailboxEvent,
+  cleanupExpiredMailboxEvents,
   completeMailboxEvent,
   enqueueMailboxEvent,
   failMailboxEvent,
+  getMailboxEventState,
   hasMailboxWork,
   recoverStaleRunningEvent
 } from "../../src/agents/agent-mailbox";
@@ -85,6 +88,96 @@ describe("agent mailbox", () => {
     const retry = await claimNextMailboxEvent(storage);
     expect(retry?.event.eventId).toBe("evt_1");
     expect(retry?.attemptCount).toBe(2);
+  });
+
+  it("keeps completed event state through the retention window", async () => {
+    const storage = createMemoryDurableObjectStorage();
+    await enqueueMailboxEvent(storage, createTickJob("evt_1"));
+
+    const item = await claimNextMailboxEvent(storage);
+    await completeMailboxEvent(storage, item!, { handled: true, runId: "run_1" });
+
+    const completed = await getMailboxEventState(storage, "evt_1");
+    expect(completed).toMatchObject({
+      eventId: "evt_1",
+      status: "completed",
+      runId: "run_1"
+    });
+    expect(completed?.expiresAt).toBeDefined();
+
+    await cleanupExpiredMailboxEvents(
+      storage,
+      Date.parse(completed!.expiresAt!) - 1
+    );
+
+    expect(await getMailboxEventState(storage, "evt_1")).toMatchObject({
+      status: "completed"
+    });
+  });
+
+  it("deletes completed event state after the retention window", async () => {
+    const storage = createMemoryDurableObjectStorage();
+    await enqueueMailboxEvent(storage, createTickJob("evt_1"));
+
+    const item = await claimNextMailboxEvent(storage);
+    await completeMailboxEvent(storage, item!, { handled: true });
+    const completed = await getMailboxEventState(storage, "evt_1");
+
+    const cleanup = await cleanupExpiredMailboxEvents(
+      storage,
+      Date.parse(completed!.expiresAt!) + 1
+    );
+
+    expect(cleanup.deleted).toBe(1);
+    await expect(getMailboxEventState(storage, "evt_1")).resolves.toBeUndefined();
+
+    const reaccepted = await enqueueMailboxEvent(storage, createTickJob("evt_1"));
+    expect(reaccepted).toMatchObject({
+      accepted: true,
+      duplicate: false
+    });
+  });
+
+  it("deletes failed terminal event state after the retention window", async () => {
+    const storage = createMemoryDurableObjectStorage();
+    await enqueueMailboxEvent(storage, createTickJob("evt_1"));
+
+    for (let attempt = 1; attempt <= MAILBOX_MAX_ATTEMPTS; attempt += 1) {
+      const item = await claimNextMailboxEvent(storage);
+      await failMailboxEvent(storage, item!, new Error(`fail ${attempt}`));
+    }
+
+    const failed = await getMailboxEventState(storage, "evt_1");
+    expect(failed).toMatchObject({
+      status: "failed",
+      error: `fail ${MAILBOX_MAX_ATTEMPTS}`
+    });
+
+    const cleanup = await cleanupExpiredMailboxEvents(
+      storage,
+      Date.parse(failed!.expiresAt!) + 1
+    );
+
+    expect(cleanup.deleted).toBe(1);
+    await expect(getMailboxEventState(storage, "evt_1")).resolves.toBeUndefined();
+  });
+
+  it("does not delete active event state from a stale cleanup index", async () => {
+    const storage = createMemoryDurableObjectStorage();
+    await enqueueMailboxEvent(storage, createTickJob("evt_1"));
+    const expiresAt = new Date(Date.now() - MAILBOX_EVENT_RETENTION_MS).toISOString();
+
+    await storage.put(`mailbox:event-gc:${expiresAt}:evt_1`, {
+      eventId: "evt_1",
+      expiresAt
+    });
+
+    const cleanup = await cleanupExpiredMailboxEvents(storage, Date.now());
+
+    expect(cleanup.deleted).toBe(0);
+    expect(await getMailboxEventState(storage, "evt_1")).toMatchObject({
+      status: "pending"
+    });
   });
 });
 

@@ -1,7 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { AgentDurableObject } from "../../src/agents/agent-durable-object";
 import type { DrainMailboxHandler } from "../../src/agents/agent-mailbox-drainer";
 import {
+  MAILBOX_EVENT_RETENTION_MS,
   MAILBOX_RECOVERY_ALARM_DELAY_MS,
   type RunningMailboxEvent
 } from "../../src/agents/agent-mailbox";
@@ -64,7 +65,7 @@ describe("AgentDurableObject mailbox integration", () => {
 
     expect(started).toEqual(["evt_1", "evt_2"]);
     expect(maxActive).toBe(1);
-    await expect(storage.getAlarm()).resolves.toBeNull();
+    await expect(storage.getAlarm()).resolves.not.toBeNull();
   });
 
   it("does not start a second drain when an alarm fires during active work", async () => {
@@ -170,7 +171,48 @@ describe("AgentDurableObject mailbox integration", () => {
 
     releaseDrain();
     await Promise.all(waitUntilPromises);
-    await expect(storage.getAlarm()).resolves.toBeNull();
+    await expect(storage.getAlarm()).resolves.not.toBeNull();
+  });
+
+  it("keeps an alarm for retained event state cleanup", async () => {
+    const storage = createMemoryDurableObjectStorage();
+    const waitUntilPromises: Promise<unknown>[] = [];
+    const state = createState(storage, waitUntilPromises);
+    const object = new AgentDurableObject(state, {} as Env, {
+      drainHandler: async () => ({ handled: true })
+    });
+
+    await object.fetch(createEventRequest(createTickJob("evt_1")));
+    await Promise.all(waitUntilPromises);
+
+    const retained = (await fetchJson(
+      object.fetch(new Request("https://agent.local/events/status?eventId=evt_1"))
+    )) as { result?: { expiresAt?: string } };
+    expect(retained.result?.expiresAt).toBeDefined();
+
+    const alarm = await storage.getAlarm();
+    expect(alarm).not.toBeNull();
+    expect(alarm!).toBeGreaterThanOrEqual(
+      Date.parse(retained.result!.expiresAt!) - 1_000
+    );
+    expect(alarm!).toBeLessThanOrEqual(
+      Date.now() + MAILBOX_EVENT_RETENTION_MS + 1_000
+    );
+
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(Date.parse(retained.result!.expiresAt!) + 1);
+      await object.alarm();
+      await Promise.all(waitUntilPromises);
+
+      await expect(storage.getAlarm()).resolves.toBeNull();
+      const cleaned = (await fetchJson(
+        object.fetch(new Request("https://agent.local/events/status?eventId=evt_1"))
+      )) as { result?: unknown };
+      expect(cleaned.result).toBeUndefined();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 
@@ -192,6 +234,10 @@ function createEventRequest(event: QueueMessageBody): Request {
     headers: { "content-type": "application/json" },
     body: JSON.stringify(event)
   });
+}
+
+async function fetchJson(responsePromise: Promise<Response>): Promise<unknown> {
+  return (await responsePromise).json();
 }
 
 function createTickJob(eventId: string): QueueMessageBody {

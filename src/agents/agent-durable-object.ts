@@ -3,6 +3,7 @@ import type { QueueMessageBody } from "../shared/types/queue";
 import { errorResponse, jsonResponse } from "../shared/http";
 import { drainAgentMailbox, type DrainMailboxHandler } from "./agent-mailbox-drainer";
 import {
+  cleanupExpiredMailboxEvents,
   enqueueMailboxEvent,
   getMailboxEventState,
   getNextMailboxAlarmTime
@@ -51,6 +52,7 @@ export class AgentDurableObject {
   async alarm(): Promise<void> {
     try {
       this.startDrain();
+      await cleanupExpiredMailboxEvents(this.state.storage);
     } finally {
       await this.scheduleNextAlarm();
     }
