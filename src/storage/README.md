@@ -2,13 +2,13 @@
 
 ## 概览
 
-`storage` 是持久化访问层，收敛 D1、object storage、KV 和 DO storage 细节。
+`storage` 是持久化访问层，收敛 D1、object storage 和 DO storage 细节，并预留 KV cache 边界。
 
 ## 职责
 
 - D1 repositories。
 - Object storage store。
-- KV cache helper。
+- KV cache helper 预留。
 - Durable Object storage helper。
 - key/path builders。
 - credential 加密存储相关访问。

@@ -2,15 +2,13 @@
 
 ## 概览
 
-`tests` 存放单元测试、集成测试和 fixtures。当前测试以 `tests/unit` 为主。
+`tests` 当前以单元测试为主。集成测试和 fixtures 目录尚未建立，新增时需要在本文件补充运行前置条件。
 
 ## 目录
 
 ```text
 tests/
   unit/
-  integration/
-  fixtures/
 ```
 
 ## 优先覆盖

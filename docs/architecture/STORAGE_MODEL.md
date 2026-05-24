@@ -54,14 +54,14 @@ attachments/{platform}/{message_id}/{name}
 
 ## KV
 
-KV 只用于缓存和小配置：
+KV 当前只用于 runtime diagnostics 验证绑定可读写。后续可用于缓存和小配置，例如：
 
 - platform metadata cache；
 - skill catalog cache；
 - 临时 dedupe key；
 - 低风险 feature flag。
 
-KV 不作为强一致核心状态库。
+这些缓存项目前不是核心路径的依赖；skill catalog 仍从 VFS/D1 读取。KV 不作为强一致核心状态库。
 
 ## Durable Object Storage
 

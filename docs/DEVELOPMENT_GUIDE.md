@@ -186,9 +186,9 @@ audit log 至少包含：
 
 ```text
 tests/unit/
-tests/integration/
-tests/fixtures/
 ```
+
+当前仓库以单元测试为主，尚未建立 `tests/integration` 或 `tests/fixtures` 目录。新增集成测试时再创建对应目录，并在测试文档中说明运行前置条件。
 
 ## 配置和密钥
 

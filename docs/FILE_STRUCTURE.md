@@ -29,7 +29,7 @@ serverless-agent/
 | `scripts/` | 开发辅助脚本。 |
 | `specs/` | 内部消息、tool contract、VFS 和 Skill 规范。 |
 | `src/` | Worker runtime 源码。 |
-| `tests/` | 单元测试、集成测试和 fixtures。 |
+| `tests/` | 当前以单元测试为主；集成测试和 fixtures 尚未建立。 |
 
 ## src 结构
 
@@ -72,7 +72,7 @@ src/
 | `src/media/` | 附件持久化和 media object key helper。 | 平台协议细节、VFS 服务。 |
 | `src/platforms/` | 平台能力、outbound registry、gateway DO wrappers 和 context hints。 | 具体 adapter normalize 逻辑。 |
 | `src/tools/` | 模型可调用工具、schema、权限和执行器。 | 平台 webhook、agent state machine。 |
-| `src/storage/` | D1 repositories、object storage、KV cache、DO storage helpers。 | 业务流程和平台适配。 |
+| `src/storage/` | D1 repositories、object storage、DO storage helpers，以及预留的 KV cache 边界。 | 业务流程和平台适配。 |
 | `src/permissions/` | 权限策略解析、pending action 创建和确认执行。 | HTTP route、具体工具实现。 |
 | `src/scheduler/` | schedules、Cron sweep、heartbeat 和 retry policy。 | 平台消息解析。 |
 | `src/security/` | 加密、hash、encoding 和 secret helper。 | 业务权限决策。 |

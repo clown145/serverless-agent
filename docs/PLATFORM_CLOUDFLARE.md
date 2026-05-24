@@ -83,9 +83,9 @@ D1 是结构化状态库，优先保存：
 
 ## KV
 
-KV 适合缓存，不适合作为核心一致性状态。
+KV 适合缓存，不适合作为核心一致性状态。当前代码主要用它做 runtime diagnostics 读写检查；以下是可接入的低风险用途：
 
-可以保存：
+后续可以保存：
 
 - skill catalog cache；
 - feature flags；
