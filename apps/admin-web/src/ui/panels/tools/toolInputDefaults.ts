@@ -105,24 +105,24 @@ const TOOL_EXAMPLES: Record<string, Record<string, unknown>> = {
   "messaging.send_buttons": {
     platform: "telegram",
     conversationId: "telegram:123456",
-    text: "请选择",
+    text: "Choose an option",
     buttons: [
       {
-        label: "继续",
+        label: "Continue",
         action: "agent.message",
-        payload: { text: "继续" }
+        payload: { text: "Continue" }
       },
       {
-        label: "稍后提醒",
+        label: "Remind later",
         action: "agent.message",
-        payload: { text: "稍后提醒" }
+        payload: { text: "Remind me later" }
       }
     ],
     layout: { columns: 2 }
   },
   "schedule.create": {
     title: "Follow up",
-    text: "总结当前状态并提醒我下一步",
+    text: "Summarize the current status and remind me of the next step",
     delaySeconds: 3600
   },
   "schedule.list": {

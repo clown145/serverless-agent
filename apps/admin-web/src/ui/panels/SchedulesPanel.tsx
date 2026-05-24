@@ -12,7 +12,7 @@ import type { ViewId } from "../views";
 
 const DEFAULT_FORM: ScheduleFormState = {
   title: "",
-  text: "搜索今天的原神和星穹铁道公告，整理更新摘要。",
+  text: "Search today's product announcements and summarize the updates.",
   timeMode: "delay",
   delaySeconds: 300,
   dueAt: "",
