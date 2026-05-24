@@ -19,6 +19,7 @@ export type ScheduleRecord = {
   maxAttempts: number;
   attemptCount: number;
   retryDelaySeconds: number;
+  recurrenceDueAt?: string;
   payloadJson: string;
   lastRunAt?: string;
   lastError?: string;
@@ -44,6 +45,7 @@ export type ScheduleRow = {
   max_attempts?: number | null;
   attempt_count?: number | null;
   retry_delay_seconds?: number | null;
+  recurrence_due_at?: string | null;
   payload_json: string;
   last_run_at?: string | null;
   last_error?: string | null;
@@ -87,6 +89,7 @@ export function mapScheduleRow(row: ScheduleRow): ScheduleRecord {
     maxAttempts: row.max_attempts ?? 1,
     attemptCount: row.attempt_count ?? 0,
     retryDelaySeconds: row.retry_delay_seconds ?? 300,
+    recurrenceDueAt: row.recurrence_due_at ?? undefined,
     payloadJson: row.payload_json,
     lastRunAt: row.last_run_at ?? undefined,
     lastError: row.last_error ?? undefined,

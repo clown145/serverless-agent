@@ -174,6 +174,46 @@ describe("AgentDurableObject mailbox integration", () => {
     await expect(storage.getAlarm()).resolves.not.toBeNull();
   });
 
+  it("recovers running work left by a previous object instance", async () => {
+    const storage = createMemoryDurableObjectStorage();
+    const waitUntilPromises: Promise<unknown>[] = [];
+    const state = createState(storage, waitUntilPromises);
+
+    let releaseFirst!: () => void;
+    const firstStarted = deferred<void>();
+    const firstCanFinish = new Promise<void>((resolve) => {
+      releaseFirst = resolve;
+    });
+    const firstObject = new AgentDurableObject(state, {} as Env, {
+      drainHandler: async (_state, _env, item) => {
+        if (item.event.eventId === "evt_1") {
+          firstStarted.resolve();
+          await firstCanFinish;
+        }
+        return { handled: true, runId: "run_old" };
+      }
+    });
+
+    await firstObject.fetch(createEventRequest(createTickJob("evt_1")));
+    await firstStarted.promise;
+
+    const handledByNewInstance: string[] = [];
+    const secondObject = new AgentDurableObject(state, {} as Env, {
+      drainHandler: async (_state, _env, item) => {
+        handledByNewInstance.push(item.event.eventId);
+        return { handled: true, runId: `run_${item.event.eventId}` };
+      }
+    });
+
+    await secondObject.fetch(createEventRequest(createTickJob("evt_2")));
+    await Promise.all(waitUntilPromises.slice(1));
+
+    expect(handledByNewInstance).toEqual(["evt_1", "evt_2"]);
+
+    releaseFirst();
+    await Promise.all(waitUntilPromises);
+  });
+
   it("keeps an alarm for retained event state cleanup", async () => {
     const storage = createMemoryDurableObjectStorage();
     const waitUntilPromises: Promise<unknown>[] = [];

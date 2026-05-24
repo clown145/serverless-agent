@@ -4,6 +4,7 @@ import {
   claimNextMailboxEvent,
   completeMailboxEvent,
   failMailboxEvent,
+  type MailboxClaimOptions,
   type RunningMailboxEvent,
   recoverStaleRunningEvent
 } from "./agent-mailbox";
@@ -21,13 +22,14 @@ export type DrainMailboxHandler = (
 export async function drainAgentMailbox(
   state: DurableObjectState,
   env: Env,
-  handler: DrainMailboxHandler = defaultDrainMailboxHandler
+  handler: DrainMailboxHandler = defaultDrainMailboxHandler,
+  options: MailboxClaimOptions = {}
 ): Promise<DrainMailboxResult> {
-  await recoverStaleRunningEvent(state.storage);
+  await recoverStaleRunningEvent(state.storage, options);
 
   let processed = 0;
   while (true) {
-    const item = await claimNextMailboxEvent(state.storage);
+    const item = await claimNextMailboxEvent(state.storage, options);
     if (!item) {
       return { processed };
     }

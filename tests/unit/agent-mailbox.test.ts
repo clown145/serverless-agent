@@ -90,6 +90,56 @@ describe("agent mailbox", () => {
     expect(retry?.attemptCount).toBe(2);
   });
 
+  it("recovers a running event owned by a previous durable object instance", async () => {
+    const storage = createMemoryDurableObjectStorage();
+    await enqueueMailboxEvent(storage, createTickJob("evt_1"));
+
+    const previous = await claimNextMailboxEvent(storage, {
+      ownerInstanceId: "instance_old"
+    });
+    expect(previous?.event.eventId).toBe("evt_1");
+
+    const recovered = await recoverStaleRunningEvent(storage, {
+      ownerInstanceId: "instance_new",
+      nowMs: Date.parse(previous!.startedAt) + 1_000
+    });
+    expect(recovered).toBe("requeued");
+
+    const retry = await claimNextMailboxEvent(storage, {
+      ownerInstanceId: "instance_new"
+    });
+    expect(retry?.event.eventId).toBe("evt_1");
+    expect(retry?.attemptCount).toBe(2);
+  });
+
+  it("does not let an old running attempt complete a newer attempt", async () => {
+    const storage = createMemoryDurableObjectStorage();
+    await enqueueMailboxEvent(storage, createTickJob("evt_1"));
+
+    const previous = await claimNextMailboxEvent(storage, {
+      ownerInstanceId: "instance_old"
+    });
+    await recoverStaleRunningEvent(storage, {
+      ownerInstanceId: "instance_new",
+      nowMs: Date.parse(previous!.startedAt) + 1_000
+    });
+    const retry = await claimNextMailboxEvent(storage, {
+      ownerInstanceId: "instance_new"
+    });
+
+    await completeMailboxEvent(storage, previous!, { handled: true, runId: "run_old" });
+    expect(await getMailboxEventState(storage, "evt_1")).toMatchObject({
+      status: "running",
+      attemptCount: 2
+    });
+
+    await completeMailboxEvent(storage, retry!, { handled: true, runId: "run_new" });
+    expect(await getMailboxEventState(storage, "evt_1")).toMatchObject({
+      status: "completed",
+      runId: "run_new"
+    });
+  });
+
   it("keeps completed event state through the retention window", async () => {
     const storage = createMemoryDurableObjectStorage();
     await enqueueMailboxEvent(storage, createTickJob("evt_1"));

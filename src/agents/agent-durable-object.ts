@@ -1,5 +1,6 @@
 import type { Env } from "../shared/types/env";
 import type { QueueMessageBody } from "../shared/types/queue";
+import { createId } from "../shared/ids";
 import { errorResponse, jsonResponse } from "../shared/http";
 import { drainAgentMailbox, type DrainMailboxHandler } from "./agent-mailbox-drainer";
 import {
@@ -10,6 +11,7 @@ import {
 } from "./agent-mailbox";
 
 export class AgentDurableObject {
+  private readonly instanceId = createId("do");
   private drainPromise?: Promise<void>;
   private readonly drainHandler?: DrainMailboxHandler;
 
@@ -63,7 +65,9 @@ export class AgentDurableObject {
       return;
     }
 
-    const promise = drainAgentMailbox(this.state, this.env, this.drainHandler)
+    const promise = drainAgentMailbox(this.state, this.env, this.drainHandler, {
+      ownerInstanceId: this.instanceId
+    })
       .then(() => undefined)
       .catch(() => undefined)
       .finally(() => {

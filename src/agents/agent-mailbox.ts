@@ -19,6 +19,7 @@ const PENDING_PREFIX = "mailbox:pending:";
 const SEQUENCE_WIDTH = 20;
 
 export const MAILBOX_RECOVERY_ALARM_DELAY_MS = 60_000;
+export const MAILBOX_RUNNING_LEASE_MS = 60_000;
 export const MAILBOX_RUNNING_STALE_MS = 30 * 60 * 1000;
 export const MAILBOX_MAX_ATTEMPTS = 3;
 export { MAILBOX_EVENT_RETENTION_MS, cleanupExpiredMailboxEvents };
@@ -38,7 +39,17 @@ export type MailboxEventRecord = {
 
 export type RunningMailboxEvent = MailboxEventRecord & {
   startedAt: string;
+  ownerInstanceId?: string;
+  leaseExpiresAt?: string;
 };
+
+export type MailboxClaimOptions = {
+  ownerInstanceId?: string;
+  leaseMs?: number;
+  nowMs?: number;
+};
+
+export type MailboxRecoveryOptions = MailboxClaimOptions;
 
 export type EnqueueMailboxResult = {
   accepted: boolean;
@@ -95,9 +106,11 @@ export async function enqueueMailboxEvent(
 
 export async function recoverStaleRunningEvent(
   storage: DurableObjectStorage,
-  nowMs = Date.now()
+  optionsOrNowMs: MailboxRecoveryOptions | number = {}
 ): Promise<"none" | "active" | "requeued" | "failed"> {
-  const now = nowIso();
+  const options = normalizeRecoveryOptions(optionsOrNowMs);
+  const nowMs = options.nowMs ?? Date.now();
+  const now = isoFromMs(nowMs);
 
   return storage.transaction(async (txn) => {
     const running = await txn.get<RunningMailboxEvent>(RUNNING_KEY);
@@ -105,8 +118,7 @@ export async function recoverStaleRunningEvent(
       return "none";
     }
 
-    const startedAtMs = Date.parse(running.startedAt);
-    if (Number.isFinite(startedAtMs) && nowMs - startedAtMs < MAILBOX_RUNNING_STALE_MS) {
+    if (!shouldRecoverRunningEvent(running, options, nowMs)) {
       return "active";
     }
 
@@ -144,9 +156,12 @@ export async function recoverStaleRunningEvent(
 }
 
 export async function claimNextMailboxEvent(
-  storage: DurableObjectStorage
+  storage: DurableObjectStorage,
+  options: MailboxClaimOptions = {}
 ): Promise<RunningMailboxEvent | undefined> {
-  const now = nowIso();
+  const nowMs = options.nowMs ?? Date.now();
+  const now = isoFromMs(nowMs);
+  const leaseMs = options.leaseMs ?? MAILBOX_RUNNING_LEASE_MS;
 
   return storage.transaction(async (txn) => {
     const running = await txn.get<RunningMailboxEvent>(RUNNING_KEY);
@@ -167,7 +182,9 @@ export async function claimNextMailboxEvent(
     const runningRecord: RunningMailboxEvent = {
       ...record,
       attemptCount: record.attemptCount + 1,
-      startedAt: now
+      startedAt: now,
+      ownerInstanceId: options.ownerInstanceId,
+      leaseExpiresAt: isoFromMs(nowMs + leaseMs)
     };
 
     await txn.delete(key);
@@ -193,7 +210,7 @@ export async function completeMailboxEvent(
 
   await storage.transaction(async (txn) => {
     const current = await txn.get<RunningMailboxEvent>(RUNNING_KEY);
-    if (current?.event.eventId !== running.event.eventId) {
+    if (!isSameRunningAttempt(current, running)) {
       return;
     }
 
@@ -220,7 +237,7 @@ export async function failMailboxEvent(
 
   await storage.transaction(async (txn) => {
     const current = await txn.get<RunningMailboxEvent>(RUNNING_KEY);
-    if (current?.event.eventId !== running.event.eventId) {
+    if (!isSameRunningAttempt(current, running)) {
       return;
     }
 
@@ -291,11 +308,17 @@ async function getNextMailboxWorkAlarmTime(
   }
 
   const startedAtMs = Date.parse(running.startedAt);
-  if (!Number.isFinite(startedAtMs)) {
+  const leaseExpiresAtMs = getRunningLeaseExpiresAtMs(running);
+  const hardStaleAtMs = Number.isFinite(startedAtMs)
+    ? startedAtMs + MAILBOX_RUNNING_STALE_MS
+    : undefined;
+  const recoveryAtMs = minFinite(leaseExpiresAtMs, hardStaleAtMs);
+
+  if (recoveryAtMs === undefined) {
     return nowMs + MAILBOX_RECOVERY_ALARM_DELAY_MS;
   }
 
-  return Math.max(nowMs + MAILBOX_RECOVERY_ALARM_DELAY_MS, startedAtMs + MAILBOX_RUNNING_STALE_MS);
+  return Math.max(nowMs + MAILBOX_RECOVERY_ALARM_DELAY_MS, recoveryAtMs);
 }
 
 export async function getMailboxEventState(
@@ -320,4 +343,75 @@ export async function hasMailboxWork(storage: DurableObjectStorage): Promise<boo
 
 function pendingKey(sequence: number): string {
   return `${PENDING_PREFIX}${String(sequence).padStart(SEQUENCE_WIDTH, "0")}`;
+}
+
+function normalizeRecoveryOptions(
+  optionsOrNowMs: MailboxRecoveryOptions | number
+): MailboxRecoveryOptions {
+  return typeof optionsOrNowMs === "number" ? { nowMs: optionsOrNowMs } : optionsOrNowMs;
+}
+
+function shouldRecoverRunningEvent(
+  running: RunningMailboxEvent,
+  options: MailboxRecoveryOptions,
+  nowMs: number
+): boolean {
+  if (
+    running.ownerInstanceId &&
+    options.ownerInstanceId &&
+    running.ownerInstanceId !== options.ownerInstanceId
+  ) {
+    return true;
+  }
+
+  const startedAtMs = Date.parse(running.startedAt);
+  if (!Number.isFinite(startedAtMs)) {
+    return true;
+  }
+
+  if (nowMs - startedAtMs >= MAILBOX_RUNNING_STALE_MS) {
+    return true;
+  }
+
+  const leaseExpiresAtMs = getRunningLeaseExpiresAtMs(running, options.leaseMs);
+  return leaseExpiresAtMs !== undefined && nowMs >= leaseExpiresAtMs;
+}
+
+function getRunningLeaseExpiresAtMs(
+  running: RunningMailboxEvent,
+  fallbackLeaseMs = MAILBOX_RUNNING_LEASE_MS
+): number | undefined {
+  const explicitLeaseMs = Date.parse(running.leaseExpiresAt ?? "");
+  if (Number.isFinite(explicitLeaseMs)) {
+    return explicitLeaseMs;
+  }
+
+  const startedAtMs = Date.parse(running.startedAt);
+  if (!Number.isFinite(startedAtMs)) {
+    return undefined;
+  }
+
+  return startedAtMs + fallbackLeaseMs;
+}
+
+function isSameRunningAttempt(
+  current: RunningMailboxEvent | undefined,
+  expected: RunningMailboxEvent
+): boolean {
+  return (
+    current?.event.eventId === expected.event.eventId &&
+    current.sequence === expected.sequence &&
+    current.attemptCount === expected.attemptCount &&
+    current.startedAt === expected.startedAt &&
+    current.ownerInstanceId === expected.ownerInstanceId
+  );
+}
+
+function minFinite(...values: Array<number | undefined>): number | undefined {
+  const finite = values.filter((value): value is number => Number.isFinite(value));
+  return finite.length > 0 ? Math.min(...finite) : undefined;
+}
+
+function isoFromMs(timestampMs: number): string {
+  return new Date(timestampMs).toISOString();
 }

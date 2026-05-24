@@ -41,4 +41,6 @@ export interface Env {
   S3_ACCESS_KEY_ID?: string;
   S3_SECRET_ACCESS_KEY?: string;
   S3_FORCE_PATH_STYLE?: string;
+  SCHEDULE_SWEEP_BATCH_SIZE?: string;
+  SCHEDULE_SWEEP_MAX_DISPATCHES?: string;
 }

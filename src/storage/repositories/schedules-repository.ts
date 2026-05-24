@@ -28,8 +28,9 @@ export async function createSchedule(
         id, agent_id, status, title, due_at, interval_seconds,
         platform, conversation_id, actor_id, actor_role,
         model_provider_id, model_id, max_attempts, attempt_count,
-        retry_delay_seconds, payload_json, execution_profile_json, created_at, updated_at
-      ) VALUES (?, ?, 'active', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?)`
+        retry_delay_seconds, recurrence_due_at, payload_json, execution_profile_json,
+        created_at, updated_at
+      ) VALUES (?, ?, 'active', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?)`
     )
     .bind(
       id,
@@ -45,6 +46,7 @@ export async function createSchedule(
       input.modelId ?? null,
       input.maxAttempts ?? 1,
       input.retryDelaySeconds ?? 300,
+      input.intervalSeconds ? input.dueAt : null,
       input.payloadJson,
       input.executionProfileJson ?? null,
       now,
@@ -68,6 +70,7 @@ export async function createSchedule(
     maxAttempts: input.maxAttempts ?? 1,
     attemptCount: 0,
     retryDelaySeconds: input.retryDelaySeconds ?? 300,
+    recurrenceDueAt: input.intervalSeconds ? input.dueAt : undefined,
     payloadJson: input.payloadJson,
     executionProfileJson: input.executionProfileJson,
     createdAt: now,
@@ -114,6 +117,19 @@ export async function listDueSchedules(
   return (result.results ?? []).map(mapScheduleRow);
 }
 
+export async function countDueSchedules(db: D1Database, dueAtOrBefore: string): Promise<number> {
+  const row = await db
+    .prepare(
+      `SELECT COUNT(*) AS count
+       FROM schedules
+       WHERE status = 'active' AND due_at <= ?`
+    )
+    .bind(dueAtOrBefore)
+    .first<{ count: number }>();
+
+  return row?.count ?? 0;
+}
+
 export async function markScheduleDispatched(
   db: D1Database,
   schedule: ScheduleRecord,
@@ -125,6 +141,7 @@ export async function markScheduleDispatched(
       `UPDATE schedules
        SET status = ?,
            due_at = ?,
+           recurrence_due_at = ?,
            last_run_at = ?,
            attempt_count = ?,
            updated_at = ?
@@ -133,6 +150,7 @@ export async function markScheduleDispatched(
     .bind(
       nextDueAt ? "active" : "completed",
       nextDueAt ?? schedule.dueAt,
+      nextDueAt ?? schedule.recurrenceDueAt ?? null,
       dispatchedAt,
       schedule.attemptCount + 1,
       dispatchedAt,

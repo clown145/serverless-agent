@@ -206,10 +206,11 @@ function createMockD1(initialRows: ScheduleRow[] = []) {
               max_attempts: statement.values[11] as number,
               attempt_count: 0,
               retry_delay_seconds: statement.values[12] as number,
-              payload_json: statement.values[13] as string,
-              execution_profile_json: statement.values[14] as string | null,
-              created_at: statement.values[15] as string,
-              updated_at: statement.values[16] as string
+              recurrence_due_at: statement.values[13] as string | null,
+              payload_json: statement.values[14] as string,
+              execution_profile_json: statement.values[15] as string | null,
+              created_at: statement.values[16] as string,
+              updated_at: statement.values[17] as string
             });
             rows.set(row.id, row);
             db.inserted.push(row);
@@ -301,6 +302,7 @@ function scheduleRow(overrides: Partial<ScheduleRow> = {}): ScheduleRow {
     max_attempts: 1,
     attempt_count: 0,
     retry_delay_seconds: 300,
+    recurrence_due_at: null,
     payload_json: JSON.stringify({ text: "Task" }),
     execution_profile_json: null,
     last_run_at: null,
