@@ -1,81 +1,53 @@
-# Roadmap
+# 路线图
 
-下面是 `serverless-agent` 平台的开发阶段图，展示了已完成的核心能力和后续演进路线。
+## 概览
 
-## Phase 0: 架构和规范 🟢 [已完成]
+这份文档记录项目当前状态和后续方向。它不是承诺清单，具体优先级以实际需求、维护成本和安全边界为准。
 
-- `[x]` 建立仓库。
-- `[x]` 固定目录结构。
-- `[x]` 划分模块边界。
-- `[x]` 定义内部消息、VFS、tool、Skill `SKILL.md` 规范草案。
-- `[x]` 明确 Cloudflare 平台映射。
+## 已完成的基础能力
 
-## Phase 1: 最小可运行内核 🟢 [已完成]
+- 仓库结构、模块边界和文档入口。
+- Worker HTTP 入口、Queue consumer 和 Cron handler。
+- Agent Durable Object mailbox 串行处理。
+- D1 migrations 和 repository 层。
+- VFS 的 D1/object-storage 存储模型。
+- audit log、runs、run steps 和 tool calls。
+- Telegram、QQ Official、WeCom、Weixin OC、WebUI/Admin 入口。
+- model provider 设置，包含 mock、OpenAI-compatible 和 Gemini。
+- tool registry、权限检查和 pending actions。
+- Skills 的 VFS-backed runtime。
+- schedules、heartbeats 和 Cron sweep。
+- Admin WebUI 的基础管理功能。
 
-- `[x]` Worker HTTP 入口与路由分发。
-- `[x]` Queue consumer 异步任务处理。
-- `[x]` Agent Durable Object 实例管理与消息串行化。
-- `[x]` D1 关系型数据库 schema 迁移与存储。
-- `[x]` 对象存储虚拟文件系统 (VFS) 物理层实现。
-- `[x]` 基础 audit log 审计。
-- `[x]` Telegram Webhook 收发与格式化退回。
+## 正在完善的方向
 
-## Phase 2: Skills 和工具系统 🟢 [已完成]
+- 文档结构和模块 README 标准化。
+- 多平台能力差异的 adapter 抽象。
+- mailbox event state 的保留期和清理策略。
+- `src/shared/types` 中共享类型的收敛。
+- 搜索、HTTP、messaging、scheduler、skills 等工具的运行边界说明。
 
-- `[x]` Skill `SKILL.md` frontmatter 解析。
-- `[x]` skill loader 运行时选择与加载。
-- `[x]` tool registry 动态工具注册表。
-- `[x]` VFS 工具（ls, cat, write, rm 等）。
-- `[x]` messaging 平台消息下行发送工具。
-- `[x]` scheduler 定时器操作工具。
-- `[x]` permission engine 细粒度工具调用授权策略。
+## 后续方向
 
-## Phase 3: 未来任务和心跳 🟢 [已完成]
+- GitHub / GitLab API 工具：repo tree、文件读取、commit 和 PR。
+- 入站邮件解析和出站邮件工具。
+- RSS 或 URL 变动监控。
+- 更完整的 rate limit 和 time window 权限策略。
+- 更细的 platform capability registry。
+- 多 agent 协作和 workflow 编排。
+- 可选向量检索后端。
+- 外部执行沙箱或 container runner。
 
-- `[x]` Durable Object alarms 周期心跳。
-- `[x]` Cron sweeper 定期清理与到期调度。
-- `[x]` schedules 与 heartbeats 核心表管理。
-- `[x]` 失败重试逻辑 (retry policy)。
+## 暂不做
 
-## Phase 4: 多平台接入 🟢 [已完成]
+- 不在 Worker 中执行真实 `git pull`、merge 或 rebase。
+- 不直接运行本地 shell 命令。
+- 不提供无限制的网页浏览器自动化。
+- 不让模型直接接触平台 token 或 provider API key。
+- 不让未经确认的高风险工具调用直接对外产生副作用。
 
-- `[x]` Telegram 适配器。
-- `[x]` QQ 官方机器人长连接网关 (QQ Official Gateway DO)。
-- `[x]` QQ 官方机器人 Webhook 模式。
-- `[x]` 个人微信 / Weixin OC 网关及扫码登录流程。
-- `[x]` 企业微信 Webhook 收发适配。
-- `[x]` 多平台 identity 绑定与解析映射。
-- `[x]` 平台消息限流与安全沙箱。
+## 相关文档
 
-## Phase 5: 扩展工具 🟡 [部分完成]
-
-- `[x]` 外部搜索提供商 (Tavily & Exa API) 对接。
-- `[ ]` GitHub / GitLab API sync 工具（含 Repo 读取、Commit、PR）。
-- `[ ]` 入站邮件接收与解析工具。
-- `[ ]` 出站邮件发送工具。
-- `[ ]` RSS/URL 网页变动监控。
-
-## Phase 6: 管理面板 (Admin WebUI) 🟢 [已完成]
-
-- `[x]` 模型设置与 Agent 绑定配置。
-- `[x]` 运行日志 (Runs) 与步序记录 (Steps) 查看。
-- `[x]` 调试沙盒控制台 (Chat/Debug Console)。
-- `[x]` 在线虚拟文件系统 (VFS) 浏览器。
-- `[x]` 定时任务 (Schedules) 在线添加、查看与管理。
-- `[x]` Pending Actions 手动审批与拒绝。
-- `[x]` 权限策略 (Permission Policies) 编辑与查看。
-
-## Phase 7: 高级能力 🔴 [规划中]
-
-- `[ ]` 多 Agent 协同与工作流编排。
-- `[ ]` 长期计划系统 (Long-term planning & self-reflection)。
-- `[ ]` 自动化代码修改、Skill 自我更新升级。
-- `[ ]` Cloudflare Vectorize 向量检索引擎接入。
-- `[ ]` 外部安全容器/执行沙箱 (Container runner) 接入。
-
-## 暂不做/安全边界 🚫
-
-- `[x]` 不执行物理主机的 `git pull` 与本地 merge。
-- `[x]` 不直接运行本地 shell 命令。
-- `[x]` 不提供无限制的外部网页浏览器自动化控制。
-- `[x]` 严禁 LLM 在未经 Pending Action 确认的情况下，向外部群组外发群发无限制的广播消息。
+- [架构概览](ARCHITECTURE.md)
+- [开发指南](DEVELOPMENT_GUIDE.md)
+- [安全与权限](SECURITY_AND_PERMISSIONS.md)

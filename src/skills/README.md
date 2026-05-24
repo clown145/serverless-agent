@@ -1,19 +1,39 @@
 # Skills
 
-skill 加载、标准 `SKILL.md` frontmatter 解析、catalog 生成和管理服务。
+## 概览
 
-这里放代码，不放用户安装的 skill 内容。真实 skill 内容存 VFS：
+`skills` 放 skill runtime 代码，包括标准 `SKILL.md` frontmatter、catalog、loader 和管理服务。
+
+真实 skill 内容不放在源码目录，而是存储在 VFS：
 
 ```text
 /skills/{skill_id}/SKILL.md
 ```
 
-相关模块：
+## 职责
 
-- `skill-frontmatter.ts`: 解析和生成标准 `SKILL.md` frontmatter。
-- `skill-loader.ts`: 加载完整 Skill 和生成短 catalog。
-- `skill-selector.ts`: 处理显式 `/skill {id} {task}`。
-- `skill-service.ts`: 提供 Skill 创建、文件读写、删除、版本列表和回滚。
-- `builtin/`: 按需写入内置 `skill-creator`。
+- 解析和生成标准 `SKILL.md` frontmatter。
+- 加载完整 skill。
+- 生成短 skill catalog。
+- 处理显式 `/skill {id} {task}`。
+- 提供 skill 文件创建、读写、删除、版本列表和回滚服务。
+- 按需 provision 内置 `skill-creator`。
 
-WebUI 和工具都通过 `skill-service.ts` 写入 VFS。`SKILL.md` 写入时必须通过 frontmatter 校验。
+## 文件职责
+
+| 文件 | 职责 |
+| --- | --- |
+| `skill-frontmatter.ts` | 解析和生成标准 frontmatter。 |
+| `skill-loader.ts` | 加载完整 skill 和短 catalog。 |
+| `skill-selector.ts` | 处理显式 skill 选择。 |
+| `skill-service.ts` | Skill 文件管理服务。 |
+| `builtin/` | 内置 skill 内容。 |
+
+## 边界
+
+Skill 不定义独立 tool allowlist。工具暴露和执行统一走权限系统、platform availability checks 和 pending confirmation flow。
+
+## 相关文档
+
+- [../../docs/SKILL_RUNTIME.md](../../docs/SKILL_RUNTIME.md)
+- [../../specs/skill-manifest.md](../../specs/skill-manifest.md)

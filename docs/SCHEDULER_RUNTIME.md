@@ -1,10 +1,12 @@
 # Scheduler Runtime
 
-Schedules let the agent run future or recurring tasks without a user message.
+## 概览
 
-## Data Model
+Scheduler 允许 agent 在没有新用户消息的情况下运行未来任务或周期任务。它和 WebUI、tool、Cron、Queue、Agent Durable Object 共用同一套运行路径。
 
-Schedules are stored in D1:
+## 数据模型
+
+Schedules 存储在 D1：
 
 ```text
 schedules.id
@@ -16,7 +18,7 @@ schedules.payload_json
 schedules.last_run_at
 ```
 
-The payload is currently:
+当前 payload 示例：
 
 ```json
 {
@@ -25,11 +27,11 @@ The payload is currently:
 }
 ```
 
-`conversationId` is optional. If omitted, the runtime uses `admin:schedule`.
+`conversationId` 可选。未指定时，运行时使用 `admin:schedule`。
 
 ## Admin API
 
-Create a one-time schedule:
+创建一次性 schedule：
 
 ```bash
 curl -sS http://localhost:8787/admin/schedules \
@@ -37,7 +39,7 @@ curl -sS http://localhost:8787/admin/schedules \
   -d '{"text":"/ping","delaySeconds":60}'
 ```
 
-Create a recurring schedule:
+创建周期 schedule：
 
 ```bash
 curl -sS http://localhost:8787/admin/schedules \
@@ -45,13 +47,13 @@ curl -sS http://localhost:8787/admin/schedules \
   -d '{"text":"/ping","delaySeconds":60,"intervalSeconds":3600}'
 ```
 
-List schedules:
+查看 schedules：
 
 ```bash
 curl -sS http://localhost:8787/admin/schedules
 ```
 
-Cancel a schedule:
+取消 schedule：
 
 ```bash
 curl -sS -X DELETE http://localhost:8787/admin/schedules/sch_...
@@ -59,30 +61,34 @@ curl -sS -X DELETE http://localhost:8787/admin/schedules/sch_...
 
 ## Model Tools
 
-The agent can create and manage schedules through built-in tools:
+agent 可以通过内置工具管理 schedule：
 
-- `schedule.create`: create one-time or recurring tasks.
-- `schedule.list`: inspect schedules for the current agent.
-- `schedule.pause`, `schedule.resume`, `schedule.cancel`: lifecycle controls.
-- `schedule.run_now`: enqueue an existing schedule immediately.
+- `schedule.create`：创建一次性或周期任务。
+- `schedule.list`：查看当前 agent 的 schedules。
+- `schedule.pause`：暂停 schedule。
+- `schedule.resume`：恢复 paused 或 failed schedule。
+- `schedule.cancel`：取消 schedule。
+- `schedule.run_now`：立即投递已有 schedule。
 
-These tools use the current actor and conversation by default, so a task created from Telegram will normally fire back into the same Telegram conversation. Read access requires `schedule:read`; mutations require `schedule:write` and level 3.
+这些工具默认使用当前 actor 和 conversation。Telegram 中创建的任务通常会回到同一个 Telegram conversation。
+
+读取需要 `schedule:read`；修改需要 `schedule:write` 和 level 3。
 
 ## Cron Sweep
 
-Cloudflare Cron calls the scheduled handler. The handler:
+Cloudflare Cron 会调用 scheduled handler。handler 会：
 
-1. Finds active schedules with `due_at <= scheduledTime`.
-2. Sends a `schedule.fire` queue event for each due schedule.
-3. Marks one-time schedules as `completed`.
-4. Moves recurring schedules to their next `due_at`.
-5. Writes a `cron` heartbeat.
+1. 查找 `due_at <= scheduledTime` 的 active schedules。
+2. 为每个到期 schedule 投递 `schedule.fire` queue event。
+3. 将一次性 schedule 标记为 `completed`。
+4. 将周期 schedule 推进到下一个 `due_at`。
+5. 写入 `cron` heartbeat。
 
-Queue delivery is asynchronous, so a schedule may be marked dispatched before the resulting run finishes.
+Queue delivery 是异步的，所以 schedule 可能先被标记为 dispatched，实际 run 稍后才完成。
 
-## Execution
+## 执行流程
 
-`schedule.fire` is delivered to the Agent Durable Object. The runtime converts it into an internal admin message:
+`schedule.fire` 会被投递到 Agent Durable Object。运行时把它转换成内部 admin message：
 
 ```text
 platform: admin
@@ -91,30 +97,36 @@ rawRef: schedule:{schedule_id}
 scheduleId: {schedule_id}
 ```
 
-The normal agent runtime then handles the task. Runs triggered by schedules store `schedule_id` in the `runs` table.
+随后由正常 agent runtime 处理。由 schedule 触发的 run 会在 `runs` 表记录 `schedule_id`。
 
 ## Execution Profile
 
-Each new schedule records an execution profile in `execution_profile_json`:
+每个新 schedule 会记录 `execution_profile_json`：
 
-- `runAs`: defaults to `creator`.
-- `contextMode`: defaults to `latest_conversation`.
-- `modelMode`: `fixed` when a model is explicitly selected, otherwise `follow_conversation`.
-- `permissionMode`: defaults to `creator_current`.
-- `createdByActorId`, `createdByActorRole`, source platform, source conversation, and source run.
+- `runAs`：默认 `creator`。
+- `contextMode`：默认 `latest_conversation`。
+- `modelMode`：显式选择模型时为 `fixed`，否则为 `follow_conversation`。
+- `permissionMode`：默认 `creator_current`。
+- `createdByActorId`、`createdByActorRole`、source platform、source conversation、source run。
 
-Current execution still uses the concrete schedule columns (`actor_id`, `actor_role`, `conversation_id`, `model_provider_id`, `model_id`). The profile makes those choices explicit so later runtime changes can add isolated context, model-following, or permission snapshots without guessing from legacy rows.
+当前执行仍使用 schedule 具体列：`actor_id`、`actor_role`、`conversation_id`、`model_provider_id`、`model_id`。profile 用来把这些选择显式记录下来，避免后续扩展 isolated context、model-following 或 permission snapshots 时从旧行里猜测语义。
 
 ## Heartbeats
 
-Heartbeat sources:
+Heartbeat source：
 
-- `cron`: cron sweep ran and dispatched due schedules.
-- `schedule-fire`: a schedule event reached the Agent Durable Object.
-- `durable-object`: schedule tick reached the Durable Object.
+- `cron`：cron sweep 已运行并投递到期 schedule。
+- `schedule-fire`：schedule event 到达 Agent Durable Object。
+- `durable-object`：schedule tick 到达 Durable Object。
 
-List them with:
+查看 heartbeats：
 
 ```bash
 curl -sS http://localhost:8787/admin/heartbeats
 ```
+
+## 相关文档
+
+- [PERMISSIONS_RUNTIME.md](PERMISSIONS_RUNTIME.md)
+- [architecture/RUNTIME_FLOW.md](architecture/RUNTIME_FLOW.md)
+- [architecture/FAILURE_AND_CONCURRENCY.md](architecture/FAILURE_AND_CONCURRENCY.md)

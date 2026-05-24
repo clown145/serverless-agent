@@ -1,5 +1,7 @@
 # Tool Contract Spec
 
+## 概览
+
 工具是 agent 能力的唯一执行入口。模型只能请求工具，不能直接操作外部系统。
 
 ## ToolDefinition
@@ -67,7 +69,7 @@ type RetryPolicy = {
 }
 ```
 
-## 工具实现要求
+## 实现要求
 
 - 输入必须 schema validate。
 - 输出必须结构化。
@@ -75,3 +77,8 @@ type RetryPolicy = {
 - 权限检查在执行前完成。
 - 执行前后都写 audit log。
 - 不把 secret 返回给模型。
+
+## 相关文档
+
+- [../src/tools/README.md](../src/tools/README.md)
+- [../docs/architecture/TOOLS_AND_BOUNDARIES.md](../docs/architecture/TOOLS_AND_BOUNDARIES.md)

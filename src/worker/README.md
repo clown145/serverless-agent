@@ -1,19 +1,25 @@
 # Worker
 
-HTTP 和 Queue 入口层。
+## 概览
 
-负责：
+`worker` 是 HTTP、Queue、Cron 和 assets 入口层。
 
-- 路由。
-- webhook 校验。
-- 请求认证。
-- payload 入队。
-- health check。
-- admin API。
+## 职责
 
-不负责：
+- 路由 HTTP 请求。
+- 校验 webhook 和 admin token。
+- 标准化入口请求并入队。
+- 处理 Queue consumer。
+- 处理 scheduled handler。
+- 提供 health check。
+- 提供 admin API。
+- 提供 WebUI assets。
 
-- agent 决策。
-- 模型调用。
-- 工具执行。
-- 存储细节。
+## 边界
+
+Worker 不负责 agent 决策、模型调用、工具执行细节或存储实现细节。
+
+## 相关文档
+
+- [../../docs/LOCAL_DEVELOPMENT.md](../../docs/LOCAL_DEVELOPMENT.md)
+- [../../docs/GITHUB_ACTIONS_DEPLOY.md](../../docs/GITHUB_ACTIONS_DEPLOY.md)

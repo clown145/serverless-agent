@@ -1,292 +1,106 @@
-# File Structure
+# 文件结构
 
-这个仓库按“职责边界”组织文件。平台适配、agent 内核、工具、存储、调度、安全和文档不能混放。
+## 概览
+
+仓库按职责边界组织文件。平台适配、agent core、tools、storage、scheduler、security 和 docs 不应混放。
 
 ## 顶层结构
 
 ```text
 serverless-agent/
+  apps/
+  docs/
+  infra/
+  scripts/
+  specs/
+  src/
+  tests/
   README.md
-  docs/
-  specs/
-  apps/
-  infra/
-  scripts/
-  src/
-  tests/
-```
-
-## 详细结构
-
-```text
-serverless-agent/
-  apps/
-    admin-web/
-      src/
-      index.html
-      vite.config.ts
-
-  docs/
-    ARCHITECTURE.md
-    LOCAL_DEVELOPMENT.md
-    architecture/
-      RUNTIME_FLOW.md
-      STORAGE_MODEL.md
-      TOOLS_AND_BOUNDARIES.md
-      FAILURE_AND_CONCURRENCY.md
-    FILE_STRUCTURE.md
-    DEVELOPMENT_GUIDE.md
-    SECURITY_AND_PERMISSIONS.md
-    PLATFORM_CLOUDFLARE.md
-    MODEL_PROVIDERS.md
-    SKILL_RUNTIME.md
-    SCHEDULER_RUNTIME.md
-    PERMISSIONS_RUNTIME.md
-    ROADMAP.md
-
-  specs/
-    internal-message.md
-    tool-contract.md
-    vfs.md
-    skill-manifest.md
-
-  infra/
-    cloudflare/
-
-  scripts/
-
-  src/
-    worker/
-    agents/
-    adapters/
-      telegram/
-      qq/
-      wecom/
-      weixin-oc/
-    core/
-    tools/
-      vfs/
-      search/
-      messaging/
-      email/
-      git/
-    storage/
-    permissions/
-    scheduler/
-    skills/
-    observability/
-    shared/
-
-  tests/
 ```
 
 ## 目录职责
 
-### `docs/`
+| 路径 | 职责 |
+| --- | --- |
+| `apps/admin-web/` | React + Vite 管理控制台。 |
+| `docs/` | 操作指南、架构说明、运行时参考和项目说明。 |
+| `docs/architecture/` | 更细的架构主题文档。 |
+| `infra/cloudflare/` | Cloudflare migrations、部署相关配置和说明。 |
+| `scripts/` | 开发辅助脚本。 |
+| `specs/` | 内部消息、tool contract、VFS 和 Skill 规范。 |
+| `src/` | Worker runtime 源码。 |
+| `tests/` | 单元测试、集成测试和 fixtures。 |
 
-设计文档、开发规范、路线图。只放人读的说明，不放运行时代码。
-
-### `apps/admin-web/`
-
-React + Vite 管理控制台。
-
-可以放：
-
-- WebUI routes/panels。
-- Admin API client。
-- WebUI-only CSS。
-
-不放：
-
-- Worker route。
-- D1/对象存储访问逻辑。
-- agent 内核逻辑。
-
-### `specs/`
-
-内部协议草案。包括消息格式、工具调用格式、VFS 规则、Skill `SKILL.md` 规范。这里的文档应该足够精确，后续可以直接转成 TypeScript 类型。
-
-### `infra/cloudflare/`
-
-Cloudflare 部署配置、D1 migration、Queue/DO/对象存储绑定说明。后续可以放：
+## src 结构
 
 ```text
-infra/cloudflare/wrangler.toml
-infra/cloudflare/migrations/
-infra/cloudflare/README.md
+src/
+  worker/
+  agents/
+  adapters/
+  commands/
+  context/
+  conversations/
+  core/
+  diagnostics/
+  media/
+  platforms/
+  tools/
+  storage/
+  permissions/
+  scheduler/
+  security/
+  setup/
+  skills/
+  vfs/
+  observability/
+  shared/
 ```
 
-### `scripts/`
+## 源码边界
 
-开发辅助脚本，例如同步 schema、生成类型、导入测试数据。不要把业务逻辑放进这里。
-
-### `src/worker/`
-
-HTTP 入口和 Queue consumer。
-
-可以放：
-
-- 路由定义。
-- webhook 入口。
-- health check。
-- admin API。
-- Queue consumer handler。
-
-不放：
-
-- agent 推理逻辑。
-- 平台业务决策。
-- 工具实现。
-
-### `src/agents/`
-
-Durable Object 或 Cloudflare Agent 实例实现。
-
-可以放：
-
-- Agent coordinator。
-- Per-agent state。
-- Alarm 处理。
-- 心跳协调。
-- run 锁。
-
-不放：
-
-- Telegram/QQ/WeCom/Weixin OC payload 细节。
-- 对象存储 key 拼接。
-- 具体工具 HTTP API 细节。
-
-### `src/adapters/`
-
-平台适配层。每个平台一个子目录。
-
-```text
-src/adapters/telegram/
-src/adapters/qq/
-src/adapters/wecom/
-src/adapters/weixin-oc/
-```
-
-adapter 只做平台协议和内部协议转换。
-
-### `src/core/`
-
-agent 内核。这里是平台无关的核心逻辑。
-
-可以放：
-
-- run state machine。
-- model provider abstraction。
-- prompt/context builder。
-- skill selector。
-- tool call dispatcher interface。
-
-不放：
-
-- Cloudflare binding。
-- 平台 token。
-- D1/对象存储细节。
-
-### `src/tools/`
-
-agent 可调用工具。每个工具域一个子目录。
-
-```text
-src/tools/vfs/
-src/tools/search/
-src/tools/messaging/
-src/tools/email/
-src/tools/git/
-```
-
-每个工具必须声明：
-
-- name。
-- input schema。
-- output schema。
-- required permissions。
-- idempotency behavior。
-- audit behavior。
-
-### `src/storage/`
-
-持久化访问层。
-
-可以放：
-
-- D1 repositories。
-- object storage store。
-- KV cache。
-- DO storage helpers。
-- key/path builders。
-
-业务模块不能直接散落 SQL 或对象存储 key 拼接。
-
-### `src/permissions/`
-
-权限策略解析和 pending action 创建逻辑。
-
-可以放：
-
-- 默认权限策略。
-- D1 策略合并和检查。
-- 高风险工具确认请求创建。
-
-不放：
-
-- HTTP admin route。
-- 具体工具实现。
-- 平台 adapter。
-
-### `src/scheduler/`
-
-未来任务和心跳。
-
-可以放：
-
-- schedule parser。
-- alarm planner。
-- heartbeat checker。
-- retry policy。
-- dead-letter handling。
-
-### `src/skills/`
-
-skill 加载器、`SKILL.md` frontmatter 解析器和管理服务。这里不放用户安装的 skill 内容；真实 skill 内容存 VFS。
-
-### `src/observability/`
-
-日志、审计、运行追踪、metrics。不要在业务代码里直接散落日志格式。
-
-### `src/shared/`
-
-跨模块共享类型和小工具函数。这里必须保持克制，不能变成杂物目录。
-
-允许：
-
-- 类型定义。
-- 常量。
-- 错误类型。
-- 小型纯函数。
-
-不允许：
-
-- 业务流程。
-- 平台 adapter。
-- 工具实现。
-- storage 实现。
+| 路径 | 放什么 | 不放什么 |
+| --- | --- | --- |
+| `src/worker/` | HTTP routes、webhook 入口、admin API、Queue/Cron handler。 | agent 推理逻辑、平台业务决策、工具实现。 |
+| `src/agents/` | Durable Object coordinator、mailbox、alarm、run 恢复。 | 平台 payload 细节、对象存储 key 拼接、具体工具 API。 |
+| `src/adapters/` | 平台协议和内部协议互转。 | agent 决策、模型调用、权限策略。 |
+| `src/commands/` | slash/system command 解析、注册和执行分发。 | 平台 webhook、工具底层执行。 |
+| `src/context/` | conversation context、附件 caption 等上下文加载逻辑。 | 平台协议解析、模型 provider 实现。 |
+| `src/conversations/` | conversation ID 生成和解析。 | 平台 API 调用。 |
+| `src/core/` | 平台无关 agent loop、context、model abstraction、tool-call flow。 | Cloudflare binding、平台 token、D1/R2 细节。 |
+| `src/diagnostics/` | 运行前配置检查和 runtime checks。 | 修复配置、写入业务状态。 |
+| `src/media/` | 附件持久化和 media object key helper。 | 平台协议细节、VFS 服务。 |
+| `src/platforms/` | 平台能力、outbound registry、gateway DO wrappers 和 context hints。 | 具体 adapter normalize 逻辑。 |
+| `src/tools/` | 模型可调用工具、schema、权限和执行器。 | 平台 webhook、agent state machine。 |
+| `src/storage/` | D1 repositories、object storage、KV cache、DO storage helpers。 | 业务流程和平台适配。 |
+| `src/permissions/` | 权限策略解析、pending action 创建和确认执行。 | HTTP route、具体工具实现。 |
+| `src/scheduler/` | schedules、Cron sweep、heartbeat 和 retry policy。 | 平台消息解析。 |
+| `src/security/` | 加密、hash、encoding 和 secret helper。 | 业务权限决策。 |
+| `src/setup/` | 初始配置状态检查。 | WebUI 表现层。 |
+| `src/skills/` | `SKILL.md` frontmatter、skill loader 和管理服务。 | 用户安装的 skill 内容。 |
+| `src/vfs/` | VFS path、command、service 和 storage 实现。 | 模型工具 registry、平台消息发送。 |
+| `src/observability/` | audit log、debug log、trace 和 metrics。 | 业务分支逻辑。 |
+| `src/shared/` | 共享类型、常量、错误类、小型纯函数。 | 业务流程、adapter、tool、storage 实现。 |
 
 ## 放文件的判断规则
 
-- 处理外部平台 payload：放 `src/adapters/{platform}`。
-- 处理 HTTP 路由：放 `src/worker`。
-- 处理 agent run 状态：放 `src/core`。
-- 处理 Durable Object 生命周期：放 `src/agents`。
-- 处理对象存储/D1/KV：放 `src/storage`。
-- 处理权限策略、确认请求：放 `src/permissions`。
-- 处理可被 agent 调用的能力：放 `src/tools/{domain}`。
-- 处理未来任务和心跳：放 `src/scheduler`。
-- 处理 Skill frontmatter、加载和管理：放 `src/skills`。
-- 处理日志审计：放 `src/observability`。
+- 外部平台 payload：`src/adapters/{platform}`。
+- HTTP 路由：`src/worker`。
+- agent run 状态：`src/core`。
+- Durable Object 生命周期：`src/agents`。
+- D1、KV、对象存储：`src/storage`。
+- VFS path、虚拟命令和文件服务：`src/vfs`。
+- 权限策略和确认请求：`src/permissions`。
+- agent 可调用能力：`src/tools/{domain}`。
+- 未来任务和心跳：`src/scheduler`。
+- Skill frontmatter、加载和管理：`src/skills`。
+- 日志和审计：`src/observability`。
+- slash/system command：`src/commands`。
 
-如果一个文件同时想放进两个目录，通常说明它需要拆分。
+如果一个文件看起来同时属于两个目录，通常应拆成平台适配、核心逻辑和持久化访问三个部分。
+
+## 相关文档
+
+- [开发指南](DEVELOPMENT_GUIDE.md)
+- [架构概览](ARCHITECTURE.md)
+- [src/README.md](../src/README.md)

@@ -1,7 +1,9 @@
 {
   "name": "serverless-agent",
   "version": "0.1.0",
+  "description": "Cloudflare-native runtime for multi-platform agents.",
   "private": true,
+  "license": "GPL-3.0-or-later",
   "type": "module",
   "scripts": {
     "dev": "npm run admin:build && wrangler dev --config wrangler.toml",

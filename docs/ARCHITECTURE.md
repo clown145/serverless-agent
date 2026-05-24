@@ -1,18 +1,34 @@
-# Architecture
+# 架构概览
 
-`serverless-agent` 的核心原则是：agent 是可恢复的状态机，不是长时间常驻进程。
+## 背景
 
-这份文件只保留总览。细节拆到 `docs/architecture/`，避免一个架构文档混进所有主题。
+`serverless-agent` 把 agent 设计成可恢复的 serverless 状态机，而不是依赖常驻进程、本地磁盘状态或进程内队列。
 
-## 文档拆分
+运行时基于 Cloudflare Workers、Queues、Durable Objects、D1、KV 和对象存储。
 
-- [architecture/RUNTIME_FLOW.md](architecture/RUNTIME_FLOW.md): 请求、队列、Durable Object 和 agent run 流程。
-- [architecture/STORAGE_MODEL.md](architecture/STORAGE_MODEL.md): D1、对象存储、KV、DO storage 的职责。
-- [architecture/TOOLS_AND_BOUNDARIES.md](architecture/TOOLS_AND_BOUNDARIES.md): 工具系统、VFS、Git、邮件、搜索边界。
-- [architecture/FAILURE_AND_CONCURRENCY.md](architecture/FAILURE_AND_CONCURRENCY.md): 失败恢复、重试、幂等和并发模型。
-- [architecture/PLATFORM_INTEGRATIONS.md](architecture/PLATFORM_INTEGRATIONS.md): Telegram、QQ 官方机器人、企业微信、Weixin OC、WebUI/Admin 的平台适配和网关集成。
+## 职责
 
-## 总体拓扑
+架构拆分为几个明确的运行边界：
+
+- 接收平台和 admin 输入；
+- 将输入规范化为内部消息；
+- 通过 Cloudflare Queues 缓冲任务；
+- 通过 Durable Objects 串行处理同一 agent 的任务；
+- 执行平台无关的 agent loop；
+- 通过权限和审计边界处理工具调用；
+- 将结构化状态保存到 D1，将较大内容保存到对象存储。
+
+## 非职责
+
+核心运行时不负责：
+
+- 执行任意 shell 命令；
+- 依赖真实可写文件系统；
+- 让模型直接接触平台 token 或供应商密钥；
+- 只把业务状态保存在内存里；
+- 在 `src/core` 中处理平台协议细节。
+
+## 运行拓扑
 
 ```text
 Telegram / QQ / WeCom / Weixin OC / WebUI / Admin
@@ -22,124 +38,60 @@ Cloudflare Worker
   - HTTP routes
   - webhook verification
   - event normalization
-  - enqueue jobs
+  - queue dispatch
         |
         v
-Cloudflare Queues
+Cloudflare Queue
         |
         v
-Durable Object / Cloudflare Agent
-  - per-agent coordinator
-  - serial state updates
-  - alarms and heartbeat
+Agent Durable Object
+  - per-agent mailbox
+  - serial event processing
+  - alarms and recovery
         |
         v
 Agent Core
-  - run state machine
   - context assembly
-  - skill selection
-  - tool-call dispatch contract
+  - model provider dispatch
+  - tool-call loop
         |
         v
 Tools / Storage / Scheduler
+  - permission checks
   - VFS
-  - messaging
-  - search
-  - email
-  - git sync
-  - D1 / Object Storage / KV
+  - platform outbound
+  - D1 / KV / object storage
 ```
 
-## 模块职责
+## 模块边界
 
-### Worker
+| 模块 | 路径 | 职责 |
+| --- | --- | --- |
+| Worker | `src/worker` | HTTP 路由、webhook 校验、admin API、Queue 和 Cron 入口。 |
+| Adapters | `src/adapters` | 平台 payload 解析、规范化和出站协议调用。 |
+| Agents | `src/agents` | Durable Object 协调、mailbox 状态、alarm 和恢复。 |
+| Core | `src/core` | 平台无关的 agent loop、上下文构造、模型调度和工具调用流程。 |
+| Tools | `src/tools` | 模型可调用工具、schema、权限和副作用执行。 |
+| Storage | `src/storage` | D1 repository、对象存储抽象和持久化边界。 |
+| Scheduler | `src/scheduler` | 未来任务、周期任务、Cron 扫描和 heartbeat。 |
+| Permissions | `src/permissions` | 权限策略解析和 pending action 执行。 |
 
-位置：`src/worker`
+## 失败模式
 
-职责：
+运行时假设平台请求、Queue 投递、模型调用和工具调用都可能独立失败。
 
-- 暴露 HTTP API。
-- 接收 Telegram、QQ、WeCom、WebUI/Admin 等入口请求。
-- 做认证和签名校验。
-- 转换 payload 为内部消息。
-- 写入 Queue。
-- 暴露健康检查和管理 API。
+主要恢复机制：
 
-Worker 不直接跑完整 agent，不直接执行危险工具，也不保存业务状态到内存。
+- Queue retry 缓冲临时入口失败。
+- Durable Object mailbox 按 agent 串行化事件。
+- mailbox event state 提供有限幂等窗口，并在保留期后清理。
+- runs 和 run steps 持久化到 D1，便于检查和恢复。
+- 高风险工具调用可以在发生副作用前停在 pending confirmation。
 
-### Adapters
+## 相关文档
 
-位置：`src/adapters`
-
-职责：
-
-- 平台 payload 解析。
-- 平台用户、群、消息 ID 规范化。
-- 平台响应格式封装。
-- 平台错误码转为内部错误。
-
-adapter 只负责平台协议和内部协议互转，不做 agent 决策。
-
-### Agents
-
-位置：`src/agents`
-
-职责：
-
-- Durable Object 或 Cloudflare Agent 实例。
-- 管理 agent state。
-- 串行化同一 agent 的任务。
-- 处理 alarms、心跳、未来任务。
-- 调用 core 层执行下一步。
-
-### Core
-
-位置：`src/core`
-
-职责：
-
-- agent run 状态机。
-- 上下文组装。
-- skill 选择。
-- 模型请求构造。
-- tool call 协议。
-- run 恢复逻辑。
-
-Core 不依赖 Telegram/QQ、Cloudflare binding 或 D1/object-storage 细节。
-
-### Tools
-
-位置：`src/tools`
-
-职责：
-
-- 提供 agent 可调用能力。
-- 声明 schema、权限、幂等规则。
-- 执行外部 API 或内部操作。
-- 返回结构化结果。
-
-工具必须通过 registry 注册，不允许散落调用。
-
-### Storage
-
-位置：`src/storage`
-
-职责：
-
-- 封装 D1、对象存储、KV、DO storage。
-- 提供 repository 接口。
-- 管理事务、索引、分页、对象 key 规范。
-
-业务层不直接拼对象 key 或 SQL。
-
-### Scheduler
-
-位置：`src/scheduler`
-
-职责：
-
-- 未来任务。
-- cron 调度。
-- Durable Object alarms。
-- 心跳检查。
-- 失败重试和 dead-letter 处理策略。
+- [运行流程](architecture/RUNTIME_FLOW.md)
+- [存储模型](architecture/STORAGE_MODEL.md)
+- [工具与边界](architecture/TOOLS_AND_BOUNDARIES.md)
+- [失败与并发](architecture/FAILURE_AND_CONCURRENCY.md)
+- [平台接入](architecture/PLATFORM_INTEGRATIONS.md)

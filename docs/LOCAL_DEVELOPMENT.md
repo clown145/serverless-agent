@@ -1,61 +1,64 @@
-# Local Development
+# 本地开发
 
-## Install
+## 目标
+
+在本地运行 Worker，通过 admin API 发送测试消息，并检查运行状态。
+
+## 前置条件
+
+- Node.js 20 或更新版本。
+- npm。
+- 如果需要访问 Cloudflare 资源，需要配置 Wrangler 登录状态。
+
+本地默认模型供应商是 `mock`，第一次运行不需要模型 API key。
+
+## 安装依赖
 
 ```bash
 npm install
 ```
 
-## Validate
+可选：复制本地环境变量模板。
 
 ```bash
-npm run typecheck
-npm test
-npm run dry-run
+cp .dev.vars.example .dev.vars
 ```
 
-Production deploy is handled by GitHub Actions. See [GITHUB_ACTIONS_DEPLOY.md](GITHUB_ACTIONS_DEPLOY.md).
-
-## Apply Local D1 Migrations
+## 准备本地 D1
 
 ```bash
 npm run db:migrate:local
 ```
 
-This applies SQL files from `infra/cloudflare/migrations`.
+该命令会应用 `infra/cloudflare/migrations` 下的 SQL migration。
 
-## Start Worker
+## 启动 Worker
 
 ```bash
 npm run dev
 ```
 
-The admin console is available at:
+管理界面地址：
 
 ```text
 http://localhost:8787/ui
 ```
 
-Build or develop only the WebUI:
+如果只需要启动前端：
 
 ```bash
-npm run admin:build
 npm run admin:dev
 ```
 
-## Trigger A Local Admin Run
-
-Use sync mode when developing. It sends the event directly to the Durable Object and returns the `runId`.
-
-The default local model provider is `mock`, configured in `wrangler.toml`.
+如果只需要构建前端：
 
 ```bash
-curl -sS http://localhost:8787/admin/messages \
-  -H 'content-type: application/json' \
-  -d '{"text":"/ping","mode":"sync"}'
+npm run admin:build
 ```
 
-WebUI sends the same endpoint with `platform:webui`:
+## 发送测试消息
+
+开发时建议使用 sync mode。它会直接把事件发送给 Agent Durable Object，并返回 run id。
 
 ```bash
 curl -sS http://localhost:8787/admin/messages \
@@ -63,13 +66,7 @@ curl -sS http://localhost:8787/admin/messages \
   -d '{"platform":"webui","conversationId":"webui:default","text":"/ping","mode":"sync"}'
 ```
 
-If your shell has proxy variables configured and local requests hang, add:
-
-```bash
-NO_PROXY=127.0.0.1,localhost curl --noproxy '*' ...
-```
-
-Expected shape:
+预期响应结构：
 
 ```json
 {
@@ -82,29 +79,35 @@ Expected shape:
 }
 ```
 
-Then inspect the run:
+如果本地 shell 设置了代理变量，导致本地请求卡住，可以加：
+
+```bash
+NO_PROXY=127.0.0.1,localhost curl --noproxy '*' ...
+```
+
+## 验证运行状态
+
+查看某次 run：
 
 ```bash
 curl -sS http://localhost:8787/admin/runs/run_...
 ```
 
-List recent runs:
+列出最近的 runs：
 
 ```bash
 curl -sS http://localhost:8787/admin/runs
 ```
 
-Test a tool call through the mock provider:
+检查健康状态：
 
 ```bash
-curl -sS http://localhost:8787/admin/messages \
-  -H 'content-type: application/json' \
-  -d '{"text":"/write /workspace/notes/mock.md hello","mode":"sync"}'
+curl -sS http://localhost:8787/health
 ```
 
-## Manage VFS Files
+## 常见本地操作
 
-Write a file:
+写入 VFS 文件：
 
 ```bash
 curl -sS -X PUT http://localhost:8787/admin/vfs \
@@ -112,90 +115,13 @@ curl -sS -X PUT http://localhost:8787/admin/vfs \
   -d '{"path":"/workspace/notes/hello.md","content":"hello"}'
 ```
 
-List a directory:
-
-```bash
-curl -sS 'http://localhost:8787/admin/vfs?path=/workspace/notes'
-```
-
-Read a file:
+读取 VFS 文件：
 
 ```bash
 curl -sS 'http://localhost:8787/admin/vfs?mode=file&path=/workspace/notes/hello.md'
 ```
 
-## Load A Skill From VFS
-
-Create a minimal skill:
-
-```bash
-curl -sS -X POST http://localhost:8787/admin/skills \
-  -H 'content-type: application/json' \
-  -d '{"skillId":"demo","content":"---\nname: Demo\ndescription: Use this skill for demo reads.\n---\n\n# Demo\nUse this skill for demo reads."}'
-```
-
-Load it:
-
-```bash
-curl -sS http://localhost:8787/admin/skills/demo
-```
-
-List skills:
-
-```bash
-curl -sS http://localhost:8787/admin/skills
-```
-
-Read and edit files through Skill-scoped routes:
-
-```bash
-curl -sS 'http://localhost:8787/admin/skills/demo/files'
-curl -sS 'http://localhost:8787/admin/skills/demo/files?mode=file&relativePath=SKILL.md'
-curl -sS -X PUT http://localhost:8787/admin/skills/demo/files \
-  -H 'content-type: application/json' \
-  -d '{"relativePath":"references/notes.md","content":"# Notes\n"}'
-curl -sS 'http://localhost:8787/admin/skills/demo/revisions?relativePath=SKILL.md'
-```
-
-Run it explicitly:
-
-```bash
-curl -sS http://localhost:8787/admin/messages \
-  -H 'content-type: application/json' \
-  -d '{"text":"/skill demo /read /workspace/notes/hello.md","mode":"sync"}'
-```
-
-Toggle model skill edits:
-
-```bash
-curl -sS http://localhost:8787/admin/messages \
-  -H 'content-type: application/json' \
-  -d '{"text":"/skill-auto-edits on","mode":"sync"}'
-```
-
-Then:
-
-```bash
-curl -sS http://localhost:8787/admin/messages \
-  -H 'content-type: application/json' \
-  -d '{"text":"/skill demo /read /workspace/notes/hello.md","mode":"sync"}'
-```
-
-## Queue Mode
-
-Production-like mode uses the Queue binding:
-
-```bash
-curl -sS http://localhost:8787/admin/messages \
-  -H 'content-type: application/json' \
-  -d '{"text":"hello","mode":"queue"}'
-```
-
-If `mode` is omitted, the API defaults to queue mode.
-
-## Test Scheduler
-
-Create an immediate one-time schedule:
+创建立即执行的一次性 schedule：
 
 ```bash
 curl -sS http://localhost:8787/admin/schedules \
@@ -203,56 +129,61 @@ curl -sS http://localhost:8787/admin/schedules \
   -d '{"text":"/write /workspace/notes/scheduled.md from-schedule","delaySeconds":0}'
 ```
 
-Trigger the local scheduled handler:
+触发本地 scheduled handler：
 
 ```bash
 curl -sS http://localhost:8787/cdn-cgi/handler/scheduled
 ```
 
-Queue delivery is async. Wait briefly, then read the file:
-
-```bash
-curl -sS 'http://localhost:8787/admin/vfs?mode=file&path=/workspace/notes/scheduled.md'
-```
-
-Inspect heartbeats:
-
-```bash
-curl -sS http://localhost:8787/admin/heartbeats
-```
-
-## Manage Permission Policies
-
-Create a policy for a user:
-
-```bash
-curl -sS http://localhost:8787/admin/permission-policies \
-  -H 'content-type: application/json' \
-  -d '{"subjectType":"user","subjectId":"alice","maxLevel":4,"scopes":["workspace:read","workspace:write","message:send"]}'
-```
-
-List policies:
+列出权限策略：
 
 ```bash
 curl -sS http://localhost:8787/admin/permission-policies
 ```
 
-List pending confirmations:
+列出等待确认的 actions：
 
 ```bash
 curl -sS http://localhost:8787/admin/pending-actions
 ```
 
-Confirm a pending action:
+## Queue Mode
+
+接近生产的模式会使用 Queue binding：
 
 ```bash
-curl -sS -X POST http://localhost:8787/admin/pending-actions/act_.../confirm
+curl -sS http://localhost:8787/admin/messages \
+  -H 'content-type: application/json' \
+  -d '{"text":"hello","mode":"queue"}'
+```
+
+如果省略 `mode`，API 默认使用 queue mode。
+
+## 验证
+
+提交 pull request 前运行：
+
+```bash
+npm run typecheck
+npm test
+```
+
+如果改动影响部署流程，额外运行：
+
+```bash
+npm run dry-run
 ```
 
 ## Admin Token
 
-If `INTERNAL_ADMIN_TOKEN` is configured, admin routes require:
+如果配置了 `INTERNAL_ADMIN_TOKEN`，admin 路由需要：
 
-```bash
+```text
 Authorization: Bearer <token>
 ```
+
+## 相关文档
+
+- [GitHub Actions 部署](GITHUB_ACTIONS_DEPLOY.md)
+- [Admin WebUI](ADMIN_WEBUI.md)
+- [模型供应商](MODEL_PROVIDERS.md)

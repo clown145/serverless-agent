@@ -1,57 +1,43 @@
-# Development Guide
+# 开发指南
 
-## 技术方向
+## 概览
 
-默认使用 TypeScript 开发 Cloudflare Worker。
+本项目使用 TypeScript 开发 Cloudflare Worker runtime。代码按职责边界拆分，核心要求是：入口轻、状态可恢复、工具受控、模块之间不泄露平台细节。
 
-后续推荐技术栈：
+主要技术栈：
 
 - TypeScript
 - Cloudflare Workers
 - Cloudflare Queues
-- Durable Objects 或 Cloudflare Agents
+- Durable Objects
 - D1
-- 对象存储（默认 R2，可选 S3-compatible 或 D1 lite）
 - KV
+- Object Storage，默认 R2，可选 S3-compatible 或 D1 lite
 - Vitest
 - Wrangler
 
 ## 基本原则
 
-1. 入口轻，核心稳。
-   Worker HTTP handler 只负责接入、校验、入队、返回。
-
-2. 状态外置。
-   不依赖内存保存业务状态。任何需要恢复的数据都写入 D1、对象存储或 DO storage。
-
-3. 工具受控。
-   模型不能直接执行动作，只能请求 tool call。tool call 必须经过权限检查和审计。
-
-4. 失败可恢复。
-   每个 run step 都要记录状态，支持重试和幂等。
-
-5. 模块边界清晰。
-   adapter、core、tool、storage、scheduler 不互相混写。
+1. Worker 入口保持轻量，只做路由、鉴权、平台校验、标准化和入队。
+2. 业务状态不能只存在内存里，需要恢复的数据写入 D1、对象存储或 DO storage。
+3. 模型不能直接执行动作，只能请求 tool call。
+4. tool call 必须经过 schema 校验、权限检查和 audit log。
+5. 同一 agent 的关键状态更新由 Durable Object 串行处理。
+6. `core` 保持平台无关，不能直接处理 Telegram、QQ、WeCom、Weixin OC 等协议细节。
 
 ## 命名规范
 
-目录名使用 kebab-case：
+目录和文件使用 kebab-case：
 
 ```text
 src/tools/git-sync/
 src/adapters/telegram/
 src/adapters/weixin-oc/
-```
-
-文件名使用 kebab-case：
-
-```text
 tool-registry.ts
 internal-message.ts
-run-state-machine.ts
 ```
 
-类型名使用 PascalCase：
+类型使用 PascalCase：
 
 ```ts
 type InternalMessage = {}
@@ -71,7 +57,7 @@ createRunStep()
 const MAX_TOOL_RETRIES = 3
 ```
 
-## 模块依赖方向
+## 模块依赖
 
 允许的依赖方向：
 
@@ -79,7 +65,7 @@ const MAX_TOOL_RETRIES = 3
 worker -> adapters
 worker -> agents
 agents -> core
-core -> tools interfaces
+core -> shared/tool interfaces
 tools -> storage
 scheduler -> storage
 observability -> storage
@@ -87,15 +73,15 @@ observability -> storage
 
 禁止：
 
-- `core` 直接依赖 Telegram、QQ、WeCom、Weixin OC 等具体平台协议。
-- `core` 直接拼 SQL 或对象存储 key。
-- `adapters` 调用模型。
-- `tools` 直接修改 agent state，必须通过明确接口返回结果。
+- `core` 直接依赖具体平台协议。
+- `core` 直接拼 SQL、对象存储 key 或平台 outbound payload。
+- `adapters` 调用模型或决定 agent 行为。
+- `tools` 直接修改 agent state。
 - `shared` 反向依赖业务模块。
 
 ## Adapter 规范
 
-每个平台 adapter 至少提供：
+adapter 的职责是消除平台差异。每个平台 adapter 至少应覆盖：
 
 ```ts
 normalizeInbound(payload): InternalMessage
@@ -103,11 +89,11 @@ buildOutbound(message): PlatformOutboundRequest
 verifyRequest(request): Promise<boolean>
 ```
 
-adapter 的目标是消除平台差异，不负责 agent 决策。
+adapter 可以处理平台签名、解密、消息格式、出站 payload 和平台能力差异。它不负责模型调用、权限决策或 run 状态机。
 
 ## Tool 规范
 
-每个工具必须有独立目录或文件组：
+每个工具域应有独立目录或清晰的文件组：
 
 ```text
 src/tools/{domain}/
@@ -120,20 +106,20 @@ src/tools/{domain}/
 
 工具必须声明：
 
-- 工具名。
-- 输入 schema。
-- 输出 schema。
-- 权限级别。
-- 是否有副作用。
-- 幂等策略。
-- 超时策略。
-- 审计字段。
+- 工具名；
+- 输入 schema；
+- 输出 schema；
+- 权限等级和 scopes；
+- side effect；
+- 幂等策略；
+- timeout；
+- audit 字段。
 
 ## Storage 规范
 
-不要在业务模块散落 SQL、对象存储 key 或 KV key。
+业务模块不应散落 SQL、对象存储 key 或 KV key。访问持久化状态应通过 repository、service 或 storage helper。
 
-应当通过 repository 访问：
+示例：
 
 ```ts
 runsRepository.createRun(...)
@@ -141,7 +127,7 @@ vfsRepository.writeFile(...)
 auditRepository.append(...)
 ```
 
-对象存储 key 必须由统一 builder 生成：
+对象存储 key 必须由统一 builder 生成，避免不同模块各自拼接：
 
 ```ts
 buildAgentWorkspaceKey(agentId, path)
@@ -150,7 +136,9 @@ buildRunArtifactKey(runId, name)
 
 ## 错误处理
 
-错误必须分类：
+错误应先转成内部错误类型，再由响应层决定怎么呈现。
+
+常见分类：
 
 ```text
 ValidationError
@@ -161,39 +149,40 @@ RateLimitError
 InternalInvariantError
 ```
 
-不要直接把第三方 API 错误返回给用户。先转成内部错误，再由响应层决定如何表达。
+不要把第三方 API 原始错误、secret、token 或完整请求体直接返回给用户或模型。
 
 ## 日志和审计
 
-普通 debug log 可以短期保存。审计日志必须长期保存。
+debug log 可以短期保存。audit log 用于追责和排障，应长期保存。
 
-审计日志至少包含：
+audit log 至少包含：
 
-- actor。
-- agent_id。
-- run_id。
-- tool_name。
-- permission level。
-- input summary。
-- result summary。
-- timestamp。
+- actor；
+- agent_id；
+- run_id；
+- tool_name；
+- permission level；
+- input summary；
+- result summary；
+- timestamp；
 - idempotency key。
 
-敏感字段必须脱敏。
+敏感字段必须脱敏或只记录摘要。
 
 ## 测试策略
 
-优先测试这些边界：
+优先覆盖这些边界：
 
-- adapter normalize。
-- VFS path normalization。
-- permission policy。
-- tool idempotency。
-- run state transition。
-- schedule due-time calculation。
-- storage key builder。
+- adapter normalize；
+- VFS path normalization；
+- permission policy；
+- tool idempotency；
+- run state transition；
+- schedule due-time calculation；
+- storage key builder；
+- Durable Object mailbox 清理和恢复。
 
-测试目录建议：
+测试目录：
 
 ```text
 tests/unit/
@@ -203,31 +192,40 @@ tests/fixtures/
 
 ## 配置和密钥
 
-- 本地使用 `.dev.vars`，不提交。
-- 生产密钥使用 Cloudflare secrets。
-- 代码中不硬编码 token。
+- 本地使用 `.dev.vars`，不要提交。
+- 生产密钥使用 Cloudflare secrets 或 GitHub Actions secrets。
+- 代码中不要硬编码 token。
 - 文档中只写变量名，不写真实值。
 
-推荐变量命名：
+常见变量：
 
 ```text
 AGENT_MASTER_KEY
+INTERNAL_ADMIN_TOKEN
 OPENAI_API_KEY
 TELEGRAM_BOT_TOKEN
-QQ_BOT_SECRET
-GITHUB_APP_ID
-GITHUB_PRIVATE_KEY
-EMAIL_PROVIDER_API_KEY
+TELEGRAM_WEBHOOK_SECRET
 ```
 
 ## 提交前检查
 
-后续实现代码后，每次提交前至少运行：
+常规代码变更至少运行：
 
 ```bash
 npm run typecheck
-npm run test
-npm run lint
+npm test
 ```
 
-如果某个检查暂时无法运行，需要在提交说明或 PR 描述里写清楚原因。
+影响部署 workflow 时额外运行：
+
+```bash
+npm run dry-run
+```
+
+如果某个检查无法运行，需要在 PR 描述或提交说明里写清楚原因。
+
+## 相关文档
+
+- [文件结构](FILE_STRUCTURE.md)
+- [架构概览](ARCHITECTURE.md)
+- [本地开发](LOCAL_DEVELOPMENT.md)

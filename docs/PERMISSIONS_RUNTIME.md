@@ -1,20 +1,22 @@
 # Permissions Runtime
 
-权限运行时负责回答两个问题：
+## 概览
 
-- 当前 actor 是否有资格调用某个工具。
-- 如果工具有高风险副作用，是否要先暂停并等待人工确认。
+权限运行时负责两个问题：
 
-## Storage
+- 当前 actor 是否可以调用某个工具；
+- 工具有高风险副作用时，是否需要先暂停并等待确认。
 
-`infra/cloudflare/migrations/0003_permissions.sql` 新增两张 D1 表：
+策略存储在 D1，不写入 VFS。VFS 可以保存 workspace、skills 和 artifacts，但权限需要可查询、可撤销、可审计。
 
-- `permission_policies`: 显式权限策略。
-- `pending_actions`: 等待确认的工具调用。
+## 存储
 
-策略内容不会写进 VFS。VFS 可以保存 skill 和工作区文件，但权限必须放在 D1 里，便于查询、撤销和审计。
+相关 D1 表：
 
-## Default Policy
+- `permission_policies`：显式权限策略。
+- `pending_actions`：等待确认的工具调用。
+
+## 默认策略
 
 没有显式策略时，运行时使用保守默认值：
 
@@ -25,19 +27,19 @@
 | role `member` | 2 | `workspace:read`, `workspace:write` |
 | unknown | 1 | `workspace:read` |
 
-显式策略会与默认策略合并：`maxLevel` 取最高值，`scopes` 取并集。这样可以按 user、role、platform、conversation 或 agent 单独加权限。
+显式策略会与默认策略合并：`maxLevel` 取最高值，`scopes` 取并集。
 
 ## Policy Subjects
 
-当前支持这些 subject：
+当前支持：
 
-- `agent`: 针对某个 agent。
-- `user`: 针对触发者 ID。
-- `role`: 针对 `owner`、`admin`、`member` 等角色。
-- `platform`: 针对 `telegram`、`qq`、`wecom`、`weixin_oc`、`webui`、`admin` 等入口。
-- `conversation`: 针对私聊、群聊或线程。
+- `agent`：针对某个 agent。
+- `user`：针对触发者 ID。
+- `role`：针对 `owner`、`admin`、`member` 等角色。
+- `platform`：针对 `telegram`、`qq`、`wecom`、`weixin_oc`、`webui`、`admin` 等入口。
+- `conversation`：针对私聊、群聊或线程。
 
-## Admin APIs
+## Admin API
 
 创建策略：
 
@@ -77,19 +79,19 @@ curl -sS http://localhost:8787/admin/pending-actions
 curl -sS -X POST http://localhost:8787/admin/pending-actions/act_.../confirm
 ```
 
-如果配置了 `INTERNAL_ADMIN_TOKEN`，这些 API 都需要 `Authorization: Bearer <token>`。
+如果配置了 `INTERNAL_ADMIN_TOKEN`，这些 API 需要 `Authorization: Bearer <token>`。
 
 ## Confirmation Flow
 
-工具会先经过权限策略检查。通过策略后，如果满足任一条件，则不会立即执行：
+工具会先经过权限策略检查。通过后，如果满足任一条件，工具不会立即执行：
 
 - `permission.level >= 5`
 - `permission.confirmationRequired === true`
 - `sideEffect === "dangerous"`
 
-普通工具不会自动弹确认按钮。只有进入 `needs_confirmation` 的调用才会创建 pending action；如果触发来源平台支持交互按钮，运行时会尝试发送“确认 / 拒绝”按钮。按钮由运行时发送，不要求模型额外拥有 `message:send_buttons`。
+只有进入 `needs_confirmation` 的调用才会创建 pending action。触发来源平台支持交互按钮时，运行时会尝试发送“确认 / 拒绝”按钮。按钮由运行时发送，不要求模型额外拥有 `message:send_buttons`。
 
-运行时会创建一条 `pending_actions` 记录，工具调用结果返回：
+工具调用结果示例：
 
 ```json
 {
@@ -100,12 +102,19 @@ curl -sS -X POST http://localhost:8787/admin/pending-actions/act_.../confirm
 }
 ```
 
-管理员确认后，系统会使用原始工具名、输入和触发者上下文重新执行该工具，并写回 `pending_actions.result_json` 或 `pending_actions.error_code`。
+管理员确认后，系统会使用原始工具名、输入和触发者上下文重新执行工具，并写回 `pending_actions.result_json` 或 `pending_actions.error_code`。
 
-## Current Limits
+## 当前限制
 
 - Admin API 和 WebUI 可以查看、确认 pending action。
-- Telegram 已支持 inline button 确认/拒绝。QQ、WeCom、Weixin OC 目前没有平台内确认按钮，仍需走 Admin/WebUI。
+- Telegram 已支持 inline button 确认/拒绝。
+- QQ、WeCom、Weixin OC 目前没有平台内确认按钮，仍需走 Admin/WebUI。
 - pending action 默认 10 分钟过期。
-- 工具级 allow/deny list 还没独立建表，目前用权限等级、scope 和 high-risk 标记控制。
-- 尚未实现 rate limit 和 time window。
+- 工具级 allow/deny list 还未独立建表，目前通过权限等级、scope 和 high-risk 标记控制。
+- rate limit 和 time window 尚未实现。
+
+## 相关文档
+
+- [安全与权限](SECURITY_AND_PERMISSIONS.md)
+- [Admin WebUI](ADMIN_WEBUI.md)
+- [architecture/TOOLS_AND_BOUNDARIES.md](architecture/TOOLS_AND_BOUNDARIES.md)

@@ -1,26 +1,32 @@
 # Schedule Tools
 
-Model-callable tools for future and recurring tasks.
+## 概览
 
-The tool layer uses the same scheduler runtime as the WebUI and `/task` command:
+`schedule` 工具让模型创建、查看和管理未来任务或周期任务。工具层复用 WebUI 和 `/task` 命令使用的 scheduler runtime。
 
-- D1 `schedules` is the source of truth.
-- Cloudflare Cron sweeps due tasks.
-- Queue events deliver `schedule.fire` jobs to the Agent Durable Object.
-- The normal agent runtime handles the scheduled text.
+## 数据来源
 
-## Tools
+- D1 `schedules` 是 source of truth。
+- Cloudflare Cron sweep 到期任务。
+- Queue 投递 `schedule.fire` jobs。
+- Agent Durable Object 处理 schedule 触发的文本。
 
-- `schedule.create`: create a one-time or recurring task.
-- `schedule.list`: list schedules for the current agent.
-- `schedule.pause`: pause an active schedule.
-- `schedule.resume`: resume a paused or failed schedule.
-- `schedule.cancel`: cancel a schedule.
-- `schedule.run_now`: enqueue a schedule immediately.
+## 工具
 
-## Permissions
+- `schedule.create`：创建一次性或周期任务。
+- `schedule.list`：列出当前 agent 的 schedules。
+- `schedule.pause`：暂停 active schedule。
+- `schedule.resume`：恢复 paused 或 failed schedule。
+- `schedule.cancel`：取消 schedule。
+- `schedule.run_now`：立即投递 schedule。
 
-- Read operations require `schedule:read`.
-- Mutations require `schedule:write` and level 3.
+## 权限
 
-Recurring tasks are capped at a minimum interval of 300 seconds to avoid accidental high-frequency loops on the free tier.
+- 读取需要 `schedule:read`。
+- 修改需要 `schedule:write` 和 level 3。
+
+Recurring tasks 最小间隔为 300 秒，避免在免费层意外形成高频循环。
+
+## 相关文档
+
+- [../../../docs/SCHEDULER_RUNTIME.md](../../../docs/SCHEDULER_RUNTIME.md)

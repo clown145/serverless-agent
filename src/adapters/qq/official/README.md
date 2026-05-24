@@ -1,45 +1,49 @@
 # QQ Official Adapter
 
-This adapter implements QQ official bot support without the Python `qq-botpy`
-SDK. It supports two inbound modes:
+## 概览
 
-- `gateway`: keep one outbound QQ Gateway WebSocket in
-  `QQOfficialGatewayDurableObject`.
-- `webhook`: receive QQ official callbacks at
-  `/webhooks/qq-official/:webhookSecret` and send replies directly through QQ
-  OpenAPI.
+QQ Official adapter 不依赖 Python `qq-botpy` SDK。它支持 Gateway mode 和 webhook mode，并把 QQ 事件转换成 `InternalMessage` queue jobs。
 
-Gateway mode flow:
+## Gateway Mode
 
-1. Fetch an app access token with `appId` and `secret`.
-2. Fetch `/gateway/bot`.
-3. Keep one outbound WebSocket connection in `QQOfficialGatewayDurableObject`.
-4. Identify/resume the gateway session and send heartbeats.
-5. Normalize QQ gateway events into `InternalMessage` queue jobs.
-6. Send replies through QQ HTTP OpenAPI.
+流程：
 
-Webhook mode flow:
+1. 使用 `appId` 和 `secret` 获取 app access token。
+2. 调用 QQ `/gateway/bot` 获取 WebSocket 地址。
+3. 在 `QQOfficialGatewayDurableObject` 中维持 WebSocket session。
+4. 发送 `Identify` 或 `Resume`。
+5. 按 `heartbeat_interval` 发送心跳。
+6. 将 dispatch event 标准化并入队。
+7. 通过 QQ HTTP OpenAPI 发送回复。
 
-1. QQ calls the Worker webhook route.
-2. `op=13` validation requests are answered with an Ed25519 signature derived
-   from the bot secret.
-3. Dispatch events are normalized into `InternalMessage` queue jobs.
-4. Conversation targets are stored in D1 so later replies can call QQ OpenAPI
-   directly.
+当前实现使用命名 Durable Object 打开 shard `0`。如果 QQ 返回多 shard，需要按 shard 拆分 object name。
 
-The initial implementation opens shard `0` in a named Durable Object. This is
-enough for normal single-shard bots. If QQ returns multiple shards for a high
-traffic bot, split the object name by shard and create one session per shard.
+## Webhook Mode
 
-The code is split by responsibility:
+流程：
 
-- `api.ts`: QQ HTTP OpenAPI client.
-- `gateway-session.ts`: WebSocket lifecycle, identify/resume, heartbeats.
-- `gateway-payloads.ts`: gateway protocol payload builders.
-- `normalize.ts`: gateway event to internal message conversion.
-- `conversation-store.ts`: DO-local conversation target cache for gateway replies.
-- `direct-sender.ts`: direct OpenAPI sender used by webhook mode.
-- `webhook.ts`: QQ official webhook event handling.
-- `webhook-validation.ts`: QQ webhook validation signature.
-- `outbound.ts`: platform outbound adapter.
-- `keepalive.ts`: scheduled/admin connection management.
+1. QQ 调用 Worker webhook route。
+2. `op=13` validation request 用 bot secret 生成 Ed25519 signature 响应。
+3. `op=0` dispatch event 标准化为 `InternalMessage` queue job。
+4. Conversation target 存入 D1，后续回复直接调用 QQ OpenAPI。
+
+Webhook mode 不需要维护 Gateway WebSocket，通常更节省 Durable Object duration。
+
+## 文件职责
+
+| 文件 | 职责 |
+| --- | --- |
+| `api.ts` | QQ HTTP OpenAPI client。 |
+| `gateway-session.ts` | WebSocket lifecycle、identify/resume、heartbeat。 |
+| `gateway-payloads.ts` | Gateway protocol payload builders。 |
+| `normalize.ts` | Gateway event 到内部消息的转换。 |
+| `conversation-store.ts` | Gateway replies 使用的 DO-local conversation target cache。 |
+| `direct-sender.ts` | Webhook mode 使用的 direct OpenAPI sender。 |
+| `webhook.ts` | QQ Official webhook event handling。 |
+| `webhook-validation.ts` | QQ webhook validation signature。 |
+| `outbound.ts` | Platform outbound adapter。 |
+| `keepalive.ts` | scheduled/admin connection management。 |
+
+## 相关文档
+
+- [../../../../docs/architecture/PLATFORM_INTEGRATIONS.md](../../../../docs/architecture/PLATFORM_INTEGRATIONS.md)

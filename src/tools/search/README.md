@@ -1,17 +1,27 @@
-# Search Tool
+# Search Tools
 
-`search.web` is the standard web search tool. The tool is provider-neutral and reads the active search provider from `search_settings`.
+## 概览
 
-Current provider:
+`search.web` 是标准 Web search 工具。工具本身 provider-neutral，运行时从 `search_settings` 读取 active provider。
 
-- `tavily`: POST `/search` with Bearer auth.
-- `exa`: POST `/search` with `x-api-key` auth.
+## 当前 provider
 
-Provider extension points:
+- `tavily`：`POST /search`，Bearer auth。
+- `exa`：`POST /search`，`x-api-key` auth。
 
-- `provider-types.ts`: shared provider interface and normalized result shape.
-- `provider-factory.ts`: active provider resolution.
-- `<provider>-provider.ts`: provider-specific HTTP adapter.
-- `storage/repositories/search-*`: provider config, credential, and active setting storage.
+## 扩展点
+
+| 文件 | 职责 |
+| --- | --- |
+| `provider-types.ts` | Provider interface 和 normalized result shape。 |
+| `provider-factory.ts` | Active provider resolution。 |
+| `<provider>-provider.ts` | Provider-specific HTTP adapter。 |
+| `storage/repositories/search-*` | Provider config、credential 和 active setting storage。 |
+
+## 权限
 
 通用 Web 搜索属于外部 API 权限，默认 scope 是 `web:search`。
+
+## 相关文档
+
+- [../../../docs/architecture/TOOLS_AND_BOUNDARIES.md](../../../docs/architecture/TOOLS_AND_BOUNDARIES.md)

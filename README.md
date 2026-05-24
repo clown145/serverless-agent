@@ -1,77 +1,159 @@
 # serverless-agent
 
-`serverless-agent` 是一个 Cloudflare-native 的 serverless agent 设计仓库。目标不是做一个普通聊天机器人，而是做一个可以接入多平台、拥有虚拟工作区、可调度未来任务、可审计执行工具的 agent 内核。
+[![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
+[![License: GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-blue.svg?style=flat-square)](LICENSE)
 
-## 目标
+Cloudflare-native runtime for multi-platform agents.
 
-- 运行在 Cloudflare Workers / Queues / Durable Objects / D1 / 对象存储上。
-- 已支持 Telegram、QQ 官方机器人、个人微信 / Weixin OC、企业微信、Web UI 等多平台入口。
-- 使用 D1 + 对象存储实现虚拟文件系统 (VFS)，存放 skills、workspace、artifacts、memory；对象存储默认 R2，可选 S3-compatible，R2 不可用时可回退 D1 lite。
-- 用 Durable Object 维护每个 agent 的长期状态和串行执行（保证同一会话请求串行化）。
-- 用工具权限系统控制“高特权”操作，例如发送平台消息、读写文件系统等，支持 Pending 确认逻辑。
-- 支持心跳、未来任务、定时任务、失败重试和审计日志。
+`serverless-agent` 是一个不需要自建服务器的 agent 后端。它运行在 Cloudflare Workers、Queues、Durable Objects、D1、KV 和对象存储之上，用来接收来自 Telegram、QQ、企业微信、Weixin OC 或 WebUI 的消息，并把这些消息交给同一套 agent runtime 处理。
 
-## 非目标
+## Table of Contents
 
-- 不把 Cloudflare Worker 当 VPS 使用。
-- 不依赖真实持久文件系统。
-- 不在 Worker 免费层里执行任意 shell 命令、`git pull`、`npm install` 或浏览器自动化。
-- 不让模型直接持有平台 token 或外部服务密钥。
-- 不承诺所有第三方能力永久免费，例如 LLM、通用网页搜索、出站邮件。
+- [Security](#security)
+- [Background](#background)
+- [Install](#install)
+- [Usage](#usage)
+- [API](#api)
+- [Maintainers](#maintainers)
+- [Contributing](#contributing)
+- [License](#license)
 
-## 推荐平台组成
+## Security
+
+- 不要把平台 token、模型 API key 或 `INTERNAL_ADMIN_TOKEN` 提交到仓库。
+- 本地开发使用 `.dev.vars`；生产环境使用 Wrangler secrets 或 GitHub Actions secrets。
+- 如果配置了 `INTERNAL_ADMIN_TOKEN`，所有 `/admin/*` 路由都需要 `Authorization: Bearer <token>`。
+
+更多安全和权限设计见 [SECURITY.md](SECURITY.md) 和 [docs/SECURITY_AND_PERMISSIONS.md](docs/SECURITY_AND_PERMISSIONS.md)。
+
+## Background
+
+很多 agent 项目默认需要一台一直在线的服务器，用进程内队列、磁盘文件和后台 worker 维持状态。`serverless-agent` 选择了另一种方式：把 agent 设计成可恢复的 serverless 状态机，而不是常驻进程。
+
+核心特点：
+
+- **不需要自建服务器**：部署目标是 Cloudflare，不需要维护 VPS、systemd、Docker daemon 或常驻后台进程。
+- **多入口同一运行时**：Telegram、QQ、WeCom、Weixin OC 和 WebUI 消息会被规范化为内部消息，然后进入同一条 agent pipeline。
+- **按 agent 串行处理**：Durable Object 负责同一 agent 的 mailbox、幂等、重试和恢复，避免同一会话中的任务并发写状态。
+- **有边界的工具执行**：模型不会直接持有平台 token 或密钥；发消息、写工作区、外部操作等能力通过工具注册和权限策略控制。
+- **虚拟工作区和定时任务**：使用 D1 与对象存储保存 workspace、skills、artifacts 和 schedules，适合无真实文件系统的 runtime。
+
+基本流程：
 
 ```text
-Telegram / QQ / Webhook / Admin UI
+Platform Webhook / Admin UI
         |
 Cloudflare Worker
         |
 Cloudflare Queue
         |
-Agent Durable Object / Cloudflare Agent
+Agent Durable Object
         |
-Tool Registry / Permission Engine / Skill Loader
-        |
-D1 / Object Storage / KV / External APIs
+Agent Core / Tools / Storage
 ```
 
-## 目录入口
+主要模块：
 
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): 整体架构和运行流程。
-- [docs/FILE_STRUCTURE.md](docs/FILE_STRUCTURE.md): 文件结构和模块边界。
-- [docs/DEVELOPMENT_GUIDE.md](docs/DEVELOPMENT_GUIDE.md): 开发规范。
-- [docs/SECURITY_AND_PERMISSIONS.md](docs/SECURITY_AND_PERMISSIONS.md): 权限、安全和审计设计。
-- [docs/PLATFORM_CLOUDFLARE.md](docs/PLATFORM_CLOUDFLARE.md): Cloudflare 平台映射。
-- [docs/LOCAL_DEVELOPMENT.md](docs/LOCAL_DEVELOPMENT.md): 本地开发、D1 迁移和调试入口。
-- [docs/MODEL_PROVIDERS.md](docs/MODEL_PROVIDERS.md): OpenAI-compatible、Gemini 和 mock provider 配置。
-- [docs/SKILL_RUNTIME.md](docs/SKILL_RUNTIME.md): skill 选择、上下文注入和工具授权规则。
-- [docs/SCHEDULER_RUNTIME.md](docs/SCHEDULER_RUNTIME.md): future tasks、recurring schedules 和 heartbeat。
-- [docs/PERMISSIONS_RUNTIME.md](docs/PERMISSIONS_RUNTIME.md): 显式权限策略、默认权限和 pending action 确认流程。
-- [docs/ADMIN_WEBUI.md](docs/ADMIN_WEBUI.md): React/Vite 管理控制台和 `platform:webui` 入口。
-- [docs/GITHUB_ACTIONS_DEPLOY.md](docs/GITHUB_ACTIONS_DEPLOY.md): 不绑定 Cloudflare 仓库的 GitHub Actions 部署方式。
-- [docs/ROADMAP.md](docs/ROADMAP.md): MVP 到长期版本路线。
-- [docs/architecture/PLATFORM_INTEGRATIONS.md](docs/architecture/PLATFORM_INTEGRATIONS.md): 各社交平台网关长连接与拉取消息的具体实现原理。
-- [specs/](specs): 内部消息、工具、VFS、skill manifest 的接口草案。
+- `src/worker`: HTTP、Queue、Cron 入口。
+- `src/agents`: Durable Object 协调与 mailbox 串行处理。
+- `src/core`: 平台无关的 agent loop、上下文和模型调用。
+- `src/adapters`: Telegram、QQ、WeCom、Weixin OC 等平台适配。
+- `src/storage`: D1、对象存储和 repository 层。
+- `apps/admin-web`: 管理控制台。
 
-## 当前实现与功能状态
+文档入口见 [docs/README.md](docs/README.md)，更完整的设计说明见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。
 
-目前仓库已经超越了最初的 MVP 阶段，核心内核以及大部分周边平台生态均已实现，并且有完备的单元测试覆盖。
+## Install
 
-### 1. 已实现的核心功能 ✅
-- **多平台收发与网关适配**：
-  - **Telegram Webhook**：完备的收发消息及富文本格式化回退（HTML/Markdown 转纯文本）容错机制。
-  - **QQ 官方机器人 (QQ Official)**：支持 Gateway Durable Object 长连接模式，也支持 QQ 官方 Webhook 模式；Webhook 模式可减少 DO duration 消耗。
-  - **个人微信 / Weixin OC**：基于腾讯 `iLink` 风格接口实现扫码登录、状态轮询与收发消息，运行游标和会话上下文保存在 DO storage。
-  - **企业微信 (WeCom)**：支持客服回调 Webhook、URL 验证和下行消息。
-  - **WebUI / Admin**：通过 `/admin/messages` 进入同一套 agent pipeline。
-- **Agent 运行循环与上下文**：基于 LLM 决策、具备可选技能（Skills）过滤与运行时工具注册机制的 `agent-tool-loop`。
-- **D1-first 虚拟文件系统 (VFS)**：提供 Agent 读写文件、管理工作区和归档的虚拟目录机制；较大对象走 R2/S3，最低可用模式可写入 D1 lite。
-- **定时与未来任务 (Scheduler)**：基于 Durable Object Alarms 和 Cron Triggers 的心跳、未来任务调度、失败重试等。
-- **权限与确认机制 (Permissions & Pending Actions)**：提供精细化策略控制，支持针对“发消息、调用高特权 API”等敏感操作的 Pending 确认流程。
-- **功能齐备的后台管理端 (Admin WebUI)**：React + Vite 构建的仪表盘，支持多语言 (i18n)、模型配置、三方平台对接、调试沙盒、Runs 运行日志查看、在线文件系统操作以及审批 Pending Actions。
-- **搜索服务对接 (Search Providers)**：集成了 **Tavily** 与 **Exa** 外部搜索提供商。
+依赖：
 
-### 2. 计划与建设中的能力 🚧
-- **Git 工具**：设计已归档，后续计划通过 GitHub/GitLab API 逐步接入完整的代码仓读取、Skills 同步、Commit 与 PR 创建工具。
-- **邮件服务对接**：入站邮件接收解析与出站邮件发送工具。
-- **RSS/URL 监控监控器**。
+- Node.js 20+
+- npm
+- Cloudflare Wrangler
+
+安装依赖：
+
+```bash
+npm install
+```
+
+可选：复制本地环境变量模板。
+
+```bash
+cp .dev.vars.example .dev.vars
+```
+
+应用本地 D1 migrations：
+
+```bash
+npm run db:migrate:local
+```
+
+## Usage
+
+启动本地 Worker：
+
+```bash
+npm run dev
+```
+
+打开管理界面：
+
+```text
+http://localhost:8787/ui
+```
+
+发送一条本地同步消息：
+
+```bash
+curl -sS http://localhost:8787/admin/messages \
+  -H 'content-type: application/json' \
+  -d '{"platform":"webui","conversationId":"webui:default","text":"/ping","mode":"sync"}'
+```
+
+常用命令：
+
+```bash
+npm run typecheck
+npm test
+npm run admin:build
+npm run dry-run
+```
+
+部署建议使用 GitHub Actions，见 [docs/GITHUB_ACTIONS_DEPLOY.md](docs/GITHUB_ACTIONS_DEPLOY.md)。
+
+## API
+
+常用 HTTP 入口：
+
+- `GET /health`
+- `GET /ui`
+- `POST /admin/messages`
+- `GET /admin/runs`
+- `GET /admin/vfs`
+- `POST /webhooks/telegram`
+- `POST /webhooks/wecom/:webhookSecret`
+- `POST /webhooks/qq-official/:webhookSecret`
+
+本地开发和管理接口示例见 [docs/LOCAL_DEVELOPMENT.md](docs/LOCAL_DEVELOPMENT.md)。
+
+## Maintainers
+
+- [@clown145](https://github.com/clown145)
+
+## Contributing
+
+Issues 和 pull requests 可以直接在 GitHub 提交。
+
+提交前请运行：
+
+```bash
+npm run typecheck
+npm test
+```
+
+开发约定见 [CONTRIBUTING.md](CONTRIBUTING.md) 和 [docs/DEVELOPMENT_GUIDE.md](docs/DEVELOPMENT_GUIDE.md)。
+
+## License
+
+GPL-3.0-or-later © serverless-agent contributors. See [LICENSE](LICENSE).
