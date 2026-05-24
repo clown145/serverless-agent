@@ -1,33 +1,5 @@
-import {
-  formatWeixinOcApiError,
-  isSuccessfulWeixinOcPayload,
-  WeixinOcApiClient,
-  weixinOcApiErrcode
-} from "../../adapters/weixin-oc/api";
-import {
-  resolveWeixinOcBotByIntegrationId,
-  resolveWeixinOcBotForAgent
-} from "../../adapters/weixin-oc/config";
-import { saveWeixinOcTokenCredential } from "../../adapters/weixin-oc/credential";
-import {
-  buildWeixinOcTextItem,
-  normalizeWeixinOcInboundMessage
-} from "../../adapters/weixin-oc/normalize";
-import { persistWeixinOcInboundMedia } from "../../adapters/weixin-oc/inbound-media";
-import {
-  buildWeixinOcFileItem,
-  buildWeixinOcImageItem,
-  uploadWeixinOcMedia
-} from "../../adapters/weixin-oc/media";
-import { normalizeContextTokens } from "../../adapters/weixin-oc/state";
-import type { WeixinOcBotConfig } from "../../adapters/weixin-oc/config";
-import type {
-  WeixinOcAccountState,
-  WeixinOcLoginSession,
-  WeixinOcSendItem
-} from "../../adapters/weixin-oc/types";
-import { createId } from "../../shared/ids";
 import { errorResponse, jsonResponse } from "../../shared/http";
+import { createId } from "../../shared/ids";
 import { nowIso } from "../../shared/time";
 import type { Env } from "../../shared/types/env";
 import type { InternalMessage } from "../../shared/types/internal-message";
@@ -36,15 +8,29 @@ import {
   clearPlatformIntegrationCredential,
   updatePlatformIntegrationCheck
 } from "../../storage/repositories/platform-integrations-repository";
-
-const SESSION_TIMEOUT_ERRCODE = -14;
-const LOGIN_SESSION_TTL_MS = 5 * 60 * 1000;
-const LOGIN_SESSION_KEY = "login_session";
-const ACCOUNT_STATE_KEY = "account_state";
-const RUNTIME_STATUS_KEY = "runtime_status";
-const AGENT_ID_KEY = "agent_id";
-const INTEGRATION_ID_KEY = "integration_id";
-const QR_EXPIRED_COUNT_KEY = "qr_expired_count";
+import {
+  pollWeixinOcGatewayLogin,
+  startWeixinOcGatewayLogin
+} from "./weixin-oc-gateway-login";
+import { pollWeixinOcGatewayUpdates } from "./weixin-oc-gateway-polling";
+import {
+  sendWeixinOcGatewayMessage,
+  sendWeixinOcGatewayTyping,
+  type WeixinOcGatewaySendInput
+} from "./weixin-oc-gateway-send";
+import {
+  clearWeixinOcLoginSession,
+  clearWeixinOcRuntimeError,
+  persistWeixinOcAccountState,
+  recordWeixinOcRuntimeError,
+  rememberWeixinOcGatewayTarget,
+  requireWeixinOcGatewayConfig,
+  resolveWeixinOcGatewayTarget
+} from "./weixin-oc-gateway-state";
+import {
+  getWeixinOcGatewayStatus,
+  type WeixinOcGatewayStatus
+} from "./weixin-oc-gateway-status";
 
 export class WeixinOcGatewayDurableObject {
   constructor(
@@ -70,22 +56,12 @@ export class WeixinOcGatewayDurableObject {
 
       if (request.method === "POST" && url.pathname === "/disconnect") {
         await this.clearLoginState(agentId, integrationId);
-        await this.state.storage.delete(LOGIN_SESSION_KEY);
-        await this.state.storage.delete(QR_EXPIRED_COUNT_KEY);
+        await clearWeixinOcLoginSession(this.state.storage);
         return jsonResponse({ ok: true });
       }
 
       if (request.method === "POST" && url.pathname === "/send") {
-        const input = (await request.json().catch(() => ({}))) as {
-          userId?: string;
-          text?: string;
-          kind?: "text" | "image" | "file";
-          file?: {
-            bytes?: number[];
-            fileName?: string;
-            mimeType?: string;
-          };
-        };
+        const input = (await request.json().catch(() => ({}))) as WeixinOcGatewaySendInput;
         const result = await this.sendMessage(agentId, input, integrationId);
         return jsonResponse({ ok: result.ok, result }, { status: result.ok ? 200 : 400 });
       }
@@ -117,12 +93,11 @@ export class WeixinOcGatewayDurableObject {
   }
 
   async alarm(): Promise<void> {
-    const agentId =
-      (await this.state.storage.get<string>(AGENT_ID_KEY)) ??
-      this.env.DEFAULT_AGENT_ID ??
-      "default";
-    const integrationId = await this.state.storage.get<string>(INTEGRATION_ID_KEY);
-    await this.pollOnce(agentId, integrationId);
+    const target = await resolveWeixinOcGatewayTarget(
+      this.state.storage,
+      this.env.DEFAULT_AGENT_ID ?? "default"
+    );
+    await this.pollOnce(target.agentId, target.integrationId);
   }
 
   private async ensureRunning(
@@ -130,15 +105,14 @@ export class WeixinOcGatewayDurableObject {
     integrationId?: string
   ): Promise<WeixinOcGatewayStatus> {
     const config = await this.requireConfig(agentId, integrationId);
-    await this.state.storage.put(AGENT_ID_KEY, agentId);
-    await this.state.storage.put(INTEGRATION_ID_KEY, config.integrationId);
+    await rememberWeixinOcGatewayTarget(this.state.storage, agentId, config.integrationId);
 
     if (!config.token) {
       return this.startLogin(agentId, false, integrationId);
     }
 
     await this.schedulePoll(1_000);
-    await this.clearRuntimeError();
+    await clearWeixinOcRuntimeError(this.state.storage);
     return this.status(agentId, integrationId);
   }
 
@@ -148,36 +122,16 @@ export class WeixinOcGatewayDurableObject {
     integrationId?: string
   ): Promise<WeixinOcGatewayStatus> {
     const config = await this.requireConfig(agentId, integrationId);
-    await this.state.storage.put(AGENT_ID_KEY, agentId);
-    await this.state.storage.put(INTEGRATION_ID_KEY, config.integrationId);
+    await rememberWeixinOcGatewayTarget(this.state.storage, agentId, config.integrationId);
 
-    const existing = await this.state.storage.get<WeixinOcLoginSession>(LOGIN_SESSION_KEY);
-    if (!forceRefresh && isLoginSessionValid(existing)) {
-      await this.schedulePoll(config.qrPollIntervalMs);
-      return this.status(agentId, integrationId);
-    }
-
-    const client = this.createClient(config);
-    const payload = await client.getLoginQrCode(config.botType);
-    const qrcode = String(payload.qrcode ?? "").trim();
-    const qrcodeImgContent = String(payload.qrcode_img_content ?? "").trim();
-    if (!qrcode || !qrcodeImgContent) {
-      throw new Error("Weixin OC QR response is missing qrcode or qrcode_img_content");
-    }
-
-    const loginSession: WeixinOcLoginSession = {
-      sessionKey: crypto.randomUUID(),
-      qrcode,
-      qrcodeImgContent,
-      startedAt: nowIso(),
-      status: "wait"
-    };
-    await this.state.storage.put(LOGIN_SESSION_KEY, loginSession);
-    await this.state.storage.put(QR_EXPIRED_COUNT_KEY, 0);
-    await updatePlatformIntegrationCheck(this.env.AGENT_DB, config.integrationId, {});
-    await this.clearRuntimeError();
-    await this.schedulePoll(config.qrPollIntervalMs);
-    return this.status(agentId, integrationId);
+    return startWeixinOcGatewayLogin({
+      env: this.env,
+      storage: this.state.storage,
+      config,
+      forceRefresh,
+      schedulePoll: (delayMs) => this.schedulePoll(delayMs),
+      status: () => this.status(agentId, integrationId)
+    });
   }
 
   private async pollOnce(
@@ -185,235 +139,48 @@ export class WeixinOcGatewayDurableObject {
     integrationId?: string
   ): Promise<WeixinOcGatewayStatus> {
     const config = await this.requireConfig(agentId, integrationId);
-    await this.state.storage.put(AGENT_ID_KEY, agentId);
-    await this.state.storage.put(INTEGRATION_ID_KEY, config.integrationId);
+    await rememberWeixinOcGatewayTarget(this.state.storage, agentId, config.integrationId);
 
     if (!config.token) {
-      if (!(await this.pollLogin(config))) {
+      if (
+        !(await pollWeixinOcGatewayLogin({
+          env: this.env,
+          storage: this.state.storage,
+          config,
+          restartLogin: () => this.startLogin(config.agentId, true, config.integrationId),
+          schedulePoll: (delayMs) => this.schedulePoll(delayMs)
+        }))
+      ) {
         await this.schedulePoll(config.qrPollIntervalMs);
       }
       return this.status(agentId, integrationId);
     }
 
     try {
-      await this.pollUpdates(config);
+      await pollWeixinOcGatewayUpdates({
+        env: this.env,
+        storage: this.state.storage,
+        config,
+        clearLoginState: () => this.clearLoginState(config.agentId, config.integrationId),
+        dispatchInbound: (dispatchAgentId, dispatchMessage) =>
+          this.dispatchInbound(dispatchAgentId, dispatchMessage)
+      });
       await this.schedulePoll(1_000);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Weixin OC poll failed";
-      await this.recordRuntimeError(message);
+      await recordWeixinOcRuntimeError(this.state.storage, message);
       await this.schedulePoll(5_000);
     }
     return this.status(agentId, integrationId);
   }
 
-  private async pollLogin(config: WeixinOcBotConfig): Promise<boolean> {
-    const loginSession = await this.state.storage.get<WeixinOcLoginSession>(LOGIN_SESSION_KEY);
-    if (!isLoginSessionValid(loginSession)) {
-      await this.startLogin(config.agentId, true, config.integrationId);
-      return false;
-    }
-
-    const client = this.createClient(config);
-    const data = await client.getQrCodeStatus(
-      loginSession.qrcode,
-      config.longPollTimeoutMs
-    );
-    const status = String(data.status ?? "wait").trim();
-    const nextSession: WeixinOcLoginSession = {
-      ...loginSession,
-      status
-    };
-
-    if (status === "expired") {
-      const expiredCount = ((await this.state.storage.get<number>(QR_EXPIRED_COUNT_KEY)) ?? 0) + 1;
-      await this.state.storage.put(QR_EXPIRED_COUNT_KEY, expiredCount);
-      if (expiredCount > 3) {
-        await this.state.storage.put(LOGIN_SESSION_KEY, {
-          ...nextSession,
-          error: "二维码已过期，请重新开始扫码登录"
-        });
-        return false;
-      }
-      await this.startLogin(config.agentId, true, config.integrationId);
-      return false;
-    }
-
-    if (status !== "confirmed") {
-      await this.state.storage.put(LOGIN_SESSION_KEY, nextSession);
-      return false;
-    }
-
-    const botToken = String(data.bot_token ?? "").trim();
-    if (!botToken) {
-      await this.state.storage.put(LOGIN_SESSION_KEY, {
-        ...nextSession,
-        error: "登录成功但微信接口未返回 bot_token"
-      });
-      return false;
-    }
-
-    const accountId = stringFromUnknown(data.ilink_bot_id);
-    const baseUrl = stringFromUnknown(data.baseurl) ?? config.baseUrl;
-    const confirmedSession: WeixinOcLoginSession = {
-      ...nextSession,
-      botToken,
-      accountId,
-      baseUrl,
-      userId: stringFromUnknown(data.ilink_user_id)
-    };
-    await this.persistAccountState(config, {
-      token: botToken,
-      accountId,
-      syncBuf: config.syncBuf,
-      baseUrl,
-      contextTokens: config.contextTokens
-    });
-    await saveWeixinOcTokenCredential(this.env, config.integrationId, botToken);
-    await this.state.storage.put(LOGIN_SESSION_KEY, confirmedSession);
-    await this.schedulePoll(1_000);
-    return true;
-  }
-
-  private async pollUpdates(config: WeixinOcBotConfig): Promise<void> {
-    const client = this.createClient(config);
-    const data = await client.getUpdates(config.syncBuf, config.longPollTimeoutMs);
-    if (!isSuccessfulWeixinOcPayload(data as Record<string, unknown>)) {
-      if (weixinOcApiErrcode(data as Record<string, unknown>) === SESSION_TIMEOUT_ERRCODE) {
-        await this.clearLoginState(config.agentId, config.integrationId);
-        return;
-      }
-      throw new Error(formatWeixinOcApiError(data as Record<string, unknown>));
-    }
-
-    const nextState: WeixinOcAccountState = {
-      token: config.token,
-      accountId: config.accountId,
-      syncBuf: data.get_updates_buf ?? config.syncBuf,
-      baseUrl: config.baseUrl,
-      contextTokens: { ...config.contextTokens }
-    };
-    let dirty = data.get_updates_buf !== undefined && data.get_updates_buf !== config.syncBuf;
-
-    for (const message of data.msgs ?? []) {
-      const fromUserId = message.from_user_id?.trim();
-      if (!fromUserId) {
-        continue;
-      }
-      const contextToken = message.context_token?.trim();
-      if (contextToken && nextState.contextTokens[fromUserId] !== contextToken) {
-        nextState.contextTokens[fromUserId] = contextToken;
-        dirty = true;
-      }
-      const normalized = normalizeWeixinOcInboundMessage(message, config.agentId);
-      if (!normalized) {
-        continue;
-      }
-      await this.dispatchInbound(
-        config.agentId,
-        await persistWeixinOcInboundMedia(this.env, config, normalized)
-      );
-    }
-
-    if (dirty) {
-      await this.persistAccountState(config, nextState);
-    }
-  }
-
   private async sendMessage(
     agentId: string,
-    input: {
-      userId?: string;
-      text?: string;
-      kind?: "text" | "image" | "file";
-      file?: {
-        bytes?: number[];
-        fileName?: string;
-        mimeType?: string;
-      };
-    },
+    input: WeixinOcGatewaySendInput,
     integrationId?: string
-  ): Promise<{ ok: boolean; providerMessageId?: string; error?: string }> {
+  ) {
     const config = await this.requireConfig(agentId, integrationId);
-    const userId = input.userId?.trim();
-    const text = input.text?.trim();
-    const kind = input.kind ?? "text";
-    if (!userId) {
-      return { ok: false, error: "userId is required" };
-    }
-    if (kind === "text" && !text) {
-      return { ok: false, error: "text is required" };
-    }
-    if (!config.token) {
-      return { ok: false, error: "Weixin OC is not logged in" };
-    }
-
-    const contextToken = config.contextTokens[userId];
-    if (!contextToken) {
-      return {
-        ok: false,
-        error: "context_token missing. Ask this WeChat user to send one message first."
-      };
-    }
-
-    const itemList: WeixinOcSendItem[] = [];
-    if (kind === "text") {
-      itemList.push(buildWeixinOcTextItem(text ?? ""));
-    } else {
-      const file = parseGatewayFile(input.file);
-      if (!file) {
-        return { ok: false, error: "file bytes, fileName, and mimeType are required" };
-      }
-      if (text) {
-        itemList.push(buildWeixinOcTextItem(text));
-      }
-      const client = this.createClient(config);
-      const uploaded = await uploadWeixinOcMedia({
-        client,
-        cdnBaseUrl: config.cdnBaseUrl,
-        toUserId: userId,
-        file,
-        kind
-      });
-      itemList.push(
-        kind === "image"
-          ? buildWeixinOcImageItem(uploaded)
-          : buildWeixinOcFileItem({
-              uploaded,
-              fileName: file.fileName
-            })
-      );
-    }
-
-    return this.sendItems(config, userId, contextToken, itemList);
-  }
-
-  private async sendItems(
-    config: WeixinOcBotConfig,
-    userId: string,
-    contextToken: string,
-    itemList: WeixinOcSendItem[]
-  ): Promise<{ ok: boolean; providerMessageId?: string; error?: string }> {
-    let providerMessageId: string | undefined;
-
-    for (const item of itemList) {
-      const payload = await this.createClient(config).sendMessage({
-        toUserId: userId,
-        contextToken,
-        itemList: [item]
-      });
-      if (!isSuccessfulWeixinOcPayload(payload as Record<string, unknown>)) {
-        return {
-          ok: false,
-          error: formatWeixinOcApiError(payload as Record<string, unknown>)
-        };
-      }
-      providerMessageId = payload.message_id ?? payload.msg_id ?? createId("wxoc_sent");
-    }
-
-    return {
-      ok: true,
-      providerMessageId
-    };
+    return sendWeixinOcGatewayMessage(config, input);
   }
 
   private async sendTyping(
@@ -422,31 +189,7 @@ export class WeixinOcGatewayDurableObject {
     integrationId?: string
   ): Promise<void> {
     const config = await this.requireConfig(agentId, integrationId);
-    const cleanUserId = userId?.trim();
-    if (!cleanUserId || !config.token) {
-      return;
-    }
-    const contextToken = config.contextTokens[cleanUserId];
-    if (!contextToken) {
-      return;
-    }
-
-    const client = this.createClient(config);
-    const configPayload = await client.getTypingConfig({
-      userId: cleanUserId,
-      contextToken
-    });
-    if (!isSuccessfulWeixinOcPayload(configPayload)) {
-      return;
-    }
-    const typingTicket = String(configPayload.typing_ticket ?? "").trim();
-    if (!typingTicket) {
-      return;
-    }
-    await client.sendTypingState({
-      userId: cleanUserId,
-      typingTicket
-    });
+    return sendWeixinOcGatewayTyping(config, userId);
   }
 
   private async status(
@@ -454,33 +197,7 @@ export class WeixinOcGatewayDurableObject {
     integrationId?: string
   ): Promise<WeixinOcGatewayStatus> {
     const config = await this.requireConfig(agentId, integrationId);
-    const loginSession = await this.state.storage.get<WeixinOcLoginSession>(LOGIN_SESSION_KEY);
-    const runtimeStatus = await this.state.storage.get<WeixinOcRuntimeStatus>(
-      RUNTIME_STATUS_KEY
-    );
-
-    return {
-      agentId: config.agentId,
-      integrationId: config.integrationId,
-      configured: Boolean(config.token),
-      accountId: config.accountId,
-      baseUrl: config.baseUrl,
-      syncBufLength: config.syncBuf.length,
-      contextTokenCount: Object.keys(config.contextTokens).length,
-      loginSession: loginSession
-        ? {
-            sessionKey: loginSession.sessionKey,
-            status: loginSession.status,
-            qrcode: loginSession.qrcode,
-            qrcodeImgContent: loginSession.qrcodeImgContent,
-            qrImageUrl: qrImageUrl(loginSession.qrcodeImgContent),
-            startedAt: loginSession.startedAt,
-            error: loginSession.error
-          }
-        : undefined,
-      updatedAt: nowIso(),
-      lastError: runtimeStatus?.lastError ?? config.integration.lastError
-    };
+    return getWeixinOcGatewayStatus(this.state.storage, config);
   }
 
   private async clearLoginState(
@@ -488,7 +205,7 @@ export class WeixinOcGatewayDurableObject {
     integrationId?: string
   ): Promise<void> {
     const config = await this.requireConfig(agentId, integrationId);
-    await this.persistAccountState(config, {
+    await persistWeixinOcAccountState(this.state.storage, config, {
       token: undefined,
       accountId: undefined,
       syncBuf: "",
@@ -501,88 +218,13 @@ export class WeixinOcGatewayDurableObject {
     });
   }
 
-  private createClient(config: WeixinOcBotConfig): WeixinOcApiClient {
-    return new WeixinOcApiClient({
-      baseUrl: config.baseUrl,
-      cdnBaseUrl: config.cdnBaseUrl,
-      apiTimeoutMs: config.apiTimeoutMs,
-      token: config.token
-    });
-  }
-
-  private async persistAccountState(
-    config: WeixinOcBotConfig,
-    state: Partial<WeixinOcAccountState>
-  ): Promise<void> {
-    const current = await this.getStoredAccountState(config);
-    await this.state.storage.put(
-      ACCOUNT_STATE_KEY,
-      normalizeRuntimeAccountState({
-        ...current,
-        ...state,
-        token: undefined
-      })
+  private requireConfig(agentId: string, integrationId?: string) {
+    return requireWeixinOcGatewayConfig(
+      this.env,
+      this.state.storage,
+      agentId,
+      integrationId
     );
-    await this.clearRuntimeError();
-  }
-
-  private async requireConfig(agentId: string, integrationId?: string) {
-    const config = integrationId
-      ? await resolveWeixinOcBotByIntegrationId(this.env, integrationId)
-      : await resolveWeixinOcBotForAgent(this.env, agentId);
-    if (!config) {
-      throw new Error("Weixin OC integration is not configured");
-    }
-    return this.withRuntimeAccountState(config);
-  }
-
-  private async withRuntimeAccountState(
-    config: WeixinOcBotConfig
-  ): Promise<WeixinOcBotConfig> {
-    const accountState = await this.getStoredAccountState(config);
-    return {
-      ...config,
-      accountId: accountState.accountId ?? config.accountId,
-      syncBuf: accountState.syncBuf ?? config.syncBuf,
-      baseUrl: accountState.baseUrl ?? config.baseUrl,
-      contextTokens: {
-        ...config.contextTokens,
-        ...accountState.contextTokens
-      }
-    };
-  }
-
-  private async getStoredAccountState(
-    config: WeixinOcBotConfig
-  ): Promise<WeixinOcAccountState> {
-    const stored = await this.state.storage.get<Partial<WeixinOcAccountState>>(
-      ACCOUNT_STATE_KEY
-    );
-    if (stored) {
-      return normalizeRuntimeAccountState(stored);
-    }
-
-    const legacyState = normalizeRuntimeAccountState({
-      accountId: config.accountId,
-      syncBuf: config.syncBuf,
-      baseUrl: config.baseUrl,
-      contextTokens: config.contextTokens
-    });
-    if (hasRuntimeAccountState(legacyState)) {
-      await this.state.storage.put(ACCOUNT_STATE_KEY, legacyState);
-    }
-    return legacyState;
-  }
-
-  private async recordRuntimeError(message: string): Promise<void> {
-    await this.state.storage.put(RUNTIME_STATUS_KEY, {
-      lastError: message,
-      updatedAt: nowIso()
-    } satisfies WeixinOcRuntimeStatus);
-  }
-
-  private async clearRuntimeError(): Promise<void> {
-    await this.state.storage.delete(RUNTIME_STATUS_KEY);
   }
 
   private async dispatchInbound(agentId: string, message: InternalMessage): Promise<void> {
@@ -599,90 +241,4 @@ export class WeixinOcGatewayDurableObject {
   private async schedulePoll(delayMs: number): Promise<void> {
     await this.state.storage.setAlarm(Date.now() + delayMs);
   }
-}
-
-export type WeixinOcGatewayStatus = {
-  agentId: string;
-  integrationId: string;
-  configured: boolean;
-  accountId?: string;
-  baseUrl: string;
-  syncBufLength: number;
-  contextTokenCount: number;
-  loginSession?: {
-    sessionKey: string;
-    status: string;
-    qrcode: string;
-    qrcodeImgContent: string;
-    qrImageUrl: string;
-    startedAt: string;
-    error?: string;
-  };
-  updatedAt: string;
-  lastError?: string;
-};
-
-type WeixinOcRuntimeStatus = {
-  lastError?: string;
-  updatedAt: string;
-};
-
-function isLoginSessionValid(
-  loginSession: WeixinOcLoginSession | undefined
-): loginSession is WeixinOcLoginSession {
-  if (!loginSession) {
-    return false;
-  }
-  return Date.now() - new Date(loginSession.startedAt).getTime() < LOGIN_SESSION_TTL_MS;
-}
-
-function qrImageUrl(qrcodeImgContent: string): string {
-  const url = new URL("https://api.qrserver.com/v1/create-qr-code/");
-  url.searchParams.set("size", "300x300");
-  url.searchParams.set("data", qrcodeImgContent);
-  return url.toString();
-}
-
-function stringFromUnknown(value: unknown): string | undefined {
-  return typeof value === "string" && value.trim() ? value.trim() : undefined;
-}
-
-function normalizeRuntimeAccountState(
-  state: Partial<WeixinOcAccountState>
-): WeixinOcAccountState {
-  return {
-    accountId: stringFromUnknown(state.accountId),
-    syncBuf: stringFromUnknown(state.syncBuf) ?? "",
-    baseUrl: stringFromUnknown(state.baseUrl),
-    contextTokens: normalizeContextTokens(state.contextTokens)
-  };
-}
-
-function hasRuntimeAccountState(state: WeixinOcAccountState): boolean {
-  return Boolean(
-    state.accountId ||
-      state.syncBuf ||
-      state.baseUrl ||
-      Object.keys(state.contextTokens).length > 0
-  );
-}
-
-function parseGatewayFile(input: {
-  bytes?: number[];
-  fileName?: string;
-  mimeType?: string;
-} | undefined): { bytes: Uint8Array; fileName: string; mimeType: string } | undefined {
-  const fileName = input?.fileName?.trim();
-  const mimeType = input?.mimeType?.trim();
-  if (!fileName || !mimeType || !Array.isArray(input?.bytes)) {
-    return undefined;
-  }
-  if (input.bytes.some((byte) => !Number.isInteger(byte) || byte < 0 || byte > 255)) {
-    return undefined;
-  }
-  return {
-    bytes: new Uint8Array(input.bytes),
-    fileName,
-    mimeType
-  };
 }
