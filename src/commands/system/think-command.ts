@@ -2,10 +2,7 @@ import {
   getConversationSettings,
   updateConversationSettings
 } from "../../storage/repositories/conversation-settings-repository";
-import type {
-  ReasoningEffort,
-  ReasoningStateMode
-} from "../../core/model/reasoning-types";
+import type { ReasoningEffort, ReasoningStateMode } from "../../core/model/reasoning-types";
 import type { CommandDefinition } from "../types";
 import { bold, code } from "./format";
 

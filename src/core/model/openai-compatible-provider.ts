@@ -136,16 +136,11 @@ function createOpenAiBody(
 ): Record<string, unknown> {
   const body: Record<string, unknown> = {
     model,
-    messages: toOpenAiMessages(
-      request.messages,
-      toWireName,
-      toolResultMode,
-      {
-        model,
-        baseUrl,
-        settings: request.reasoning
-      }
-    ),
+    messages: toOpenAiMessages(request.messages, toWireName, toolResultMode, {
+      model,
+      baseUrl,
+      settings: request.reasoning
+    }),
     ...openAiReasoningBodyFields({
       model,
       baseUrl,

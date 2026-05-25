@@ -13,7 +13,9 @@ export type OpenAiReasoningOptions = {
   settings?: ReasoningSettings;
 };
 
-export function openAiReasoningBodyFields(options: OpenAiReasoningOptions): Record<string, unknown> {
+export function openAiReasoningBodyFields(
+  options: OpenAiReasoningOptions
+): Record<string, unknown> {
   const settings = options.settings ?? defaultReasoningSettings();
   if (!shouldSendReasoningEffort(settings)) {
     return {};

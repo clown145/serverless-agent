@@ -7,10 +7,7 @@ import {
   type ConversationSettingsRecord,
   type ConversationSettingsRow
 } from "./conversation-settings-types";
-import type {
-  ReasoningEffort,
-  ReasoningStateMode
-} from "../../core/model/reasoning-types";
+import type { ReasoningEffort, ReasoningStateMode } from "../../core/model/reasoning-types";
 
 export type EnsureConversationSettingsInput = {
   agentId: string;
