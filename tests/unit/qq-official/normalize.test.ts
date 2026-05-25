@@ -79,6 +79,30 @@ describe("normalizeQqOfficialGatewayEvent", () => {
     });
     expect(result.message?.kind).toBe("command");
   });
+
+  it("accepts QQ image attachment content types without a subtype", () => {
+    const result = normalizeQqOfficialGatewayEvent(
+      "C2C_MESSAGE_CREATE",
+      {
+        id: "msg-4",
+        content: "",
+        author: { user_openid: "user-openid" },
+        attachments: [
+          {
+            id: "att-image",
+            content_type: "image",
+            url: "cdn.qq.com/image"
+          }
+        ]
+      },
+      "agent-1"
+    );
+
+    expect(result.message?.attachments[0]).toMatchObject({
+      type: "image",
+      sourceUrl: "https://cdn.qq.com/image"
+    });
+  });
 });
 
 describe("qqOfficialConversationId", () => {

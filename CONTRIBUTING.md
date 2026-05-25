@@ -17,6 +17,8 @@ npm run dev
 请先运行：
 
 ```bash
+npm run lint
+npm run format:check
 npm run typecheck
 npm test
 ```

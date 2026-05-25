@@ -172,6 +172,46 @@ describe("QqOfficialApiClient", () => {
       })
     ).resolves.toEqual({ id: "sent-media" });
   });
+
+  it("sends direct images as multipart file_image uploads", async () => {
+    const fetcher = vi.fn(async (url: string, init?: RequestInit) => {
+      if (url.endsWith("/app/getAppAccessToken")) {
+        return jsonResponse({ access_token: "token", expires_in: 7200 });
+      }
+      if (url.endsWith("/dms/guild-id/messages")) {
+        expect(init?.method).toBe("POST");
+        expect(init?.headers).toEqual({ authorization: "QQBot token" });
+        const form = init?.body as FormData;
+        expect(form.get("content")).toBe("caption");
+        expect(form.get("msg_id")).toBe("source-msg");
+        const file = form.get("file_image") as unknown as File;
+        expect(file.name).toBe("image.png");
+        expect(file.type).toBe("image/png");
+        expect(new TextDecoder().decode(await file.arrayBuffer())).toBe("img");
+        return jsonResponse({ id: "sent-direct-image" });
+      }
+      throw new Error(`unexpected url ${url}`);
+    });
+
+    const api = new QqOfficialApiClient({
+      appId: "app-id",
+      secret: "secret",
+      fetcher: fetcher as unknown as typeof fetch
+    });
+
+    await expect(
+      api.sendDirectImage({
+        guildId: "guild-id",
+        content: "caption",
+        file: {
+          bytes: new TextEncoder().encode("img"),
+          fileName: "image.png",
+          mimeType: "image/png"
+        },
+        msgId: "source-msg"
+      })
+    ).resolves.toEqual({ id: "sent-direct-image" });
+  });
 });
 
 function jsonResponse(body: unknown, init: ResponseInit = {}): Response {
