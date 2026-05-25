@@ -69,7 +69,7 @@ src/
 | `src/conversations/` | conversation ID 生成和解析。                                                    | 平台 API 调用。                                      |
 | `src/core/`          | 平台无关 agent loop、context、model abstraction、tool-call flow。               | Cloudflare binding、平台 token、D1/R2 细节。         |
 | `src/diagnostics/`   | 运行前配置检查和 runtime checks。                                               | 修复配置、写入业务状态。                             |
-| `src/media/`         | 附件持久化、平台入站媒体分发和 media object key helper。                       | 平台协议细节、VFS 服务。                             |
+| `src/media/`         | 附件持久化、平台入站媒体分发和 media object key helper。                        | 平台协议细节、VFS 服务。                             |
 | `src/platforms/`     | 平台能力、outbound registry、gateway DO wrappers 和 context hints。             | 具体 adapter normalize 逻辑。                        |
 | `src/tools/`         | 模型可调用工具、schema、权限和执行器。                                          | 平台 webhook、agent state machine。                  |
 | `src/storage/`       | D1 repositories、object storage、DO storage helpers，以及预留的 KV cache 边界。 | 业务流程和平台适配。                                 |

@@ -36,9 +36,7 @@ describe("QQ official inbound media", () => {
     expect(
       new TextDecoder().decode(stored.get("attachments/agent-1/msg_qq/qq_attachment_0")?.bytes)
     ).toBe("fake-png-bytes");
-    expect(stored.get("attachments/agent-1/msg_qq/qq_attachment_0")?.contentType).toBe(
-      "image/png"
-    );
+    expect(stored.get("attachments/agent-1/msg_qq/qq_attachment_0")?.contentType).toBe("image/png");
   });
 });
 

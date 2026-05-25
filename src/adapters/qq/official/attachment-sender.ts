@@ -86,7 +86,10 @@ export async function sendQqOfficialAttachment(
 function qqOfficialUnsupportedAttachmentMessage(
   input: QqOfficialAttachmentSendInput
 ): string | undefined {
-  if ((input.target.kind === "channel" || input.target.kind === "direct") && !isImageFile(input.file)) {
+  if (
+    (input.target.kind === "channel" || input.target.kind === "direct") &&
+    !isImageFile(input.file)
+  ) {
     return "QQ official channel and direct conversations only support image attachments";
   }
   return undefined;
