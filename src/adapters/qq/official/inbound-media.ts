@@ -45,14 +45,15 @@ async function persistQqOfficialImageAttachment(
       messageId: message.id,
       attachmentId: attachment.id
     });
+    const contentType = imageContentType(attachment.mimeType, downloaded.contentType);
     await createBlobStorage(env).put(r2Key, downloaded.bytes, {
-      contentType: attachment.mimeType ?? downloaded.contentType ?? "image/jpeg"
+      contentType
     });
 
     return {
       ...attachment,
       r2Key,
-      mimeType: attachment.mimeType ?? downloaded.contentType ?? "image/jpeg",
+      mimeType: contentType,
       size: attachment.size ?? downloaded.bytes.byteLength
     };
   } catch (error) {
@@ -96,4 +97,18 @@ function isQqOfficialHttpImageAttachment(attachment: MessageAttachment): boolean
 
 function normalizeContentType(value: string | null): string | undefined {
   return value?.split(";")[0]?.trim() || undefined;
+}
+
+function imageContentType(
+  attachmentMimeType: string | undefined,
+  downloadedContentType: string | undefined
+): string {
+  return specificMimeType(attachmentMimeType) ?? downloadedContentType ?? "image/jpeg";
+}
+
+function specificMimeType(value: string | undefined): string | undefined {
+  if (!value || !value.includes("/")) {
+    return undefined;
+  }
+  return value;
 }

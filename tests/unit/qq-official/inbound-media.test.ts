@@ -38,6 +38,27 @@ describe("QQ official inbound media", () => {
     ).toBe("fake-png-bytes");
     expect(stored.get("attachments/agent-1/msg_qq/qq_attachment_0")?.contentType).toBe("image/png");
   });
+
+  it("prefers downloaded image content type over generic attachment MIME type", async () => {
+    const stored = new Map<string, { bytes: Uint8Array; contentType?: string }>();
+    const imageBytes = new TextEncoder().encode("fake-png-bytes");
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(imageBytes, {
+          headers: {
+            "content-type": "image/png"
+          }
+        })
+    );
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+
+    const result = await persistQqOfficialInboundMedia(envWithBucket(stored), message("image"));
+
+    expect(result.attachments[0]).toMatchObject({
+      mimeType: "image/png"
+    });
+    expect(stored.get("attachments/agent-1/msg_qq/qq_attachment_0")?.contentType).toBe("image/png");
+  });
 });
 
 function envWithBucket(stored: Map<string, { bytes: Uint8Array; contentType?: string }>): Env {
@@ -55,7 +76,7 @@ function envWithBucket(stored: Map<string, { bytes: Uint8Array; contentType?: st
   } as Env;
 }
 
-function message(): InternalMessage {
+function message(mimeType?: string): InternalMessage {
   return {
     id: "msg_qq",
     platform: "qq",
@@ -71,6 +92,7 @@ function message(): InternalMessage {
       {
         id: "qq_attachment_0",
         type: "image",
+        mimeType,
         sourceUrl: "https://cdn.qq.com/image.png"
       }
     ],
