@@ -7,6 +7,10 @@ import {
   type ConversationSettingsRecord,
   type ConversationSettingsRow
 } from "./conversation-settings-types";
+import type {
+  ReasoningEffort,
+  ReasoningStateMode
+} from "../../core/model/reasoning-types";
 
 export type EnsureConversationSettingsInput = {
   agentId: string;
@@ -24,6 +28,8 @@ export type UpdateConversationSettingsInput = {
   summaryEnabled?: boolean;
   summaryProviderId?: string | null;
   summaryModelId?: string | null;
+  reasoningEffort?: ReasoningEffort;
+  reasoningStateMode?: ReasoningStateMode;
 };
 
 export async function ensureConversationSettings(
@@ -160,7 +166,9 @@ export async function updateConversationSettings(
         : existing.historyLimit,
     summaryEnabled: input.summaryEnabled ?? existing.summaryEnabled,
     summaryProviderId: valueOrExisting(input.summaryProviderId, existing.summaryProviderId),
-    summaryModelId: valueOrExisting(input.summaryModelId, existing.summaryModelId)
+    summaryModelId: valueOrExisting(input.summaryModelId, existing.summaryModelId),
+    reasoningEffort: input.reasoningEffort ?? existing.reasoningEffort,
+    reasoningStateMode: input.reasoningStateMode ?? existing.reasoningStateMode
   };
   const now = nowIso();
 
@@ -174,6 +182,8 @@ export async function updateConversationSettings(
            summary_enabled = ?,
            summary_provider_id = ?,
            summary_model_id = ?,
+           reasoning_effort = ?,
+           reasoning_state_mode = ?,
            updated_at = ?
        WHERE agent_id = ? AND conversation_id = ?`
     )
@@ -185,6 +195,8 @@ export async function updateConversationSettings(
       next.summaryEnabled ? 1 : 0,
       next.summaryProviderId ?? null,
       next.summaryModelId ?? null,
+      next.reasoningEffort,
+      next.reasoningStateMode,
       now,
       agentId,
       conversationId

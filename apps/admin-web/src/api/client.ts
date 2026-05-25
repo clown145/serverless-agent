@@ -177,6 +177,8 @@ export function createAdminClient(getToken: () => string) {
         summaryEnabled?: boolean;
         summaryProviderId?: string | null;
         summaryModelId?: string | null;
+        reasoningEffort?: "auto" | "low" | "normal" | "high";
+        reasoningStateMode?: "auto" | "on" | "off";
       }
     ) => {
       return request<ApiResult<{ conversation: ConversationSettings }>>(

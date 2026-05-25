@@ -24,7 +24,7 @@ describe("agent context", () => {
     });
   });
 
-  it("adds runtime time and platform formatting guidance", () => {
+  it("adds stable runtime context and platform formatting guidance", () => {
     const [system] = createInitialModelMessages(
       { ...message("msg-1", "hello"), platform: "telegram", conversationId: "telegram:123" },
       undefined,
@@ -41,6 +41,9 @@ describe("agent context", () => {
     expect(system.content).toContain("Configured timezone: Asia/Shanghai");
     expect(system.content).toContain("Current platform: telegram");
     expect(system.content).toContain("Current conversation: telegram:123");
+    expect(system.content).not.toContain("Current time:");
+    expect(system.content).not.toContain("Current time ISO:");
+    expect(system.content).toContain("Use time.now to get the current date/time");
     expect(system.content).toContain("Telegram formatting");
     expect(system.content).toContain("parse_mode HTML");
   });

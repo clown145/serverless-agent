@@ -1,4 +1,10 @@
 import type { Platform } from "../../shared/types/internal-message";
+import {
+  normalizeReasoningEffort,
+  normalizeReasoningStateMode,
+  type ReasoningEffort,
+  type ReasoningStateMode
+} from "../../core/model/reasoning-types";
 
 export type ConversationSettingsRecord = {
   id: string;
@@ -13,6 +19,8 @@ export type ConversationSettingsRecord = {
   summaryEnabled: boolean;
   summaryProviderId?: string;
   summaryModelId?: string;
+  reasoningEffort: ReasoningEffort;
+  reasoningStateMode: ReasoningStateMode;
   summaryText?: string;
   summaryUpdatedAt?: string;
   compactedUntilMessageId?: string;
@@ -33,6 +41,8 @@ export type ConversationSettingsRow = {
   summary_enabled?: number | null;
   summary_provider_id?: string | null;
   summary_model_id?: string | null;
+  reasoning_effort?: string | null;
+  reasoning_state_mode?: string | null;
   summary_text?: string | null;
   summary_updated_at?: string | null;
   compacted_until_message_id?: string | null;
@@ -56,6 +66,8 @@ export function mapConversationSettingsRow(
     summaryEnabled: row.summary_enabled !== 0,
     summaryProviderId: row.summary_provider_id ?? undefined,
     summaryModelId: row.summary_model_id ?? undefined,
+    reasoningEffort: normalizeReasoningEffort(row.reasoning_effort),
+    reasoningStateMode: normalizeReasoningStateMode(row.reasoning_state_mode),
     summaryText: row.summary_text ?? undefined,
     summaryUpdatedAt: row.summary_updated_at ?? undefined,
     compactedUntilMessageId: row.compacted_until_message_id ?? undefined,

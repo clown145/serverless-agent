@@ -15,6 +15,8 @@ export type ConversationDto = {
   summaryEnabled: boolean;
   summaryProviderId?: string;
   summaryModelId?: string;
+  reasoningEffort: string;
+  reasoningStateMode: string;
   summaryText?: string;
   summaryPreview?: string;
   summaryUpdatedAt?: string;
@@ -38,6 +40,8 @@ export function toConversationDto(record: ConversationSettingsRecord): Conversat
     summaryEnabled: record.summaryEnabled,
     summaryProviderId: record.summaryProviderId,
     summaryModelId: record.summaryModelId,
+    reasoningEffort: record.reasoningEffort,
+    reasoningStateMode: record.reasoningStateMode,
     summaryText: record.summaryText,
     summaryPreview: preview(record.summaryText),
     summaryUpdatedAt: record.summaryUpdatedAt,

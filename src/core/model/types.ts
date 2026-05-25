@@ -1,4 +1,5 @@
 import type { MessageAttachment } from "../../shared/types/internal-message";
+import type { ReasoningSettings, ReasoningState } from "./reasoning-types";
 
 export type JsonSchema = Record<string, unknown>;
 
@@ -43,6 +44,7 @@ export type ModelMessage =
       role: "assistant";
       content?: string;
       toolCalls?: ModelToolCall[];
+      reasoning?: ReasoningState;
     }
   | {
       role: "tool";
@@ -54,11 +56,13 @@ export type ModelMessage =
 export type ModelRequest = {
   messages: ModelMessage[];
   tools: ModelTool[];
+  reasoning?: ReasoningSettings;
 };
 
 export type ModelResponse = {
   content?: string;
   toolCalls: ModelToolCall[];
+  reasoning?: ReasoningState;
   raw?: unknown;
 };
 

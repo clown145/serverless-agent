@@ -6,6 +6,7 @@ import { newConversationCommand } from "./system/new-conversation-command";
 import { sidCommand } from "./system/sid-command";
 import { skillAutoEditsCommand } from "./system/skill-auto-edits-command";
 import { taskCommand } from "./system/task-command";
+import { thinkCommand } from "./system/think-command";
 import { switchConversationCommand } from "./system/switch-conversation-command";
 import type { CommandDefinition } from "./types";
 
@@ -15,6 +16,7 @@ const COMMANDS: CommandDefinition[] = [
   switchConversationCommand,
   contextCommand,
   modelCommand,
+  thinkCommand,
   sidCommand,
   skillAutoEditsCommand,
   taskCommand

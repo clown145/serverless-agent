@@ -10,6 +10,7 @@ describe("telegram commands", () => {
       { command: "sessions", description: "List conversations" },
       { command: "switch", description: "Switch conversation" },
       { command: "model", description: "Show or set the model" },
+      { command: "think", description: "Set reasoning effort" },
       { command: "context", description: "Show or update context settings" },
       { command: "compact", description: "Compact conversation context" },
       { command: "skill-auto-edits", description: "Toggle skill edit confirmations" },

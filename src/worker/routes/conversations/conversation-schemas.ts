@@ -32,7 +32,9 @@ export const updateConversationSchema = z.object({
   historyLimit: z.number().int().min(4).max(80).optional(),
   summaryEnabled: z.boolean().optional(),
   summaryProviderId: z.string().min(1).nullable().optional(),
-  summaryModelId: z.string().min(1).nullable().optional()
+  summaryModelId: z.string().min(1).nullable().optional(),
+  reasoningEffort: z.enum(["auto", "low", "normal", "high"]).optional(),
+  reasoningStateMode: z.enum(["auto", "on", "off"]).optional()
 });
 
 export const compactConversationSchema = z.object({

@@ -3,6 +3,11 @@ import { parseJsonObject } from "./json";
 import { openAiChatUrl } from "./provider-endpoints";
 import { applyModelAuth, type ModelAuthConfig } from "./provider-auth";
 import { createToolNameMapper } from "./tool-name-mapper";
+import {
+  openAiReasoningBodyFields,
+  openAiReasoningContent,
+  openAiReasoningFromResponse
+} from "./openai-reasoning";
 
 type OpenAiCompatibleOptions = {
   apiKey?: string;
@@ -14,6 +19,7 @@ type OpenAiCompatibleOptions = {
 type OpenAiMessage = {
   role: "system" | "user" | "assistant" | "tool";
   content?: string | OpenAiContentPart[] | null;
+  reasoning_content?: string;
   tool_call_id?: string;
   tool_calls?: OpenAiToolCall[];
 };
@@ -43,6 +49,7 @@ type OpenAiResponse = {
   choices?: Array<{
     message?: {
       content?: string | null;
+      reasoning_content?: string | null;
       tool_calls?: OpenAiToolCall[];
     };
   }>;
@@ -72,7 +79,14 @@ export class OpenAiCompatibleProvider implements ModelProvider {
     const payload = await postChatCompletion(
       endpoint,
       headers,
-      createOpenAiBody(this.options.model, request, wireTools, mapper.toWireName, "native")
+      createOpenAiBody(
+        this.options.model,
+        this.baseUrl,
+        request,
+        wireTools,
+        mapper.toWireName,
+        "native"
+      )
     ).catch(async (error) => {
       if (!shouldRetryToolResultsAsText(error, request.messages)) {
         throw error;
@@ -81,7 +95,14 @@ export class OpenAiCompatibleProvider implements ModelProvider {
       return postChatCompletion(
         endpoint,
         headers,
-        createOpenAiBody(this.options.model, request, wireTools, mapper.toWireName, "text")
+        createOpenAiBody(
+          this.options.model,
+          this.baseUrl,
+          request,
+          wireTools,
+          mapper.toWireName,
+          "text"
+        )
       );
     });
 
@@ -97,6 +118,7 @@ export class OpenAiCompatibleProvider implements ModelProvider {
     return {
       content: message?.content ?? undefined,
       toolCalls,
+      reasoning: openAiReasoningFromResponse(message),
       raw: payload
     };
   }
@@ -106,6 +128,7 @@ type ToolResultMode = "native" | "text";
 
 function createOpenAiBody(
   model: string,
+  baseUrl: string | undefined,
   request: ModelRequest,
   wireTools: ModelTool[],
   toWireName: (name: string) => string,
@@ -113,7 +136,21 @@ function createOpenAiBody(
 ): Record<string, unknown> {
   const body: Record<string, unknown> = {
     model,
-    messages: toOpenAiMessages(request.messages, toWireName, toolResultMode)
+    messages: toOpenAiMessages(
+      request.messages,
+      toWireName,
+      toolResultMode,
+      {
+        model,
+        baseUrl,
+        settings: request.reasoning
+      }
+    ),
+    ...openAiReasoningBodyFields({
+      model,
+      baseUrl,
+      settings: request.reasoning
+    })
   };
 
   if (wireTools.length) {
@@ -127,15 +164,17 @@ function createOpenAiBody(
 function toOpenAiMessages(
   messages: ModelMessage[],
   toWireName: (name: string) => string,
-  toolResultMode: ToolResultMode
+  toolResultMode: ToolResultMode,
+  reasoning: { model: string; baseUrl?: string; settings?: ModelRequest["reasoning"] }
 ): OpenAiMessage[] {
-  return messages.map((message) => toOpenAiMessage(message, toWireName, toolResultMode));
+  return messages.map((message) => toOpenAiMessage(message, toWireName, toolResultMode, reasoning));
 }
 
 function toOpenAiMessage(
   message: ModelMessage,
   toWireName: (name: string) => string,
-  toolResultMode: ToolResultMode
+  toolResultMode: ToolResultMode,
+  reasoning: { model: string; baseUrl?: string; settings?: ModelRequest["reasoning"] }
 ): OpenAiMessage {
   if (message.role === "tool") {
     if (toolResultMode === "text") {
@@ -171,9 +210,11 @@ function toOpenAiMessage(
       };
     }
 
+    const reasoningContent = openAiReasoningContent(message, reasoning);
     return {
       role: "assistant",
       content: message.content ?? null,
+      ...(reasoningContent ? { reasoning_content: reasoningContent } : {}),
       tool_calls: message.toolCalls?.map((toolCall) => ({
         id: toolCall.id,
         type: "function",

@@ -85,6 +85,8 @@ export type ConversationSettings = {
   summaryEnabled: boolean;
   summaryProviderId?: string;
   summaryModelId?: string;
+  reasoningEffort: "auto" | "low" | "normal" | "high";
+  reasoningStateMode: "auto" | "on" | "off";
   summaryText?: string;
   summaryPreview?: string;
   summaryUpdatedAt?: string;

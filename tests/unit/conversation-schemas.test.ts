@@ -18,14 +18,19 @@ describe("conversation schemas", () => {
         historyLimit: 24,
         summaryEnabled: false,
         modelProviderId: null,
-        modelId: null
+        modelId: null,
+        reasoningEffort: "high",
+        reasoningStateMode: "on"
       })
     ).toMatchObject({
       historyLimit: 24,
       summaryEnabled: false,
       modelProviderId: null,
-      modelId: null
+      modelId: null,
+      reasoningEffort: "high",
+      reasoningStateMode: "on"
     });
     expect(() => updateConversationSchema.parse({ historyLimit: 100 })).toThrow();
+    expect(() => updateConversationSchema.parse({ reasoningEffort: "max" })).toThrow();
   });
 });

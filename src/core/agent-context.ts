@@ -54,31 +54,11 @@ function createBaseInstructions(message: InternalMessage, options: AgentContextO
 }
 
 function createRuntimeContext(message: InternalMessage, timeZone = "UTC"): string {
-  const now = new Date();
   return [
-    `Current time: ${formatLocalTime(now, timeZone)}`,
-    `Current time ISO: ${now.toISOString()}`,
     `Configured timezone: ${normalizeTimeZone(timeZone)}`,
     `Current platform: ${message.platform}`,
     `Current conversation: ${message.conversationId}`
   ].join("\n");
-}
-
-function formatLocalTime(date: Date, timeZone: string): string {
-  const normalized = normalizeTimeZone(timeZone);
-  try {
-    return new Intl.DateTimeFormat("en-US", {
-      dateStyle: "full",
-      timeStyle: "long",
-      timeZone: normalized
-    }).format(date);
-  } catch {
-    return new Intl.DateTimeFormat("en-US", {
-      dateStyle: "full",
-      timeStyle: "long",
-      timeZone: "UTC"
-    }).format(date);
-  }
 }
 
 function normalizeTimeZone(timeZone?: string): string {

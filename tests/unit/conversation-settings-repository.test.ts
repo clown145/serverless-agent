@@ -59,6 +59,8 @@ function conversationSettingsRow(
     summary_enabled: 1,
     summary_provider_id: null,
     summary_model_id: null,
+    reasoning_effort: "auto",
+    reasoning_state_mode: "auto",
     summary_text: null,
     summary_updated_at: null,
     compacted_until_message_id: null,

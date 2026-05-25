@@ -14,6 +14,7 @@ import { createRuntimeToolRegistry, type ToolRegistry } from "../tools/registry/
 import type { ConversationContextMessage } from "./agent-context";
 import { createModelProvider } from "./model/provider-factory";
 import type { ModelProvider } from "./model/types";
+import type { ReasoningSettings } from "./model/reasoning-types";
 
 export type PreparedAgentLoopContext = {
   registry: ToolRegistry;
@@ -25,6 +26,7 @@ export type PreparedAgentLoopContext = {
   platformFormatInstruction: string;
   registryTools: RegisteredTool[];
   allowedToolNames: Set<string>;
+  reasoning: ReasoningSettings;
 };
 
 export async function prepareAgentLoopContext(
@@ -61,6 +63,10 @@ export async function prepareAgentLoopContext(
     conversationSummary: context.summary,
     platformFormatInstruction: platformHints.formatInstruction,
     registryTools,
-    allowedToolNames: new Set(registryTools.map((tool) => tool.definition.name))
+    allowedToolNames: new Set(registryTools.map((tool) => tool.definition.name)),
+    reasoning: {
+      effort: context.settings.reasoningEffort,
+      stateMode: context.settings.reasoningStateMode
+    }
   };
 }

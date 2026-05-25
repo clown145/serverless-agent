@@ -27,7 +27,11 @@ export async function executeAgentToolLoop(
   let sentMessageTool = false;
 
   for (let index = 0; index < MAX_MODEL_STEPS; index += 1) {
-    const response = await context.provider.complete({ messages, tools });
+    const response = await context.provider.complete({
+      messages,
+      tools,
+      reasoning: context.reasoning
+    });
     await recordModelStep(
       env,
       runId,
@@ -44,7 +48,8 @@ export async function executeAgentToolLoop(
     messages.push({
       role: "assistant",
       content: response.content,
-      toolCalls: response.toolCalls
+      toolCalls: response.toolCalls,
+      reasoning: response.reasoning
     });
 
     for (const toolCall of response.toolCalls) {

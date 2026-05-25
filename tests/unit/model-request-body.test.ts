@@ -156,6 +156,98 @@ describe("model request bodies", () => {
     );
   });
 
+  it("sends OpenAI-compatible reasoning effort and tool-call reasoning content", async () => {
+    const fetchMock = vi.fn(async () => {
+      return jsonResponse({
+        choices: [
+          {
+            message: {
+              content: "done",
+              reasoning_content: "hidden reasoning"
+            }
+          }
+        ]
+      });
+    });
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+
+    const provider = new OpenAiCompatibleProvider({
+      apiKey: "test",
+      model: "mimo-test",
+      baseUrl: "https://api.mimo.example/v1"
+    });
+    const response = await provider.complete({
+      messages: [
+        { role: "user", content: "list files" },
+        {
+          role: "assistant",
+          toolCalls: [
+            {
+              id: "call_1",
+              name: "vfs.list_dir",
+              arguments: { path: "/" }
+            }
+          ],
+          reasoning: { content: "previous hidden reasoning" }
+        }
+      ],
+      tools: [],
+      reasoning: {
+        effort: "normal",
+        stateMode: "auto"
+      }
+    });
+
+    const body = fetchBody(fetchMock);
+    expect(body.reasoning_effort).toBe("medium");
+    expect(body.messages).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          role: "assistant",
+          reasoning_content: "previous hidden reasoning"
+        })
+      ])
+    );
+    expect(response.reasoning).toEqual({ content: "hidden reasoning" });
+  });
+
+  it("does not send OpenAI-compatible reasoning content when state is off", async () => {
+    const fetchMock = vi.fn(async () => {
+      return jsonResponse({ choices: [{ message: { content: "done" } }] });
+    });
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+
+    const provider = new OpenAiCompatibleProvider({
+      apiKey: "test",
+      model: "mimo-test",
+      baseUrl: "https://api.mimo.example/v1"
+    });
+    await provider.complete({
+      messages: [
+        {
+          role: "assistant",
+          toolCalls: [
+            {
+              id: "call_1",
+              name: "vfs.list_dir",
+              arguments: { path: "/" }
+            }
+          ],
+          reasoning: { content: "previous hidden reasoning" }
+        }
+      ],
+      tools: [],
+      reasoning: {
+        effort: "auto",
+        stateMode: "off"
+      }
+    });
+
+    const body = fetchBody(fetchMock);
+    expect(JSON.stringify(body.messages)).not.toContain("reasoning_content");
+    expect(body).not.toHaveProperty("reasoning_effort");
+  });
+
   it("sends Gemini inline image parts", async () => {
     const fetchMock = vi.fn(async () => {
       return jsonResponse({ candidates: [{ content: { parts: [{ text: "seen" }] } }] });

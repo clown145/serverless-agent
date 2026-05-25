@@ -47,6 +47,7 @@
 | `web/`       | 页面读取和正文抽取工具。     |
 | `http/`      | 高权限结构化 HTTP 请求工具。 |
 | `skills/`    | Skill 管理工具。             |
+| `time/`      | 当前时间和时区查询工具。     |
 | `mcp/`       | MCP server 工具适配。        |
 | `email/`     | 邮件工具边界。               |
 | `git/`       | Git provider API 工具边界。  |

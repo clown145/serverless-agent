@@ -20,6 +20,7 @@ describe("tool catalog", () => {
     expect(catalog.map((tool) => tool.name)).toContain("vfs.search");
     expect(catalog.map((tool) => tool.name)).toContain("http.request");
     expect(catalog.map((tool) => tool.name)).toContain("web.fetch_page");
+    expect(catalog.map((tool) => tool.name)).toContain("time.now");
     expect(catalog.map((tool) => tool.name)).toContain("schedule.create");
     expect(catalog.map((tool) => tool.name)).toContain("schedule.list");
     expect(catalog.map((tool) => tool.name)).toContain("messaging.send_file");
