@@ -51,7 +51,7 @@ Worker 和 Platform Gateway Durable Object 都只做轻量工作：
 | 平台         | 内部 platform | 入站方式                                                                                                              | 出站能力                                         | 主要状态                                                         |
 | ------------ | ------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ | ---------------------------------------------------------------- |
 | Telegram     | `telegram`    | `POST /webhooks/telegram`                                                                                             | 文本、文件、图片、按钮、typing                   | WebUI integration 或 Worker secrets                              |
-| QQ Official  | `qq`          | `connectionMode=gateway` 使用 DO WebSocket；`connectionMode=webhook` 使用 `POST /webhooks/qq-official/:webhookSecret` | 文本；群聊/C2C 支持文件和图片；频道/私信支持文本 | D1 integration、conversation target，gateway 模式另有 DO session |
+| QQ Official  | `qq`          | `connectionMode=gateway` 使用 DO WebSocket；`connectionMode=webhook` 使用 `POST /webhooks/qq-official/:webhookSecret` | 文本；群聊/C2C 支持文件和图片；频道/私信支持图片 | D1 integration、conversation target，gateway 模式另有 DO session |
 | WeCom        | `wecom`       | `GET/POST /webhooks/wecom/:webhookSecret`                                                                             | 文本下行、客服联系入口                           | D1 integration、加密 secret                                      |
 | Weixin OC    | `weixin_oc`   | Gateway DO 扫码登录和 HTTP long-poll                                                                                  | 文本、文件、图片、typing                         | 加密 token 在 D1；运行游标和 context token 在 DO storage         |
 | WebUI        | `webui`       | `POST /admin/messages`                                                                                                | 写入本地 WebUI conversation history              | D1                                                               |
@@ -93,6 +93,8 @@ QQ Official webhook 模式通过 `/webhooks/qq-official/:webhookSecret` 接收�
 - `op=0` 是业务事件，标准化为 `InternalMessage` 后入队。
 - 出站不经过 Gateway Durable Object，而是使用 QQ OpenAPI direct sender。
 - 机器人必须先收到某个群、C2C、频道或私信的入站事件，系统才知道对应 conversation target。
+- 入站 QQ 图片附件会尝试下载并写入当前对象存储后端，成功后进入现有图片转述链路；下载或存储失败不阻断整条消息。
+- 群聊和 C2C 附件发送使用 QQ `/files` 上传后再以 media 消息发送；频道和频道私信按 QQ SDK 的 `file_image` 路径支持图片发送。
 
 Webhook 模式不需要 Worker 出站固定 IP，因为 QQ 主动把事件推到 Worker。
 
