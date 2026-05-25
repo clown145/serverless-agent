@@ -115,6 +115,8 @@ curl -sS http://localhost:8787/admin/messages \
 
 ```bash
 npm run prompts:build
+npm run lint
+npm run format:check
 npm run typecheck
 npm test
 npm run admin:build

@@ -164,6 +164,8 @@ curl -sS http://localhost:8787/admin/messages \
 提交 pull request 前运行：
 
 ```bash
+npm run lint
+npm run format:check
 npm run typecheck
 npm test
 ```
