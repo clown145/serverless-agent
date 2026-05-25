@@ -279,6 +279,148 @@ describe("model request bodies", () => {
       }
     ]);
   });
+
+  it("sends Gemini thinking config for supported reasoning effort", async () => {
+    const fetchMock = vi.fn(async () => {
+      return jsonResponse({ candidates: [{ content: { parts: [{ text: "done" }] } }] });
+    });
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+
+    const provider = new GeminiProvider({
+      apiKey: "test",
+      model: "gemini-3-pro-preview"
+    });
+    await provider.complete({
+      messages: [{ role: "user", content: "ping" }],
+      tools: [],
+      reasoning: {
+        effort: "normal",
+        stateMode: "auto"
+      }
+    });
+
+    const body = fetchBody(fetchMock);
+    expect(body.generationConfig).toEqual({
+      thinkingConfig: {
+        thinkingLevel: "medium"
+      }
+    });
+  });
+
+  it("round-trips Gemini function call thought signatures", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        jsonResponse({
+          candidates: [
+            {
+              content: {
+                parts: [
+                  {
+                    functionCall: {
+                      id: "call_1",
+                      name: "vfs_list_dir",
+                      args: { path: "/" }
+                    },
+                    thoughtSignature: "gemini-signature"
+                  }
+                ]
+              }
+            }
+          ]
+        })
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({ candidates: [{ content: { parts: [{ text: "done" }] } }] })
+      );
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+
+    const provider = new GeminiProvider({
+      apiKey: "test",
+      model: "gemini-3-pro-preview"
+    });
+    const first = await provider.complete({
+      messages: [{ role: "user", content: "list files" }],
+      tools: [
+        {
+          name: "vfs.list_dir",
+          description: "List files",
+          parameters: {
+            type: "object",
+            properties: {
+              path: { type: "string" }
+            }
+          }
+        }
+      ],
+      reasoning: {
+        effort: "auto",
+        stateMode: "auto"
+      }
+    });
+    await provider.complete({
+      messages: [
+        { role: "user", content: "list files" },
+        {
+          role: "assistant",
+          toolCalls: first.toolCalls,
+          reasoning: first.reasoning
+        },
+        {
+          role: "tool",
+          toolCallId: "call_1",
+          toolName: "vfs.list_dir",
+          content: '{"status":"success","entries":[]}'
+        }
+      ],
+      tools: [],
+      reasoning: {
+        effort: "auto",
+        stateMode: "auto"
+      }
+    });
+
+    expect(first).toMatchObject({
+      toolCalls: [
+        {
+          id: "call_1",
+          name: "vfs.list_dir",
+          arguments: { path: "/" }
+        }
+      ],
+      reasoning: {
+        gemini: {
+          thoughtSignatures: [
+            {
+              partKind: "functionCall",
+              thoughtSignature: "gemini-signature",
+              toolCallId: "call_1",
+              toolName: "vfs.list_dir"
+            }
+          ]
+        }
+      }
+    });
+
+    const body = fetchBodyAt(fetchMock, 1);
+    expect(body.contents).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          role: "model",
+          parts: [
+            expect.objectContaining({
+              thoughtSignature: "gemini-signature",
+              functionCall: expect.objectContaining({
+                id: "call_1",
+                name: "vfs_list_dir",
+                args: { path: "/" }
+              })
+            })
+          ]
+        })
+      ])
+    );
+  });
 });
 
 function fetchBody(fetchMock: ReturnType<typeof vi.fn>): Record<string, unknown> {

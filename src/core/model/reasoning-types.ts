@@ -11,6 +11,18 @@ export type ReasoningSettings = {
 
 export type ReasoningState = {
   content?: string;
+  gemini?: {
+    thoughtSignatures?: GeminiThoughtSignature[];
+  };
+};
+
+export type GeminiThoughtSignature = {
+  partIndex: number;
+  partKind: "text" | "functionCall";
+  thoughtSignature: string;
+  functionCallIndex?: number;
+  toolCallId?: string;
+  toolName?: string;
 };
 
 export const DEFAULT_REASONING_EFFORT: ReasoningEffort = "auto";

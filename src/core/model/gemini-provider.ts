@@ -6,6 +6,7 @@ import {
   toGeminiFunction,
   type GeminiResponse
 } from "./gemini-format";
+import { geminiGenerationConfig, geminiReasoningFromParts } from "./gemini-reasoning";
 import { applyModelAuth, type ModelAuthConfig } from "./provider-auth";
 import { geminiGenerateUrl } from "./provider-endpoints";
 import { createToolNameMapper } from "./tool-name-mapper";
@@ -41,8 +42,21 @@ export class GeminiProvider implements ModelProvider {
     const systemInstruction = buildSystemInstruction(request.messages);
     const body: Record<string, unknown> = {
       systemInstruction,
-      contents: toGeminiContents(request.messages, mapper.toWireName)
+      contents: toGeminiContents(request.messages, mapper.toWireName, {
+        model: this.options.model,
+        baseUrl: this.baseUrl,
+        settings: request.reasoning
+      })
     };
+    const generationConfig = geminiGenerationConfig({
+      model: this.options.model,
+      baseUrl: this.baseUrl,
+      settings: request.reasoning
+    });
+
+    if (generationConfig) {
+      body.generationConfig = generationConfig;
+    }
 
     if (wireTools.length) {
       body.tools = [{ functionDeclarations: wireTools.map(toGeminiFunction) }];
@@ -86,6 +100,7 @@ export class GeminiProvider implements ModelProvider {
     return {
       content: extractGeminiText(parts ?? []),
       toolCalls,
+      reasoning: geminiReasoningFromParts(parts ?? [], toolCalls),
       raw: payload
     };
   }

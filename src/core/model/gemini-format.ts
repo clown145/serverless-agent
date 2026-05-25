@@ -1,4 +1,9 @@
 import type { ModelContent, ModelMessage, ModelTool } from "./types";
+import {
+  geminiFunctionCallThoughtSignatures,
+  geminiTextThoughtSignature,
+  type GeminiReasoningOptions
+} from "./gemini-reasoning";
 
 export type GeminiPart = {
   text?: string;
@@ -16,6 +21,7 @@ export type GeminiPart = {
     name: string;
     response: Record<string, unknown>;
   };
+  thoughtSignature?: string;
 };
 
 export type GeminiContent = {
@@ -40,11 +46,12 @@ export function buildSystemInstruction(messages: ModelMessage[]): GeminiContent 
 
 export function toGeminiContents(
   messages: ModelMessage[],
-  toWireName: (name: string) => string
+  toWireName: (name: string) => string,
+  reasoning: GeminiReasoningOptions
 ): GeminiContent[] {
   return messages
     .filter((message) => message.role !== "system")
-    .map((message) => toGeminiContent(message, toWireName));
+    .map((message) => toGeminiContent(message, toWireName, reasoning));
 }
 
 export function toGeminiFunction(tool: ModelTool): Record<string, unknown> {
@@ -66,7 +73,8 @@ export function extractGeminiText(parts: GeminiPart[]): string | undefined {
 
 function toGeminiContent(
   message: ModelMessage,
-  toWireName: (name: string) => string
+  toWireName: (name: string) => string,
+  reasoning: GeminiReasoningOptions
 ): GeminiContent {
   if (message.role === "system") {
     return { role: "user", parts: [{ text: message.content }] };
@@ -92,21 +100,34 @@ function toGeminiContent(
   }
 
   if (message.toolCalls?.length) {
+    const thoughtSignatures = geminiFunctionCallThoughtSignatures(
+      message,
+      message.toolCalls,
+      reasoning
+    );
     return {
       role: "model",
-      parts: message.toolCalls.map((toolCall) => ({
+      parts: message.toolCalls.map((toolCall, index) => ({
         functionCall: {
           id: toolCall.id,
           name: toWireName(toolCall.name),
           args: toolCall.arguments
-        }
+        },
+        ...(thoughtSignatures[index] ? { thoughtSignature: thoughtSignatures[index] } : {})
       }))
     };
   }
 
+  const thoughtSignature = geminiTextThoughtSignature(message, reasoning);
+
   return {
     role: "model",
-    parts: [{ text: message.content ?? "" }]
+    parts: [
+      {
+        text: message.content ?? "",
+        ...(thoughtSignature ? { thoughtSignature } : {})
+      }
+    ]
   };
 }
 

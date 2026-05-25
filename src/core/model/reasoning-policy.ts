@@ -62,6 +62,10 @@ export function toOpenAiReasoningEffort(effort: ReasoningEffort): string | undef
 export function inferReasoningStatePolicy(info: ReasoningProviderInfo): ReasoningStatePolicy {
   const haystack = `${info.baseUrl ?? ""} ${info.model ?? ""}`.toLowerCase();
 
+  if (info.provider === "gemini") {
+    return "tool_calls_only";
+  }
+
   if (haystack.includes("deepseek-reasoner")) {
     return "forbidden";
   }
