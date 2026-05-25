@@ -1,6 +1,6 @@
 import { QqOfficialApiClient } from "./api";
+import { trySendQqOfficialAttachment } from "./attachment-sender";
 import { resolveQqOfficialBotByIntegrationId, resolveQqOfficialBotForAgent } from "./config";
-import { qqOfficialFileDataBase64, qqOfficialFileType } from "./media";
 import type { QqOfficialConversationRecord } from "../../../storage/repositories/qq-official-conversations-repository";
 import {
   getQqOfficialConversationByIntegration,
@@ -8,7 +8,6 @@ import {
 } from "../../../storage/repositories/qq-official-conversations-repository";
 import type { Env } from "../../../shared/types/env";
 import type { OutboundFile } from "../../../platforms/outbound/types";
-import type { QqOfficialMedia } from "./types";
 
 export type QqOfficialDirectSendRequest = {
   conversationId: string;
@@ -70,14 +69,12 @@ export async function sendQqOfficialDirect(
       return { ok: true, providerMessageId: response.id };
     }
 
-    const media = await uploadGroupFile(api, conversation.targetId, input.file);
-    const response = await api.sendGroupMessage({
-      groupOpenId: conversation.targetId,
-      ...common,
-      media,
-      msgType: 7
+    const result = await trySendQqOfficialAttachment(api, {
+      target: { kind: "group", groupOpenId: conversation.targetId },
+      file: input.file,
+      ...common
     });
-    return { ok: true, providerMessageId: response.id };
+    return sendResult(result);
   }
 
   if (conversation.targetKind === "c2c") {
@@ -91,24 +88,24 @@ export async function sendQqOfficialDirect(
       return { ok: true, providerMessageId: response.id };
     }
 
-    const media = await uploadC2cFile(api, conversation.targetId, input.file);
-    const response = await api.sendC2cMessage({
-      openId: conversation.targetId,
-      ...common,
-      media,
-      msgType: 7
+    const result = await trySendQqOfficialAttachment(api, {
+      target: { kind: "c2c", openId: conversation.targetId },
+      file: input.file,
+      ...common
     });
-    return { ok: true, providerMessageId: response.id };
-  }
-
-  if (input.file) {
-    return {
-      ok: false,
-      error: "QQ official file upload is currently supported for group and C2C conversations only"
-    };
+    return sendResult(result);
   }
 
   if (conversation.targetKind === "direct") {
+    if (input.file) {
+      const result = await trySendQqOfficialAttachment(api, {
+        target: { kind: "direct", guildId: conversation.targetId },
+        file: input.file,
+        ...common
+      });
+      return sendResult(result);
+    }
+
     const response = await api.sendDirectText({
       guildId: conversation.targetId,
       content: input.text ?? "",
@@ -116,6 +113,15 @@ export async function sendQqOfficialDirect(
       eventId: common.eventId
     });
     return { ok: true, providerMessageId: response.id };
+  }
+
+  if (input.file) {
+    const result = await trySendQqOfficialAttachment(api, {
+      target: { kind: "channel", channelId: conversation.targetId },
+      file: input.file,
+      ...common
+    });
+    return sendResult(result);
   }
 
   const response = await api.sendChannelText({
@@ -145,26 +151,11 @@ async function findConversation(
   });
 }
 
-async function uploadGroupFile(
-  api: QqOfficialApiClient,
-  groupOpenId: string,
-  file: OutboundFile
-): Promise<QqOfficialMedia> {
-  return api.uploadGroupFile({
-    groupOpenId,
-    fileDataBase64: qqOfficialFileDataBase64(file),
-    fileType: qqOfficialFileType(file)
-  });
-}
-
-async function uploadC2cFile(
-  api: QqOfficialApiClient,
-  openId: string,
-  file: OutboundFile
-): Promise<QqOfficialMedia> {
-  return api.uploadC2cFile({
-    openId,
-    fileDataBase64: qqOfficialFileDataBase64(file),
-    fileType: qqOfficialFileType(file)
-  });
+function sendResult(
+  result: Awaited<ReturnType<typeof trySendQqOfficialAttachment>>
+): QqOfficialDirectSendResponse {
+  if (!result.ok) {
+    return { ok: false, error: result.error };
+  }
+  return { ok: true, providerMessageId: result.response.id };
 }

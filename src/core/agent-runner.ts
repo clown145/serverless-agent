@@ -11,7 +11,7 @@ import {
   resolveRoleModelCapabilities,
   supportsVision
 } from "./model/capabilities";
-import { persistInboundAttachments } from "../media/persist-attachments";
+import { persistInboundMedia } from "../media/inbound-media";
 import { getAgentModelConfig } from "../storage/repositories/agent-model-config-repository";
 import { resolveInboundConversation } from "../conversations/resolve";
 import { insertMessage } from "../storage/repositories/messages-repository";
@@ -32,7 +32,7 @@ async function runAgentForMessageInternal(
   inboundMessage: InternalMessage
 ): Promise<string> {
   const resolved = await resolveInboundConversation(env, inboundMessage);
-  const message = await persistInboundAttachments(env, resolved.message);
+  const message = await persistInboundMedia(env, resolved.message);
   await insertMessage(env.AGENT_DB, message);
 
   const runId = createId("run");

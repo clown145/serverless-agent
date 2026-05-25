@@ -165,6 +165,28 @@ export class QqOfficialApiClient {
     );
   }
 
+  async sendChannelImage(input: {
+    channelId: string;
+    content?: string;
+    file: {
+      bytes: Uint8Array;
+      fileName: string;
+      mimeType: string;
+    };
+    msgId?: string;
+    eventId?: string;
+  }): Promise<QqOfficialMessageSendResponse> {
+    return this.requestMultipart<QqOfficialMessageSendResponse>(
+      `/channels/${encodeURIComponent(input.channelId)}/messages`,
+      {
+        content: input.content,
+        msg_id: input.msgId,
+        event_id: input.eventId,
+        file_image: input.file
+      }
+    );
+  }
+
   async sendDirectMessage(input: {
     guildId: string;
     content?: string;
@@ -182,6 +204,28 @@ export class QqOfficialApiClient {
           msg_id: input.msgId,
           event_id: input.eventId
         }
+      }
+    );
+  }
+
+  async sendDirectImage(input: {
+    guildId: string;
+    content?: string;
+    file: {
+      bytes: Uint8Array;
+      fileName: string;
+      mimeType: string;
+    };
+    msgId?: string;
+    eventId?: string;
+  }): Promise<QqOfficialMessageSendResponse> {
+    return this.requestMultipart<QqOfficialMessageSendResponse>(
+      `/dms/${encodeURIComponent(input.guildId)}/messages`,
+      {
+        content: input.content,
+        msg_id: input.msgId,
+        event_id: input.eventId,
+        file_image: input.file
       }
     );
   }
@@ -314,6 +358,52 @@ export class QqOfficialApiClient {
     return payload as T;
   }
 
+  private async requestMultipart<T>(
+    path: string,
+    fields: Record<
+      string,
+      | string
+      | number
+      | boolean
+      | undefined
+      | {
+          bytes: Uint8Array;
+          fileName: string;
+          mimeType: string;
+        }
+    >
+  ): Promise<T> {
+    const token = await this.accessToken();
+    const form = new FormData();
+    for (const [key, value] of Object.entries(fields)) {
+      if (value === undefined || value === "") {
+        continue;
+      }
+      if (isMultipartFile(value)) {
+        form.append(key, new Blob([value.bytes], { type: value.mimeType }), value.fileName);
+        continue;
+      }
+      form.append(key, String(value));
+    }
+
+    const response = await this.fetcher(`${this.baseUrl}${path}`, {
+      method: "POST",
+      headers: {
+        authorization: `QQBot ${token}`
+      },
+      body: form
+    });
+    const payload = (await response.json().catch(() => undefined)) as
+      | Record<string, unknown>
+      | undefined;
+
+    if (!response.ok) {
+      throw new Error(qqOfficialApiError(response.status, payload));
+    }
+
+    return payload as T;
+  }
+
   private async accessToken(): Promise<string> {
     if (this.token && this.token.expiresAt - Date.now() > 60_000) {
       return this.token.accessToken;
@@ -342,6 +432,20 @@ export class QqOfficialApiClient {
     };
     return this.token.accessToken;
   }
+}
+
+function isMultipartFile(value: unknown): value is {
+  bytes: Uint8Array;
+  fileName: string;
+  mimeType: string;
+} {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "bytes" in value &&
+    "fileName" in value &&
+    "mimeType" in value
+  );
 }
 
 type RawAccessTokenResponse = {

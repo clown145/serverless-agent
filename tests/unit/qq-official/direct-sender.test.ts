@@ -41,22 +41,110 @@ describe("sendQqOfficialDirect", () => {
       globalThis.fetch = originalFetch;
     }
   });
+
+  it("sends webhook-mode direct images as multipart file_image uploads", async () => {
+    const originalFetch = globalThis.fetch;
+    const fetcher = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.endsWith("/app/getAppAccessToken")) {
+        return jsonResponse({ access_token: "token", expires_in: 7200 });
+      }
+      if (url.endsWith("/dms/guild-id/messages")) {
+        const form = init?.body as FormData;
+        expect(form.get("content")).toBe("caption");
+        expect(form.get("msg_id")).toBe("source-msg");
+        expect(form.get("event_id")).toBe("source-event");
+        const file = form.get("file_image") as unknown as File;
+        expect(file.name).toBe("image.png");
+        expect(file.type).toBe("image/png");
+        return jsonResponse({ id: "sent-direct-image" });
+      }
+      throw new Error(`unexpected url ${url}`);
+    });
+    globalThis.fetch = fetcher as unknown as typeof fetch;
+
+    try {
+      await expect(
+        sendQqOfficialDirect(fakeEnv(), "agent-1", {
+          conversationId: "qq:direct:guild-id",
+          text: "caption",
+          file: {
+            bytes: new TextEncoder().encode("img"),
+            fileName: "image.png",
+            mimeType: "image/png"
+          }
+        })
+      ).resolves.toEqual({
+        ok: true,
+        providerMessageId: "sent-direct-image"
+      });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("returns a clear error for direct non-image attachments", async () => {
+    const originalFetch = globalThis.fetch;
+    const fetcher = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.endsWith("/app/getAppAccessToken")) {
+        return jsonResponse({ access_token: "token", expires_in: 7200 });
+      }
+      throw new Error(`unexpected url ${url}`);
+    });
+    globalThis.fetch = fetcher as unknown as typeof fetch;
+
+    try {
+      await expect(
+        sendQqOfficialDirect(fakeEnv(), "agent-1", {
+          conversationId: "qq:direct:guild-id",
+          file: {
+            bytes: new TextEncoder().encode("pdf"),
+            fileName: "file.pdf",
+            mimeType: "application/pdf"
+          }
+        })
+      ).resolves.toEqual({
+        ok: false,
+        error: "QQ official channel and direct conversations only support image attachments"
+      });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
 });
 
 function fakeEnv(): Env {
+  const conversations = new Map([
+    [
+      "qq:group:group-openid",
+      {
+        targetKind: "group",
+        targetId: "group-openid"
+      }
+    ],
+    [
+      "qq:direct:guild-id",
+      {
+        targetKind: "direct",
+        targetId: "guild-id"
+      }
+    ]
+  ]);
   const statement = {
     bind: vi.fn((...values: string[]) => {
       statement.bound = values;
       return statement;
     }),
     first: vi.fn(async () => {
-      if (statement.bound[1] === "qq:group:group-openid") {
+      const conversation = conversations.get(statement.bound[1]);
+      if (conversation) {
         return {
           integration_id: "pint-qq",
           agent_id: "agent-1",
-          conversation_id: "qq:group:group-openid",
-          target_kind: "group",
-          target_id: "group-openid",
+          conversation_id: statement.bound[1],
+          target_kind: conversation.targetKind,
+          target_id: conversation.targetId,
           last_message_id: "source-msg",
           last_event_id: "source-event",
           created_at: "2026-01-01T00:00:00.000Z",

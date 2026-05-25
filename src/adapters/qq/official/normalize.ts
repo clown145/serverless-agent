@@ -144,7 +144,7 @@ function extractAttachments(attachments: QqOfficialAttachment[] | undefined): Me
     }
 
     const mimeType = attachment.content_type;
-    const type = mimeType?.startsWith("image/")
+    const type = mimeType?.startsWith("image")
       ? "image"
       : mimeType?.startsWith("audio/")
         ? "audio"
