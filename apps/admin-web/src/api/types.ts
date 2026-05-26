@@ -382,6 +382,12 @@ export type ToolCatalogItem = {
   timeoutMs: number;
 };
 
+export type ToolSettings = {
+  agentId: string;
+  maxToolCallsPerRun: number;
+  updatedAt?: string;
+};
+
 export type ToolResult = {
   status: "success" | "failed" | "permission_denied" | "needs_confirmation";
   output?: unknown;

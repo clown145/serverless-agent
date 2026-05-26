@@ -620,6 +620,30 @@
   align-items: start;
 }
 
+.tool-settings {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(140px, 180px) auto;
+  gap: 10px;
+  align-items: end;
+  margin-bottom: 14px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  padding: 12px;
+}
+
+.tool-settings strong,
+.tool-settings span {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.tool-settings span {
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
 .tool-meta {
   display: flex;
   flex-wrap: wrap;
@@ -1672,6 +1696,7 @@
   .mcp-server-head,
   .composer,
   .tools-layout,
+  .tool-settings,
   .tool-history-layout,
   .skills-layout,
   .skill-settings-bar,
