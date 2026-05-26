@@ -1,6 +1,12 @@
 import { RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import type { McpServer, McpTool, ToolCallHistoryItem, ToolCatalogItem } from "../../api/types";
+import type {
+  McpServer,
+  McpTool,
+  ToolCallHistoryItem,
+  ToolCatalogItem,
+  ToolSettings
+} from "../../api/types";
 import { useI18n } from "../i18n/I18nProvider";
 import { ToolbarButton } from "../ToolbarButton";
 import { McpServerForm, type McpServerDraft } from "./tools/McpServerForm";
@@ -8,6 +14,7 @@ import { McpServerList } from "./tools/McpServerList";
 import { RegisteredToolsView } from "./tools/RegisteredToolsView";
 import { ToolCallHistoryView } from "./tools/ToolCallHistoryView";
 import { ToolRunnerView } from "./tools/ToolRunnerView";
+import { ToolSettingsView } from "./tools/ToolSettingsView";
 import type { PanelProps } from "./types";
 
 export function ToolsPanel({ client, notify }: PanelProps) {
@@ -15,6 +22,9 @@ export function ToolsPanel({ client, notify }: PanelProps) {
   const [tools, setTools] = useState<ToolCatalogItem[]>([]);
   const [selectedToolName, setSelectedToolName] = useState("");
   const [toolCalls, setToolCalls] = useState<ToolCallHistoryItem[]>([]);
+  const [settings, setSettings] = useState<ToolSettings>();
+  const [maxToolCallsPerRun, setMaxToolCallsPerRun] = useState(20);
+  const [savingSettings, setSavingSettings] = useState(false);
   const [mcpServers, setMcpServers] = useState<McpServer[]>([]);
   const [mcpTools, setMcpTools] = useState<McpTool[]>([]);
   const [busyServerId, setBusyServerId] = useState("");
@@ -43,6 +53,8 @@ export function ToolsPanel({ client, notify }: PanelProps) {
         client.listToolCalls()
       ]);
       setTools(toolResult.tools);
+      setSettings(toolResult.settings);
+      setMaxToolCallsPerRun(toolResult.settings.maxToolCallsPerRun);
       setSelectedToolName((current) => current || toolResult.tools[0]?.name || "");
       setMcpServers(mcpResult.servers);
       setMcpTools(mcpResult.tools);
@@ -111,6 +123,20 @@ export function ToolsPanel({ client, notify }: PanelProps) {
     }
   }
 
+  async function saveSettings() {
+    setSavingSettings(true);
+    try {
+      const result = await client.updateToolSettings({ maxToolCallsPerRun });
+      setSettings(result.settings);
+      setMaxToolCallsPerRun(result.settings.maxToolCallsPerRun);
+      notify(t("tools.settingsSaved"), "ok");
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "Failed to save tool settings", "error");
+    } finally {
+      setSavingSettings(false);
+    }
+  }
+
   useEffect(() => {
     void load();
   }, []);
@@ -124,6 +150,14 @@ export function ToolsPanel({ client, notify }: PanelProps) {
         </div>
         <ToolbarButton label={t("common.refresh")} icon={RefreshCw} onClick={() => void load()} />
       </header>
+
+      <ToolSettingsView
+        settings={settings}
+        value={maxToolCallsPerRun}
+        saving={savingSettings}
+        onValueChange={setMaxToolCallsPerRun}
+        onSave={() => void saveSettings()}
+      />
 
       <RegisteredToolsView
         tools={tools}

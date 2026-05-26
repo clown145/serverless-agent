@@ -1,11 +1,22 @@
 import type { Env } from "../shared/types/env";
 import type { InternalMessage } from "../shared/types/internal-message";
 import { completeRun } from "../storage/repositories/runs-repository";
+import { getToolSettings } from "../storage/repositories/tool-settings-repository";
 import { createInitialModelMessages, createModelTools } from "./agent-context";
 import { prepareAgentLoopContext } from "./agent-loop-context";
 import { executeAgentToolCall } from "./agent-tool-executor";
 import { sendFinalMessage } from "./agent-final-message";
-import { recordContextStep, recordModelStep, recordRunCompletedStep } from "./run-step-recorder";
+import {
+  recordContextStep,
+  recordModelStep,
+  recordRunCompletedStep,
+  recordRunFailedStep
+} from "./run-step-recorder";
+import {
+  createToolCallLimitState,
+  reserveToolCall,
+  toolCallLimitExceededMessage
+} from "./tool-call-limit";
 
 const MAX_MODEL_STEPS = 6;
 
@@ -14,7 +25,10 @@ export async function executeAgentToolLoop(
   runId: string,
   message: InternalMessage
 ): Promise<void> {
-  const context = await prepareAgentLoopContext(env, message);
+  const [context, toolSettings] = await Promise.all([
+    prepareAgentLoopContext(env, message),
+    getToolSettings(env.AGENT_DB, message.agentId)
+  ]);
   await recordContextStep(env, runId, message.agentId, context.selectedSkill);
 
   const messages = createInitialModelMessages(message, context.selectedSkill, context.history, {
@@ -24,6 +38,7 @@ export async function executeAgentToolLoop(
     skillCatalog: context.skillCatalog
   });
   const tools = createModelTools(context.registryTools);
+  const toolCallLimit = createToolCallLimitState(toolSettings);
   let sentMessageTool = false;
 
   for (let index = 0; index < MAX_MODEL_STEPS; index += 1) {
@@ -53,6 +68,11 @@ export async function executeAgentToolLoop(
     });
 
     for (const toolCall of response.toolCalls) {
+      if (!reserveToolCall(toolCallLimit)) {
+        await failRunForToolCallLimit(env, runId, message, toolCallLimit);
+        return;
+      }
+
       const execution = await executeAgentToolCall(env, {
         registry: context.registry,
         runId,
@@ -66,8 +86,7 @@ export async function executeAgentToolLoop(
     }
   }
 
-  await sendFinalMessage(env, runId, message, "Task stopped: maximum tool-call steps exceeded.");
-  await completeRun(env.AGENT_DB, runId, "failed");
+  await failRun(env, runId, message, "Task stopped: maximum tool-call steps exceeded.");
 }
 
 async function finishRun(
@@ -84,4 +103,24 @@ async function finishRun(
   await recordRunCompletedStep(env, runId, message.agentId);
 
   await completeRun(env.AGENT_DB, runId, "completed");
+}
+
+async function failRunForToolCallLimit(
+  env: Env,
+  runId: string,
+  message: InternalMessage,
+  toolCallLimit: ReturnType<typeof createToolCallLimitState>
+): Promise<void> {
+  await failRun(env, runId, message, toolCallLimitExceededMessage(toolCallLimit));
+}
+
+async function failRun(
+  env: Env,
+  runId: string,
+  message: InternalMessage,
+  text: string
+): Promise<void> {
+  await recordRunFailedStep(env, runId, message.agentId, text);
+  await sendFinalMessage(env, runId, message, text);
+  await completeRun(env.AGENT_DB, runId, "failed");
 }
