@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useI18n } from "../../i18n/I18nProvider";
 
 type ToolSettingsFormProps = {
@@ -10,6 +10,10 @@ export function ToolSettingsForm({ maxSteps, onSave }: ToolSettingsFormProps) {
   const { t } = useI18n();
   const [value, setValue] = useState(maxSteps);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setValue(maxSteps);
+  }, [maxSteps]);
 
   async function handleSave() {
     setSaving(true);

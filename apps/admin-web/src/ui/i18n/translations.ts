@@ -811,7 +811,8 @@ export const translations: Record<Locale, Record<string, string>> = {
     "tools.toolDisabled": "MCP tool disabled",
     "tools.settings": "Tool Settings",
     "tools.maxSteps": "Max Tool-Call Steps",
-    "tools.maxStepsHint": "Limit the maximum number of consecutive tool calls in a single run (1-100).",
+    "tools.maxStepsHint":
+      "Limit the maximum number of consecutive tool calls in a single run (1-100).",
     "tools.settingsSaved": "Tool settings saved",
 
     "skills.title": "Skills",
