@@ -8,6 +8,7 @@ import { McpServerList } from "./tools/McpServerList";
 import { RegisteredToolsView } from "./tools/RegisteredToolsView";
 import { ToolCallHistoryView } from "./tools/ToolCallHistoryView";
 import { ToolRunnerView } from "./tools/ToolRunnerView";
+import { ToolSettingsView } from "./tools/ToolSettingsView";
 import type { PanelProps } from "./types";
 
 export function ToolsPanel({ client, notify }: PanelProps) {
@@ -15,6 +16,8 @@ export function ToolsPanel({ client, notify }: PanelProps) {
   const [tools, setTools] = useState<ToolCatalogItem[]>([]);
   const [selectedToolName, setSelectedToolName] = useState("");
   const [toolCalls, setToolCalls] = useState<ToolCallHistoryItem[]>([]);
+  const [maxToolCallsPerRunDraft, setMaxToolCallsPerRunDraft] = useState("20");
+  const [savingSettings, setSavingSettings] = useState(false);
   const [mcpServers, setMcpServers] = useState<McpServer[]>([]);
   const [mcpTools, setMcpTools] = useState<McpTool[]>([]);
   const [busyServerId, setBusyServerId] = useState("");
@@ -43,6 +46,7 @@ export function ToolsPanel({ client, notify }: PanelProps) {
         client.listToolCalls()
       ]);
       setTools(toolResult.tools);
+      setMaxToolCallsPerRunDraft(String(toolResult.settings.maxToolCallsPerRun));
       setSelectedToolName((current) => current || toolResult.tools[0]?.name || "");
       setMcpServers(mcpResult.servers);
       setMcpTools(mcpResult.tools);
@@ -111,6 +115,25 @@ export function ToolsPanel({ client, notify }: PanelProps) {
     }
   }
 
+  async function saveSettings() {
+    const maxToolCallsPerRun = parseMaxToolCallsPerRun(maxToolCallsPerRunDraft);
+    if (maxToolCallsPerRun === undefined) {
+      notify(t("tools.maxCallsInvalid"), "error");
+      return;
+    }
+
+    setSavingSettings(true);
+    try {
+      const result = await client.updateToolSettings({ maxToolCallsPerRun });
+      setMaxToolCallsPerRunDraft(String(result.settings.maxToolCallsPerRun));
+      notify(t("tools.settingsSaved"), "ok");
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "Failed to save tool settings", "error");
+    } finally {
+      setSavingSettings(false);
+    }
+  }
+
   useEffect(() => {
     void load();
   }, []);
@@ -124,6 +147,13 @@ export function ToolsPanel({ client, notify }: PanelProps) {
         </div>
         <ToolbarButton label={t("common.refresh")} icon={RefreshCw} onClick={() => void load()} />
       </header>
+
+      <ToolSettingsView
+        value={maxToolCallsPerRunDraft}
+        saving={savingSettings}
+        onValueChange={setMaxToolCallsPerRunDraft}
+        onSave={() => void saveSettings()}
+      />
 
       <RegisteredToolsView
         tools={tools}
@@ -156,4 +186,13 @@ export function ToolsPanel({ client, notify }: PanelProps) {
       />
     </section>
   );
+}
+
+function parseMaxToolCallsPerRun(value: string): number | undefined {
+  const parsed = Number(value.trim());
+  if (!Number.isInteger(parsed) || parsed < 1 || parsed > 100) {
+    return undefined;
+  }
+
+  return parsed;
 }

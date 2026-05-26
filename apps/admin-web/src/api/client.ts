@@ -38,6 +38,7 @@ import type {
   ToolCatalogItem,
   ToolCallHistoryItem,
   ToolDebugCall,
+  ToolSettings,
   VfsEntry,
   VfsFile,
   VfsCommandResult,
@@ -770,7 +771,15 @@ export function createAdminClient(getToken: () => string) {
       );
     },
     listTools: () => {
-      return request<ApiResult<{ tools: ToolCatalogItem[] }>>("/admin/tools");
+      return request<ApiResult<{ tools: ToolCatalogItem[]; settings: ToolSettings }>>(
+        "/admin/tools"
+      );
+    },
+    updateToolSettings: (body: { maxToolCallsPerRun: number }) => {
+      return request<ApiResult<{ settings: ToolSettings }>>("/admin/tools/settings", {
+        method: "PUT",
+        body: JSON.stringify(body)
+      });
     },
     callTool: (body: {
       toolName: string;

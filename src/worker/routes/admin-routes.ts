@@ -36,6 +36,7 @@ import { handleAdminTelegramIntegrationDetail } from "./admin-telegram-integrati
 import { handleAdminTelegramIntegrations } from "./admin-telegram-integrations";
 import { handleAdminToolCall } from "./admin-tool-call";
 import { handleAdminToolCalls } from "./admin-tool-calls";
+import { handleAdminToolSettings } from "./admin-tool-settings";
 import { handleAdminTools } from "./admin-tools";
 import { handleAdminUi } from "./admin-ui";
 import { handleAdminVfs } from "./admin-vfs";
@@ -141,6 +142,10 @@ export async function handleAdminRoute(
 
   if (request.method === "GET" && url.pathname === "/admin/tools") {
     return handleAdminTools(request, env);
+  }
+
+  if (url.pathname === "/admin/tools/settings") {
+    return handleAdminToolSettings(request, env);
   }
 
   if (url.pathname === "/admin/tools/call") {
