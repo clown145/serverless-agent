@@ -99,10 +99,12 @@ export async function handleAdminModelRoleSettings(request: Request, env: Env): 
       }
     }
 
-    if (parsed.data.config?.imageCaptionEnabled !== undefined) {
+    if (parsed.data.config) {
+      const config = await getAgentModelConfig(env.AGENT_DB, agentId);
       await setAgentModelConfig(env.AGENT_DB, {
         agentId,
-        imageCaptionEnabled: parsed.data.config.imageCaptionEnabled
+        imageCaptionEnabled: parsed.data.config.imageCaptionEnabled ?? config.imageCaptionEnabled,
+        maxToolSteps: parsed.data.config.maxToolSteps ?? config.maxToolSteps
       });
     }
 

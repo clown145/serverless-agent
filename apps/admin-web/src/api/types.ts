@@ -316,6 +316,7 @@ export type ModelRoleSettingsUpdate = Partial<
 
 export type AgentModelConfig = {
   imageCaptionEnabled: boolean;
+  maxToolSteps: number;
 };
 
 export type SetupStep = {

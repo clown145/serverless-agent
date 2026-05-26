@@ -26,8 +26,10 @@ export function toModelRoleSettingsDto(settings: ModelRoleSettingRecord[]): Mode
 
 export function toAgentModelConfigDto(config: AgentModelConfigRecord): {
   imageCaptionEnabled: boolean;
+  maxToolSteps: number;
 } {
   return {
-    imageCaptionEnabled: config.imageCaptionEnabled
+    imageCaptionEnabled: config.imageCaptionEnabled,
+    maxToolSteps: config.maxToolSteps
   };
 }

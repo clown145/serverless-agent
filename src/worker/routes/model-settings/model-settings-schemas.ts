@@ -54,7 +54,8 @@ export const updateModelRoleSettingsSchema = z.object({
   }),
   config: z
     .object({
-      imageCaptionEnabled: z.boolean().optional()
+      imageCaptionEnabled: z.boolean().optional(),
+      maxToolSteps: z.number().int().min(1).max(100).optional()
     })
     .optional()
 });

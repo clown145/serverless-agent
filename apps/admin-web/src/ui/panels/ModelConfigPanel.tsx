@@ -21,7 +21,10 @@ export function ModelConfigPanel({ client, notify }: PanelProps) {
   const { t } = useI18n();
   const [providers, setProviders] = useState<ModelProvider[]>([]);
   const [models, setModels] = useState<ModelCatalogItem[]>([]);
-  const [config, setConfig] = useState<AgentModelConfig>({ imageCaptionEnabled: false });
+  const [config, setConfig] = useState<AgentModelConfig>({
+    imageCaptionEnabled: false,
+    maxToolSteps: 6
+  });
   const [draft, setDraft] = useState<Record<ModelRole, string>>({
     default: "",
     summary: "",

@@ -3,12 +3,14 @@ import { nowIso } from "../../shared/time";
 export type AgentModelConfigRecord = {
   agentId: string;
   imageCaptionEnabled: boolean;
+  maxToolSteps: number;
   updatedAt?: string;
 };
 
 type AgentModelConfigRow = {
   agent_id: string;
   image_caption_enabled?: number | null;
+  max_tool_steps?: number | null;
   updated_at?: string | null;
 };
 
@@ -29,23 +31,28 @@ export async function setAgentModelConfig(
   input: {
     agentId: string;
     imageCaptionEnabled: boolean;
+    maxToolSteps?: number;
   }
 ): Promise<AgentModelConfigRecord> {
   const now = nowIso();
+  const maxToolSteps = input.maxToolSteps ?? 6;
+
   await db
     .prepare(
-      `INSERT INTO agent_model_config (agent_id, image_caption_enabled, updated_at)
-       VALUES (?, ?, ?)
+      `INSERT INTO agent_model_config (agent_id, image_caption_enabled, max_tool_steps, updated_at)
+       VALUES (?, ?, ?, ?)
        ON CONFLICT(agent_id) DO UPDATE SET
          image_caption_enabled = excluded.image_caption_enabled,
+         max_tool_steps = excluded.max_tool_steps,
          updated_at = excluded.updated_at`
     )
-    .bind(input.agentId, input.imageCaptionEnabled ? 1 : 0, now)
+    .bind(input.agentId, input.imageCaptionEnabled ? 1 : 0, maxToolSteps, now)
     .run();
 
   return {
     agentId: input.agentId,
     imageCaptionEnabled: input.imageCaptionEnabled,
+    maxToolSteps,
     updatedAt: now
   };
 }
@@ -53,7 +60,8 @@ export async function setAgentModelConfig(
 function defaultAgentModelConfig(agentId: string): AgentModelConfigRecord {
   return {
     agentId,
-    imageCaptionEnabled: false
+    imageCaptionEnabled: false,
+    maxToolSteps: 6
   };
 }
 
@@ -61,6 +69,7 @@ function mapAgentModelConfigRow(row: AgentModelConfigRow): AgentModelConfigRecor
   return {
     agentId: row.agent_id,
     imageCaptionEnabled: row.image_caption_enabled === 1,
+    maxToolSteps: row.max_tool_steps ?? 6,
     updatedAt: row.updated_at ?? undefined
   };
 }

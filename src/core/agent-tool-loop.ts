@@ -7,8 +7,6 @@ import { executeAgentToolCall } from "./agent-tool-executor";
 import { sendFinalMessage } from "./agent-final-message";
 import { recordContextStep, recordModelStep, recordRunCompletedStep } from "./run-step-recorder";
 
-const MAX_MODEL_STEPS = 6;
-
 export async function executeAgentToolLoop(
   env: Env,
   runId: string,
@@ -26,7 +24,7 @@ export async function executeAgentToolLoop(
   const tools = createModelTools(context.registryTools);
   let sentMessageTool = false;
 
-  for (let index = 0; index < MAX_MODEL_STEPS; index += 1) {
+  for (let index = 0; index < context.maxToolSteps; index += 1) {
     const response = await context.provider.complete({
       messages,
       tools,

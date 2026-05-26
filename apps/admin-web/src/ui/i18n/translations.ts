@@ -263,6 +263,10 @@ export const translations: Record<Locale, Record<string, string>> = {
     "tools.discovered": "发现 {count} 个 MCP 工具",
     "tools.toolEnabled": "MCP 工具已启用",
     "tools.toolDisabled": "MCP 工具已禁用",
+    "tools.settings": "工具设置",
+    "tools.maxSteps": "最大工具调用步骤",
+    "tools.maxStepsHint": "限制模型在单次任务中可以连续调用工具的最大次数（1-100）。",
+    "tools.settingsSaved": "工具设置已保存",
 
     "skills.title": "Skills",
     "skills.subtitle":
@@ -805,6 +809,10 @@ export const translations: Record<Locale, Record<string, string>> = {
     "tools.discovered": "{count} MCP tools discovered",
     "tools.toolEnabled": "MCP tool enabled",
     "tools.toolDisabled": "MCP tool disabled",
+    "tools.settings": "Tool Settings",
+    "tools.maxSteps": "Max Tool-Call Steps",
+    "tools.maxStepsHint": "Limit the maximum number of consecutive tool calls in a single run (1-100).",
+    "tools.settingsSaved": "Tool settings saved",
 
     "skills.title": "Skills",
     "skills.subtitle":

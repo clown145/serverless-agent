@@ -27,6 +27,7 @@ export type PreparedAgentLoopContext = {
   registryTools: RegisteredTool[];
   allowedToolNames: Set<string>;
   reasoning: ReasoningSettings;
+  maxToolSteps: number;
 };
 
 export async function prepareAgentLoopContext(
@@ -67,6 +68,7 @@ export async function prepareAgentLoopContext(
     reasoning: {
       effort: context.settings.reasoningEffort,
       stateMode: context.settings.reasoningStateMode
-    }
+    },
+    maxToolSteps: modelConfig.maxToolSteps
   };
 }

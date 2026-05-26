@@ -8,6 +8,7 @@ import { McpServerList } from "./tools/McpServerList";
 import { RegisteredToolsView } from "./tools/RegisteredToolsView";
 import { ToolCallHistoryView } from "./tools/ToolCallHistoryView";
 import { ToolRunnerView } from "./tools/ToolRunnerView";
+import { ToolSettingsForm } from "./tools/ToolSettingsForm";
 import type { PanelProps } from "./types";
 
 export function ToolsPanel({ client, notify }: PanelProps) {
@@ -17,6 +18,7 @@ export function ToolsPanel({ client, notify }: PanelProps) {
   const [toolCalls, setToolCalls] = useState<ToolCallHistoryItem[]>([]);
   const [mcpServers, setMcpServers] = useState<McpServer[]>([]);
   const [mcpTools, setMcpTools] = useState<McpTool[]>([]);
+  const [maxToolSteps, setMaxToolSteps] = useState(6);
   const [busyServerId, setBusyServerId] = useState("");
   const [draft, setDraft] = useState<McpServerDraft>({
     name: "",
@@ -37,18 +39,30 @@ export function ToolsPanel({ client, notify }: PanelProps) {
 
   async function load() {
     try {
-      const [toolResult, mcpResult, callResult] = await Promise.all([
+      const [toolResult, mcpResult, callResult, roleSettingsResult] = await Promise.all([
         client.listTools(),
         client.listMcpServers(),
-        client.listToolCalls()
+        client.listToolCalls(),
+        client.getModelRoleSettings()
       ]);
       setTools(toolResult.tools);
       setSelectedToolName((current) => current || toolResult.tools[0]?.name || "");
       setMcpServers(mcpResult.servers);
       setMcpTools(mcpResult.tools);
       setToolCalls(callResult.calls);
+      setMaxToolSteps(roleSettingsResult.config.maxToolSteps);
     } catch (error) {
       notify(error instanceof Error ? error.message : "Failed to load tools", "error");
+    }
+  }
+
+  async function saveSettings(steps: number) {
+    try {
+      const result = await client.updateModelRoleSettings({}, { maxToolSteps: steps });
+      setMaxToolSteps(result.config.maxToolSteps);
+      notify(t("tools.settingsSaved"), "ok");
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "Failed to save tool settings", "error");
     }
   }
 
@@ -139,6 +153,8 @@ export function ToolsPanel({ client, notify }: PanelProps) {
       />
 
       <ToolCallHistoryView calls={toolCalls} onRefresh={() => void loadToolCalls()} />
+
+      <ToolSettingsForm maxSteps={maxToolSteps} onSave={saveSettings} />
 
       <McpServerForm
         draft={draft}
