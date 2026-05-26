@@ -17,7 +17,7 @@ function toolExamples(text: ToolInputExampleText = {}): Record<string, Record<st
       maxResults: 3
     },
     "web.fetch_page": {
-      url: "https://workers.cloudflare.com",
+      urls: ["https://workers.cloudflare.com", "https://developers.cloudflare.com/workers/"],
       maxChars: 6000,
       includeLinks: false
     },

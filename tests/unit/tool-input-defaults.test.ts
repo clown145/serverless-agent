@@ -9,7 +9,7 @@ describe("tool input defaults", () => {
       maxResults: 3
     });
     expect(createToolInputDraft(tool("web.fetch_page"))).toMatchObject({
-      url: "https://workers.cloudflare.com",
+      urls: ["https://workers.cloudflare.com", "https://developers.cloudflare.com/workers/"],
       maxChars: 6000
     });
     expect(createToolInputDraft(tool("http.request"))).toMatchObject({
