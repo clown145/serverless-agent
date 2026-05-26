@@ -1,5 +1,7 @@
 import { nowIso } from "../../shared/time";
 
+export const DEFAULT_MAX_TOOL_STEPS = 6;
+
 export type AgentModelConfigRecord = {
   agentId: string;
   imageCaptionEnabled: boolean;
@@ -35,7 +37,7 @@ export async function setAgentModelConfig(
   }
 ): Promise<AgentModelConfigRecord> {
   const now = nowIso();
-  const maxToolSteps = input.maxToolSteps ?? 6;
+  const maxToolSteps = input.maxToolSteps ?? DEFAULT_MAX_TOOL_STEPS;
 
   await db
     .prepare(
@@ -61,7 +63,7 @@ function defaultAgentModelConfig(agentId: string): AgentModelConfigRecord {
   return {
     agentId,
     imageCaptionEnabled: false,
-    maxToolSteps: 6
+    maxToolSteps: DEFAULT_MAX_TOOL_STEPS
   };
 }
 
@@ -69,7 +71,7 @@ function mapAgentModelConfigRow(row: AgentModelConfigRow): AgentModelConfigRecor
   return {
     agentId: row.agent_id,
     imageCaptionEnabled: row.image_caption_enabled === 1,
-    maxToolSteps: row.max_tool_steps ?? 6,
+    maxToolSteps: row.max_tool_steps ?? DEFAULT_MAX_TOOL_STEPS,
     updatedAt: row.updated_at ?? undefined
   };
 }
