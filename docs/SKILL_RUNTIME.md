@@ -100,6 +100,9 @@ Skill 激活后，运行时会额外收窄 VFS 工具边界：
 /skill-auto-edits off
 ```
 
+Telegram Bot command 菜单使用 `/skillauto` 作为同一命令的 alias，因为 Telegram
+菜单命令不允许连字符。
+
 开启 auto edits 后，模型可以直接更新 skill 文件。VFS revisions、tool calls 和 audit logs 仍会记录变化。
 
 WebUI 的 Skills 页面使用同一套 VFS-backed 内容。它可以：

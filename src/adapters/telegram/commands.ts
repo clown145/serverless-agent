@@ -17,6 +17,7 @@ const COMMAND_DESCRIPTIONS: Record<string, string> = {
   context: "Show or update context settings",
   compact: "Compact conversation context",
   "skill-auto-edits": "Toggle skill edit confirmations",
+  skillauto: "Toggle skill edit confirmations",
   task: "Create a delayed or recurring task",
   sid: "Show session and permission IDs"
 };
@@ -31,10 +32,12 @@ const MENU_COMMANDS = [
   "think",
   "context",
   "compact",
-  "skill-auto-edits",
+  "skillauto",
   "task",
   "sid"
 ];
+
+const TELEGRAM_BOT_COMMAND_PATTERN = /^[a-z0-9_]{1,32}$/;
 
 export function createTelegramBotCommands(): TelegramBotCommand[] {
   const supported = new Set<string>();
@@ -46,8 +49,14 @@ export function createTelegramBotCommands(): TelegramBotCommand[] {
     }
   }
 
-  return MENU_COMMANDS.filter((name) => supported.has(name)).map((name) => ({
-    command: name,
-    description: COMMAND_DESCRIPTIONS[name] ?? `Run /${name}`
-  }));
+  return MENU_COMMANDS.filter((name) => supported.has(name) && isValidTelegramBotCommand(name)).map(
+    (name) => ({
+      command: name,
+      description: COMMAND_DESCRIPTIONS[name] ?? `Run /${name}`
+    })
+  );
+}
+
+function isValidTelegramBotCommand(command: string): boolean {
+  return TELEGRAM_BOT_COMMAND_PATTERN.test(command);
 }
