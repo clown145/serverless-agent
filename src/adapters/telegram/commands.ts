@@ -16,7 +16,6 @@ const COMMAND_DESCRIPTIONS: Record<string, string> = {
   reasoning: "Set reasoning effort",
   context: "Show or update context settings",
   compact: "Compact conversation context",
-  "skill-auto-edits": "Toggle skill edit confirmations",
   skillauto: "Toggle skill edit confirmations",
   task: "Create a delayed or recurring task",
   sid: "Show session and permission IDs"
