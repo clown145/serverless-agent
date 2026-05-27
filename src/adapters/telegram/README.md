@@ -11,6 +11,16 @@ Telegram adapter 负责 Telegram webhook payload 校验、标准化、Bot API �
 - 文本、文件、图片、按钮和 typing 出站。
 - Markdown/HTML parse mode，发送失败时回退纯文本。
 
+## Bot Command 菜单
+
+`commands.ts` 会生成传给 Telegram `setMyCommands` 的菜单。Telegram Bot API 要求
+command 只能包含 `a-z`、`0-9` 和 `_`，长度为 1-32 个字符，因此菜单里只发布符合
+这个限制的命令。
+
+带连字符的系统命令需要使用合法 alias 暴露到 Telegram 菜单。例如
+`/skill-auto-edits` 的菜单命令是 `/skillauto`。运行时 parser 仍支持用户手动发送
+canonical 命令名。
+
 ## 配置来源
 
 优先级：

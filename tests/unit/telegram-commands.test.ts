@@ -13,9 +13,18 @@ describe("telegram commands", () => {
       { command: "think", description: "Set reasoning effort" },
       { command: "context", description: "Show or update context settings" },
       { command: "compact", description: "Compact conversation context" },
-      { command: "skill-auto-edits", description: "Toggle skill edit confirmations" },
+      { command: "skillauto", description: "Toggle skill edit confirmations" },
       { command: "task", description: "Create a delayed or recurring task" },
       { command: "sid", description: "Show session and permission IDs" }
     ]);
+  });
+
+  it("only exposes bot commands accepted by Telegram", () => {
+    expect(createTelegramBotCommands().map((command) => command.command)).not.toContain(
+      "skill-auto-edits"
+    );
+    for (const command of createTelegramBotCommands()) {
+      expect(command.command).toMatch(/^[a-z0-9_]{1,32}$/);
+    }
   });
 });
