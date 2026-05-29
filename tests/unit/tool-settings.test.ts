@@ -52,14 +52,24 @@ describe("tool settings", () => {
   });
 
   it("coerces and clamps tool settings updates", () => {
-    expect(updateToolSettingsSchema.parse({ maxToolCallsPerRun: "3", maxModelStepsPerRun: "40" })).toEqual({
+    expect(
+      updateToolSettingsSchema.parse({ maxToolCallsPerRun: "3", maxModelStepsPerRun: "40" })
+    ).toEqual({
       maxToolCallsPerRun: 3,
       maxModelStepsPerRun: 40
     });
-    expect(() => updateToolSettingsSchema.parse({ maxToolCallsPerRun: 0, maxModelStepsPerRun: 10 })).toThrow();
-    expect(() => updateToolSettingsSchema.parse({ maxToolCallsPerRun: 101, maxModelStepsPerRun: 10 })).toThrow();
-    expect(() => updateToolSettingsSchema.parse({ maxToolCallsPerRun: 5, maxModelStepsPerRun: 0 })).toThrow();
-    expect(() => updateToolSettingsSchema.parse({ maxToolCallsPerRun: 5, maxModelStepsPerRun: 501 })).toThrow();
+    expect(() =>
+      updateToolSettingsSchema.parse({ maxToolCallsPerRun: 0, maxModelStepsPerRun: 10 })
+    ).toThrow();
+    expect(() =>
+      updateToolSettingsSchema.parse({ maxToolCallsPerRun: 101, maxModelStepsPerRun: 10 })
+    ).toThrow();
+    expect(() =>
+      updateToolSettingsSchema.parse({ maxToolCallsPerRun: 5, maxModelStepsPerRun: 0 })
+    ).toThrow();
+    expect(() =>
+      updateToolSettingsSchema.parse({ maxToolCallsPerRun: 5, maxModelStepsPerRun: 501 })
+    ).toThrow();
   });
 });
 

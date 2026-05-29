@@ -88,7 +88,12 @@ export async function executeAgentToolLoop(
     }
   }
 
-  await failRun(env, runId, message, `Task stopped: maximum model reasoning steps exceeded (${maxModelSteps}).`);
+  await failRun(
+    env,
+    runId,
+    message,
+    `Task stopped: maximum model reasoning steps exceeded (${maxModelSteps}).`
+  );
 }
 
 async function finishRun(
