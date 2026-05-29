@@ -24,7 +24,8 @@ export async function handleAdminToolSettings(request: Request, env: Env): Promi
 
     const settings = await setToolSettings(env.AGENT_DB, {
       agentId: parsed.data.agentId ?? agentId,
-      maxToolCallsPerRun: parsed.data.maxToolCallsPerRun
+      maxToolCallsPerRun: parsed.data.maxToolCallsPerRun,
+      maxModelStepsPerRun: parsed.data.maxModelStepsPerRun
     });
 
     return jsonResponse({ ok: true, settings: toToolSettingsDto(settings) });

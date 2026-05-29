@@ -17,8 +17,9 @@ import {
   reserveToolCall,
   toolCallLimitExceededMessage
 } from "./tool-call-limit";
+import { MAX_MODEL_STEPS_PER_RUN_LIMIT } from "../storage/repositories/tool-settings-types";
 
-const MAX_MODEL_STEPS = 6;
+const ABSOLUTE_MAX_MODEL_STEPS = MAX_MODEL_STEPS_PER_RUN_LIMIT;
 
 export async function executeAgentToolLoop(
   env: Env,
@@ -39,9 +40,10 @@ export async function executeAgentToolLoop(
   });
   const tools = createModelTools(context.registryTools);
   const toolCallLimit = createToolCallLimitState(toolSettings);
+  const maxModelSteps = Math.min(toolSettings.maxModelStepsPerRun, ABSOLUTE_MAX_MODEL_STEPS);
   let sentMessageTool = false;
 
-  for (let index = 0; index < MAX_MODEL_STEPS; index += 1) {
+  for (let index = 0; index < maxModelSteps; index += 1) {
     const response = await context.provider.complete({
       messages,
       tools,
@@ -86,7 +88,12 @@ export async function executeAgentToolLoop(
     }
   }
 
-  await failRun(env, runId, message, "Task stopped: maximum tool-call steps exceeded.");
+  await failRun(
+    env,
+    runId,
+    message,
+    `Task stopped: maximum model reasoning steps exceeded (${maxModelSteps}).`
+  );
 }
 
 async function finishRun(

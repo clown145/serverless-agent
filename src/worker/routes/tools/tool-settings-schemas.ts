@@ -1,6 +1,8 @@
 import { z } from "zod";
 import {
+  MAX_MODEL_STEPS_PER_RUN_LIMIT,
   MAX_TOOL_CALLS_PER_RUN_LIMIT,
+  MIN_MAX_MODEL_STEPS_PER_RUN,
   MIN_MAX_TOOL_CALLS_PER_RUN
 } from "../../../storage/repositories/tool-settings-types";
 
@@ -10,7 +12,12 @@ export const updateToolSettingsSchema = z.object({
     .number()
     .int()
     .min(MIN_MAX_TOOL_CALLS_PER_RUN)
-    .max(MAX_TOOL_CALLS_PER_RUN_LIMIT)
+    .max(MAX_TOOL_CALLS_PER_RUN_LIMIT),
+  maxModelStepsPerRun: z.coerce
+    .number()
+    .int()
+    .min(MIN_MAX_MODEL_STEPS_PER_RUN)
+    .max(MAX_MODEL_STEPS_PER_RUN_LIMIT)
 });
 
 export function zodMessage(error: z.ZodError): string {
