@@ -9,6 +9,12 @@ import { RegisteredToolsView } from "./tools/RegisteredToolsView";
 import { ToolCallHistoryView } from "./tools/ToolCallHistoryView";
 import { ToolRunnerView } from "./tools/ToolRunnerView";
 import { ToolSettingsView } from "./tools/ToolSettingsView";
+import {
+  MAX_MODEL_STEPS_PER_RUN,
+  MAX_TOOL_CALLS_PER_RUN,
+  MIN_MODEL_STEPS_PER_RUN,
+  MIN_TOOL_CALLS_PER_RUN
+} from "./tools/tool-settings-constants";
 import type { PanelProps } from "./types";
 
 export function ToolsPanel({ client, notify }: PanelProps) {
@@ -118,13 +124,21 @@ export function ToolsPanel({ client, notify }: PanelProps) {
   }
 
   async function saveSettings() {
-    const maxToolCallsPerRun = parseMaxToolCallsPerRun(maxToolCallsPerRunDraft);
+    const maxToolCallsPerRun = parseBoundedInt(
+      maxToolCallsPerRunDraft,
+      MIN_TOOL_CALLS_PER_RUN,
+      MAX_TOOL_CALLS_PER_RUN
+    );
     if (maxToolCallsPerRun === undefined) {
       notify(t("tools.maxCallsInvalid"), "error");
       return;
     }
 
-    const maxModelStepsPerRun = parseMaxModelStepsPerRun(maxModelStepsPerRunDraft);
+    const maxModelStepsPerRun = parseBoundedInt(
+      maxModelStepsPerRunDraft,
+      MIN_MODEL_STEPS_PER_RUN,
+      MAX_MODEL_STEPS_PER_RUN
+    );
     if (maxModelStepsPerRun === undefined) {
       notify(t("tools.maxModelStepsInvalid"), "error");
       return;
@@ -199,18 +213,18 @@ export function ToolsPanel({ client, notify }: PanelProps) {
   );
 }
 
-function parseMaxToolCallsPerRun(value: string): number | undefined {
+function parseBoundedInt(value: string, min: number, max: number): number | undefined {
   const parsed = Number(value.trim());
-  if (!Number.isInteger(parsed) || parsed < 1 || parsed > 100) {
+  if (!Number.isInteger(parsed) || parsed < min || parsed > max) {
     return undefined;
   }
   return parsed;
 }
 
+function parseMaxToolCallsPerRun(value: string): number | undefined {
+  return parseBoundedInt(value, MIN_TOOL_CALLS_PER_RUN, MAX_TOOL_CALLS_PER_RUN);
+}
+
 function parseMaxModelStepsPerRun(value: string): number | undefined {
-  const parsed = Number(value.trim());
-  if (!Number.isInteger(parsed) || parsed < 1 || parsed > 500) {
-    return undefined;
-  }
-  return parsed;
+  return parseBoundedInt(value, MIN_MODEL_STEPS_PER_RUN, MAX_MODEL_STEPS_PER_RUN);
 }
