@@ -124,21 +124,13 @@ export function ToolsPanel({ client, notify }: PanelProps) {
   }
 
   async function saveSettings() {
-    const maxToolCallsPerRun = parseBoundedInt(
-      maxToolCallsPerRunDraft,
-      MIN_TOOL_CALLS_PER_RUN,
-      MAX_TOOL_CALLS_PER_RUN
-    );
+    const maxToolCallsPerRun = parseMaxToolCallsPerRun(maxToolCallsPerRunDraft);
     if (maxToolCallsPerRun === undefined) {
       notify(t("tools.maxCallsInvalid"), "error");
       return;
     }
 
-    const maxModelStepsPerRun = parseBoundedInt(
-      maxModelStepsPerRunDraft,
-      MIN_MODEL_STEPS_PER_RUN,
-      MAX_MODEL_STEPS_PER_RUN
-    );
+    const maxModelStepsPerRun = parseMaxModelStepsPerRun(maxModelStepsPerRunDraft);
     if (maxModelStepsPerRun === undefined) {
       notify(t("tools.maxModelStepsInvalid"), "error");
       return;
