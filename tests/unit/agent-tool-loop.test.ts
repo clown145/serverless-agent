@@ -41,7 +41,8 @@ describe("executeAgentToolLoop", () => {
     mocks.completeRun.mockResolvedValue(undefined);
     mocks.getToolSettings.mockResolvedValue({
       agentId: "agent-1",
-      maxToolCallsPerRun: 1
+      maxToolCallsPerRun: 1,
+      maxModelStepsPerRun: 10
     });
   });
 
@@ -83,6 +84,32 @@ describe("executeAgentToolLoop", () => {
       "Task stopped: maximum tool call count exceeded (1)."
     );
     expect(mocks.completeRun).toHaveBeenCalledWith(expect.anything(), "run_1", "failed");
+  });
+
+  it("stops after reaching the configured max model steps", async () => {
+    const execute = vi.fn(async () => ({ status: "success" as const, output: { ok: true } }));
+    const providerResponses: ModelResponse[] = [
+      { content: "", toolCalls: [{ id: "call_1", name: "test.tool", arguments: { index: 1 } }] },
+      { content: "", toolCalls: [{ id: "call_2", name: "test.tool", arguments: { index: 2 } }] },
+      { content: "", toolCalls: [{ id: "call_3", name: "test.tool", arguments: { index: 3 } }] }
+    ];
+    mocks.getToolSettings.mockResolvedValue({
+      agentId: "agent-1",
+      maxToolCallsPerRun: 10,
+      maxModelStepsPerRun: 2
+    });
+    mocks.prepareAgentLoopContext.mockResolvedValue(createContext(execute, providerResponses));
+
+    await executeAgentToolLoop(createEnv(), "run_2", message());
+
+    expect(execute).toHaveBeenCalledTimes(2);
+    expect(mocks.sendFinalMessage).toHaveBeenCalledWith(
+      expect.anything(),
+      "run_2",
+      expect.objectContaining({ id: "msg_1" }),
+      "Task stopped: maximum model reasoning steps exceeded (2)."
+    );
+    expect(mocks.completeRun).toHaveBeenCalledWith(expect.anything(), "run_2", "failed");
   });
 });
 

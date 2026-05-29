@@ -17,6 +17,7 @@ export function ToolsPanel({ client, notify }: PanelProps) {
   const [selectedToolName, setSelectedToolName] = useState("");
   const [toolCalls, setToolCalls] = useState<ToolCallHistoryItem[]>([]);
   const [maxToolCallsPerRunDraft, setMaxToolCallsPerRunDraft] = useState("20");
+  const [maxModelStepsPerRunDraft, setMaxModelStepsPerRunDraft] = useState("50");
   const [savingSettings, setSavingSettings] = useState(false);
   const [mcpServers, setMcpServers] = useState<McpServer[]>([]);
   const [mcpTools, setMcpTools] = useState<McpTool[]>([]);
@@ -47,6 +48,7 @@ export function ToolsPanel({ client, notify }: PanelProps) {
       ]);
       setTools(toolResult.tools);
       setMaxToolCallsPerRunDraft(String(toolResult.settings.maxToolCallsPerRun));
+      setMaxModelStepsPerRunDraft(String(toolResult.settings.maxModelStepsPerRun));
       setSelectedToolName((current) => current || toolResult.tools[0]?.name || "");
       setMcpServers(mcpResult.servers);
       setMcpTools(mcpResult.tools);
@@ -122,10 +124,17 @@ export function ToolsPanel({ client, notify }: PanelProps) {
       return;
     }
 
+    const maxModelStepsPerRun = parseMaxModelStepsPerRun(maxModelStepsPerRunDraft);
+    if (maxModelStepsPerRun === undefined) {
+      notify(t("tools.maxModelStepsInvalid"), "error");
+      return;
+    }
+
     setSavingSettings(true);
     try {
-      const result = await client.updateToolSettings({ maxToolCallsPerRun });
+      const result = await client.updateToolSettings({ maxToolCallsPerRun, maxModelStepsPerRun });
       setMaxToolCallsPerRunDraft(String(result.settings.maxToolCallsPerRun));
+      setMaxModelStepsPerRunDraft(String(result.settings.maxModelStepsPerRun));
       notify(t("tools.settingsSaved"), "ok");
     } catch (error) {
       notify(error instanceof Error ? error.message : "Failed to save tool settings", "error");
@@ -149,9 +158,11 @@ export function ToolsPanel({ client, notify }: PanelProps) {
       </header>
 
       <ToolSettingsView
-        value={maxToolCallsPerRunDraft}
+        maxCallsDraft={maxToolCallsPerRunDraft}
+        maxStepsDraft={maxModelStepsPerRunDraft}
         saving={savingSettings}
-        onValueChange={setMaxToolCallsPerRunDraft}
+        onCallsChange={setMaxToolCallsPerRunDraft}
+        onStepsChange={setMaxModelStepsPerRunDraft}
         onSave={() => void saveSettings()}
       />
 
@@ -193,6 +204,13 @@ function parseMaxToolCallsPerRun(value: string): number | undefined {
   if (!Number.isInteger(parsed) || parsed < 1 || parsed > 100) {
     return undefined;
   }
+  return parsed;
+}
 
+function parseMaxModelStepsPerRun(value: string): number | undefined {
+  const parsed = Number(value.trim());
+  if (!Number.isInteger(parsed) || parsed < 1 || parsed > 500) {
+    return undefined;
+  }
   return parsed;
 }

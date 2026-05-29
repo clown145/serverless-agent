@@ -385,6 +385,7 @@ export type ToolCatalogItem = {
 export type ToolSettings = {
   agentId: string;
   maxToolCallsPerRun: number;
+  maxModelStepsPerRun: number;
   updatedAt?: string;
 };
 

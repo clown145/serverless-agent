@@ -2,21 +2,28 @@ import { Save } from "lucide-react";
 import { useI18n } from "../../i18n/I18nProvider";
 
 type ToolSettingsViewProps = {
-  value: string;
+  maxCallsDraft: string;
+  maxStepsDraft: string;
   saving: boolean;
-  onValueChange: (value: string) => void;
+  onCallsChange: (value: string) => void;
+  onStepsChange: (value: string) => void;
   onSave: () => void;
 };
 
-export function ToolSettingsView({ value, saving, onValueChange, onSave }: ToolSettingsViewProps) {
+export function ToolSettingsView({
+  maxCallsDraft,
+  maxStepsDraft,
+  saving,
+  onCallsChange,
+  onStepsChange,
+  onSave
+}: ToolSettingsViewProps) {
   const { t } = useI18n();
-  const hintValue = value.trim() || "-";
 
   return (
     <section className="tool-settings">
       <div>
         <strong>{t("tools.settings")}</strong>
-        <span>{t("tools.settingsHint", { count: hintValue })}</span>
       </div>
       <label>
         {t("tools.maxCallsPerRun")}
@@ -24,8 +31,18 @@ export function ToolSettingsView({ value, saving, onValueChange, onSave }: ToolS
           type="number"
           min="1"
           max="100"
-          value={value}
-          onChange={(event) => onValueChange(event.target.value)}
+          value={maxCallsDraft}
+          onChange={(event) => onCallsChange(event.target.value)}
+        />
+      </label>
+      <label>
+        {t("tools.maxModelStepsPerRun")}
+        <input
+          type="number"
+          min="1"
+          max="500"
+          value={maxStepsDraft}
+          onChange={(event) => onStepsChange(event.target.value)}
         />
       </label>
       <button className="secondary-button" disabled={saving} type="button" onClick={onSave}>

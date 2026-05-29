@@ -775,7 +775,7 @@ export function createAdminClient(getToken: () => string) {
         "/admin/tools"
       );
     },
-    updateToolSettings: (body: { maxToolCallsPerRun: number }) => {
+    updateToolSettings: (body: { maxToolCallsPerRun: number; maxModelStepsPerRun: number }) => {
       return request<ApiResult<{ settings: ToolSettings }>>("/admin/tools/settings", {
         method: "PUT",
         body: JSON.stringify(body)
