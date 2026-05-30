@@ -6,7 +6,11 @@ export function formatToolResultForModel(result: unknown): string {
   }
 
   // Default behavior for other results
-  return JSON.stringify(result ?? null);
+  try {
+    return JSON.stringify(result ?? null);
+  } catch {
+    return JSON.stringify({ error: "Failed to serialize tool result" });
+  }
 }
 
 function isToolResult(value: unknown): value is ToolResult {

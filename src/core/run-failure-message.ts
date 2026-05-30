@@ -1,6 +1,17 @@
 import type { D1Database } from "@cloudflare/workers-types";
 
-const MODEL_ERROR_HINTS = ["openai", "gemini", "provider", "model", "api error"];
+const MODEL_ERROR_PATTERNS = [
+  "openai_error",
+  "gemini_error",
+  "model_error",
+  "api_error",
+  "rate limit",
+  "quota exceeded",
+  "context length",
+  "token limit exceeded",
+  "timeout",
+  "429",
+];
 
 export async function getUserFacingFailureMessage(
   runId: string,
@@ -23,16 +34,34 @@ export async function getUserFacingFailureMessage(
 
 async function hasPermissionDeniedToolCall(runId: string, db: D1Database): Promise<boolean> {
   try {
-    const row = await db
+    // Check tool_calls table (most common case, including policy denials)
+    const toolCallRow = await db
       .prepare(
         `SELECT 1 FROM tool_calls 
-         WHERE run_id = ? AND status = 'permission_denied' 
+         WHERE run_id = ? 
+           AND (status = 'permission_denied' OR error_code IN ('permission_denied', 'skill_tool_not_allowed'))
          LIMIT 1`
       )
       .bind(runId)
       .first();
 
-    return !!row;
+    if (toolCallRow) return true;
+
+    // Also check run_steps for skill-level and other denied cases
+    // (some permission denials are recorded here with summary_status)
+    const stepRow = await db
+      .prepare(
+        `SELECT 1 FROM run_steps 
+         WHERE run_id = ? 
+           AND (summary_status = 'skill_denied' 
+                OR summary LIKE '%permission_denied%' 
+                OR summary LIKE '%denied%')
+         LIMIT 1`
+      )
+      .bind(runId)
+      .first();
+
+    return !!stepRow;
   } catch {
     return false;
   }
@@ -40,5 +69,5 @@ async function hasPermissionDeniedToolCall(runId: string, db: D1Database): Promi
 
 function looksLikeModelError(message: string): boolean {
   const lower = message.toLowerCase();
-  return MODEL_ERROR_HINTS.some((hint) => lower.includes(hint));
+  return MODEL_ERROR_PATTERNS.some((pattern) => lower.includes(pattern));
 }
