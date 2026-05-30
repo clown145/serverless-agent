@@ -14,7 +14,7 @@ describe("formatToolResultForModel", () => {
 
     const output = formatToolResultForModel(result);
 
-    expect(output).toContain("Permission denied for this tool");
+    expect(output).toContain("Permission denied (code: permission_denied)");
     expect(output).toContain("Missing required scope: http:request");
     expect(output).toContain("If this tool or permission is necessary");
     expect(output).toContain("ask them to grant the required permission");
@@ -37,7 +37,7 @@ describe("formatToolResultForModel", () => {
     };
 
     const output = formatToolResultForModel(result);
-    expect(output).toContain("Permission denied for this tool");
+    expect(output).toContain("Permission denied (code: skill_tool_not_allowed)");
     expect(output).toContain("Skill foo does not allow tool http.request");
   });
 });

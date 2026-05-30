@@ -113,7 +113,17 @@ async function runAgentForMessageInternal(
     const summary = error instanceof Error ? error.message : "Agent run failed";
     await recordRunFailedStep(env, runId, message.agentId, summary);
 
-    const userMessage = await getUserFacingFailureMessage(runId, summary, env.AGENT_DB);
+    let userMessage = `Run failed: ${summary}`;
+
+    try {
+      userMessage = await getUserFacingFailureMessage(runId, summary, env.AGENT_DB);
+    } catch (helperError) {
+      // If the helper itself fails, fall back to the original summary but log it
+      console.error(
+        `[agent-runner] getUserFacingFailureMessage failed for run ${runId}:`,
+        helperError
+      );
+    }
 
     await sendFinalMessage(env, runId, message, userMessage).catch(async (sendError) => {
       await recordRunFailedStep(

@@ -18,13 +18,13 @@ export async function getUserFacingFailureMessage(
   originalError: string,
   db: D1Database
 ): Promise<string> {
-  const hadPermissionDenied = await hasPermissionDeniedToolCall(runId, db);
+  const check = await hasPermissionDeniedToolCall(runId, db);
 
-  if (hadPermissionDenied && looksLikeModelError(originalError)) {
+  if (check.hadPermissionDenied && looksLikeModelError(originalError)) {
     return "Run failed: insufficient permissions for required tools";
   }
 
-  if (hadPermissionDenied) {
+  if (check.hadPermissionDenied) {
     // Even if not model error, make it clearer
     return `Run failed: insufficient permissions for required tools (${originalError})`;
   }
@@ -32,39 +32,45 @@ export async function getUserFacingFailureMessage(
   return `Run failed: ${originalError}`;
 }
 
-async function hasPermissionDeniedToolCall(runId: string, db: D1Database): Promise<boolean> {
+async function hasPermissionDeniedToolCall(
+  runId: string,
+  db: D1Database
+): Promise<{ hadPermissionDenied: boolean; dbError?: unknown }> {
   try {
-    // Check tool_calls table (most common case, including policy denials)
-    const toolCallRow = await db
-      .prepare(
-        `SELECT 1 FROM tool_calls 
-         WHERE run_id = ? 
-           AND (status = 'permission_denied' OR error_code IN ('permission_denied', 'skill_tool_not_allowed'))
-         LIMIT 1`
-      )
-      .bind(runId)
-      .first();
+    // Run both checks in parallel for better performance
+    const [toolCallRow, stepRow] = await Promise.all([
+      // Check tool_calls table (policy denials + most tool-level denials)
+      db
+        .prepare(
+          `SELECT 1 FROM tool_calls 
+           WHERE run_id = ? 
+             AND (status = 'permission_denied' 
+                  OR error_code IN ('permission_denied', 'skill_tool_not_allowed'))
+           LIMIT 1`
+        )
+        .bind(runId)
+        .first(),
 
-    if (toolCallRow) return true;
+      // Check run_steps for recorded denials (skill restrictions etc.)
+      // These are written as failed steps with summary in format "toolName: skill_denied"
+      db
+        .prepare(
+          `SELECT 1 FROM run_steps 
+           WHERE run_id = ? 
+             AND status = 'failed'
+             AND (summary LIKE '%: skill_denied' 
+                  OR summary LIKE '%: permission_denied')
+           LIMIT 1`
+        )
+        .bind(runId)
+        .first()
+    ]);
 
-    // Check run_steps for failed steps that indicate permission or skill denials
-    // (these are recorded in the summary column, e.g. "skill_denied" or permission messages)
-    const stepRow = await db
-      .prepare(
-        `SELECT 1 FROM run_steps 
-         WHERE run_id = ? 
-           AND status = 'failed'
-           AND (summary LIKE '%skill_denied%' 
-                OR summary LIKE '%permission_denied%' 
-                OR summary LIKE '%denied%')
-         LIMIT 1`
-      )
-      .bind(runId)
-      .first();
-
-    return !!stepRow;
-  } catch {
-    return false;
+    return { hadPermissionDenied: !!toolCallRow || !!stepRow };
+  } catch (err) {
+    // Distinguish DB errors from "no permission_denied found"
+    console.error(`[hasPermissionDeniedToolCall] DB query failed for run ${runId}:`, err);
+    return { hadPermissionDenied: false, dbError: err };
   }
 }
 
