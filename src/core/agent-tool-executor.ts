@@ -126,6 +126,6 @@ function createToolResultMessage(toolCall: ModelToolCall, result: unknown): Mode
     role: "tool",
     toolCallId: toolCall.id,
     toolName: toolCall.name,
-    content: formatToolResultForModel(result)
+    content: formatToolResultForModel(result, toolCall.name)
   };
 }

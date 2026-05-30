@@ -13,23 +13,22 @@ function isToolResult(value: unknown): value is ToolResult {
     return false;
   }
 
-  // Only treat objects that have a known permission_denied status as ToolResult for this formatter
   if (!PERMISSION_DENIED_STATUSES.has(candidate.status)) {
     return false;
   }
 
-  // Require at least one additional identifier to avoid matching random objects
-  const hasIdentifier =
-    typeof candidate.toolName === "string" ||
-    typeof (candidate as any).name === "string" ||
-    typeof candidate.error === "object";
+  // For permission_denied results, require a proper error object (not null)
+  const error = candidate.error;
+  if (error === null || typeof error !== "object") {
+    return false;
+  }
 
-  return hasIdentifier;
+  return true;
 }
 
-export function formatToolResultForModel(result: unknown): string {
+export function formatToolResultForModel(result: unknown, toolName?: string): string {
   if (isToolResult(result) && result.status === "permission_denied") {
-    return formatPermissionDeniedForModel(result);
+    return formatPermissionDeniedForModel(result, toolName);
   }
 
   // Default behavior for other results
@@ -40,12 +39,13 @@ export function formatToolResultForModel(result: unknown): string {
   }
 }
 
-function formatPermissionDeniedForModel(result: ToolResult): string {
+function formatPermissionDeniedForModel(result: ToolResult, toolName?: string): string {
   const error = result.error;
   const reason = error?.message ?? "Permission denied";
   const code = error?.code ? ` (code: ${error.code})` : "";
 
-  const toolInfo = (result as any).toolName ? ` for tool "${(result as any).toolName}"` : "";
+  const effectiveToolName = toolName ?? (result as any).toolName ?? (result as any).name;
+  const toolInfo = effectiveToolName ? ` for tool "${effectiveToolName}"` : "";
 
   return [
     `Permission denied${toolInfo}${code}.`,
