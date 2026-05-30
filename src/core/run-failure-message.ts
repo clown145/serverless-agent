@@ -10,7 +10,7 @@ const MODEL_ERROR_PATTERNS = [
   "context length",
   "token limit exceeded",
   "timeout",
-  "429",
+  "429"
 ];
 
 export async function getUserFacingFailureMessage(
