@@ -17,6 +17,7 @@ import { resolveInboundConversation } from "../conversations/resolve";
 import { insertMessage } from "../storage/repositories/messages-repository";
 import { appendRunStep, completeRun, createRun } from "../storage/repositories/runs-repository";
 import { recordRunFailedStep } from "./run-step-recorder";
+import { getUserFacingFailureMessage } from "./run-failure-message";
 
 export async function runAgentForMessage(
   env: Env,
@@ -111,18 +112,19 @@ async function runAgentForMessageInternal(
   } catch (error) {
     const summary = error instanceof Error ? error.message : "Agent run failed";
     await recordRunFailedStep(env, runId, message.agentId, summary);
-    await sendFinalMessage(env, runId, message, `Run failed: ${summary}`).catch(
-      async (sendError) => {
-        await recordRunFailedStep(
-          env,
-          runId,
-          message.agentId,
-          sendError instanceof Error
-            ? `Failed to send failure message: ${sendError.message}`
-            : "Failed to send failure message"
-        );
-      }
-    );
+
+    const userMessage = await getUserFacingFailureMessage(runId, summary, env.AGENT_DB);
+
+    await sendFinalMessage(env, runId, message, userMessage).catch(async (sendError) => {
+      await recordRunFailedStep(
+        env,
+        runId,
+        message.agentId,
+        sendError instanceof Error
+          ? `Failed to send failure message: ${sendError.message}`
+          : "Failed to send failure message"
+      );
+    });
     await completeRun(env.AGENT_DB, runId, "failed");
   }
 
