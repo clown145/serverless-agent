@@ -47,13 +47,14 @@ async function hasPermissionDeniedToolCall(runId: string, db: D1Database): Promi
 
     if (toolCallRow) return true;
 
-    // Also check run_steps for skill-level and other denied cases
-    // (some permission denials are recorded here with summary_status)
+    // Check run_steps for failed steps that indicate permission or skill denials
+    // (these are recorded in the summary column, e.g. "skill_denied" or permission messages)
     const stepRow = await db
       .prepare(
         `SELECT 1 FROM run_steps 
          WHERE run_id = ? 
-           AND (summary_status = 'skill_denied' 
+           AND status = 'failed'
+           AND (summary LIKE '%skill_denied%' 
                 OR summary LIKE '%permission_denied%' 
                 OR summary LIKE '%denied%')
          LIMIT 1`
