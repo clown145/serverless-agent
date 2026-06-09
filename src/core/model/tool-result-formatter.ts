@@ -17,9 +17,9 @@ function isToolResult(value: unknown): value is ToolResult {
     return false;
   }
 
-  // For permission_denied results, require a proper error object (not null)
+  // If present, permission_denied error payloads must be real objects.
   const error = candidate.error;
-  if (error === null || typeof error !== "object") {
+  if (error !== undefined && (error === null || typeof error !== "object")) {
     return false;
   }
 

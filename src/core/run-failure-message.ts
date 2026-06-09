@@ -57,6 +57,7 @@ async function hasPermissionDeniedToolCall(
         .prepare(
           `SELECT 1 FROM run_steps 
            WHERE run_id = ? 
+             AND kind = 'tool_completed'
              AND status = 'failed'
              AND (summary LIKE '%: skill_denied' 
                   OR summary LIKE '%: permission_denied')

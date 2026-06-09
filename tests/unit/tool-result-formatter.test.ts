@@ -26,6 +26,18 @@ describe("formatToolResultForModel", () => {
     expect(output).toBe(JSON.stringify(result));
   });
 
+  it("handles permission_denied without an error object gracefully", () => {
+    const result = {
+      status: "permission_denied" as const
+    };
+
+    const output = formatToolResultForModel(result);
+
+    expect(output).toContain("Permission denied");
+    expect(output).toContain("Reason: Permission denied");
+    expect(output).toContain("If this tool or permission is necessary");
+  });
+
   it("handles skill-based permission_denied the same way", () => {
     const result = {
       status: "permission_denied" as const,
