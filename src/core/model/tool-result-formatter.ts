@@ -1,19 +1,15 @@
 import type { ToolResult } from "../../tools/types";
 
-const PERMISSION_DENIED_STATUSES = new Set<string>(["permission_denied"]);
-
-function isToolResult(value: unknown): value is ToolResult {
+function isPermissionDeniedToolResult(
+  value: unknown
+): value is ToolResult & { status: "permission_denied" } {
   if (value === null || typeof value !== "object") {
     return false;
   }
 
   const candidate = value as Partial<ToolResult> & Record<string, unknown>;
 
-  if (typeof candidate.status !== "string") {
-    return false;
-  }
-
-  if (!PERMISSION_DENIED_STATUSES.has(candidate.status)) {
+  if (candidate.status !== "permission_denied") {
     return false;
   }
 
@@ -27,7 +23,7 @@ function isToolResult(value: unknown): value is ToolResult {
 }
 
 export function formatToolResultForModel(result: unknown, toolName?: string): string {
-  if (isToolResult(result) && result.status === "permission_denied") {
+  if (isPermissionDeniedToolResult(result)) {
     return formatPermissionDeniedForModel(result, toolName);
   }
 

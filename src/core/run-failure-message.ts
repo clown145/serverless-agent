@@ -1,17 +1,5 @@
 import type { D1Database } from "@cloudflare/workers-types";
-
-const MODEL_ERROR_PATTERNS = [
-  "openai_error",
-  "gemini_error",
-  "model_error",
-  "api_error",
-  "rate limit",
-  "quota exceeded",
-  "context length",
-  "token limit exceeded",
-  "timeout",
-  "429"
-];
+import { looksLikeModelProviderError } from "./model/model-error-classifier";
 
 export async function getUserFacingFailureMessage(
   runId: string,
@@ -20,7 +8,7 @@ export async function getUserFacingFailureMessage(
 ): Promise<string> {
   const check = await hasPermissionDeniedToolCall(runId, db);
 
-  if (check.hadPermissionDenied && looksLikeModelError(originalError)) {
+  if (check.hadPermissionDenied && looksLikeModelProviderError(originalError)) {
     return "Run failed: insufficient permissions for required tools";
   }
 
@@ -73,9 +61,4 @@ async function hasPermissionDeniedToolCall(
     console.error(`[hasPermissionDeniedToolCall] DB query failed for run ${runId}:`, err);
     return { hadPermissionDenied: false, dbError: err };
   }
-}
-
-function looksLikeModelError(message: string): boolean {
-  const lower = message.toLowerCase();
-  return MODEL_ERROR_PATTERNS.some((pattern) => lower.includes(pattern));
 }
