@@ -167,6 +167,48 @@ describe("telegram callbacks", () => {
       text: "已关闭"
     });
   });
+
+  it("preserves the existing inline keyboard when editing message text", async () => {
+    const fetchMock = vi.fn(async () => jsonResponse({ ok: true, result: true }));
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+    const queue = { send: vi.fn(async () => undefined) };
+    const db = createCallbackDb([
+      callbackRow({
+        id: "cb_edit",
+        action: "agent.message",
+        payload_json: JSON.stringify({
+          text: "open",
+          __button: {
+            editMessageText: "Updated"
+          }
+        })
+      })
+    ]);
+
+    const result = await handleTelegramCallbackQuery(
+      {
+        AGENT_DB: db as unknown as D1Database,
+        AGENT_QUEUE: queue
+      } as unknown as Env,
+      {
+        agentId: "default",
+        query: query("cb_edit", "Open")
+      },
+      "token"
+    );
+
+    expect(result.handled).toBe(true);
+    expect(fetchUrl(fetchMock, 0)).toContain("/bottoken/editMessageText");
+    expect(fetchBody(fetchMock, 0)).toMatchObject({
+      chat_id: 123,
+      message_id: 10,
+      text: "Updated",
+      reply_markup: {
+        inline_keyboard: [[{ text: "Open", callback_data: "cb_edit" }]]
+      }
+    });
+    expect(fetchUrl(fetchMock, 1)).toContain("/bottoken/answerCallbackQuery");
+  });
 });
 
 function createCallbackDb(rows: PlatformCallbackRow[]) {

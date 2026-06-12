@@ -116,10 +116,49 @@ describe("telegram outbound", () => {
       ]
     });
   });
+
+  it("strips user-supplied internal button metadata from callback payloads", async () => {
+    const fetchMock = vi.fn(async () => jsonResponse({ ok: true, result: { message_id: 42 } }));
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+    const db = createOutboundDb();
+
+    const result = await sendTelegramButtons(
+      {
+        AGENT_DB: db as unknown as D1Database,
+        TELEGRAM_BOT_TOKEN: "token"
+      } as unknown as Env,
+      "default",
+      "telegram:123",
+      "Choose",
+      {
+        rows: [
+          [
+            {
+              kind: "callback",
+              label: "Open",
+              action: "agent.message",
+              payload: {
+                text: "open",
+                __button: { silent: true }
+              }
+            }
+          ]
+        ]
+      }
+    );
+
+    expect(result).toMatchObject({ ok: true });
+    expect(db.callbacks).toHaveLength(1);
+    expect(JSON.parse(db.callbacks[0]?.payloadJson ?? "{}")).toEqual({
+      text: "open",
+      buttonLabel: "Open"
+    });
+  });
 });
 
 function createOutboundDb() {
-  return {
+  const db = {
+    callbacks: [] as Array<{ payloadJson: string }>,
     prepare(sql: string) {
       const statement = {
         values: [] as unknown[],
@@ -132,6 +171,9 @@ function createOutboundDb() {
         },
         async run() {
           if (sql.includes("INSERT INTO platform_callbacks")) {
+            db.callbacks.push({
+              payloadJson: String(statement.values[5] ?? "")
+            });
             return { meta: { changes: 1 } };
           }
           return { meta: { changes: 0 } };
@@ -140,6 +182,8 @@ function createOutboundDb() {
       return statement;
     }
   };
+
+  return db;
 }
 
 function fetchBody(fetchMock: ReturnType<typeof vi.fn>): Record<string, unknown> {

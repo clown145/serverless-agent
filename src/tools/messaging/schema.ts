@@ -98,7 +98,7 @@ const urlButtonSchema = z
   .object({
     kind: z.literal("url"),
     ...buttonLabelShape,
-    url: z.url()
+    url: z.string().url()
   })
   .superRefine(requireButtonLabel)
   .transform((button) => ({
@@ -111,7 +111,7 @@ const webAppButtonSchema = z
   .object({
     kind: z.literal("web_app"),
     ...buttonLabelShape,
-    url: z.url()
+    url: z.string().url()
   })
   .superRefine(requireButtonLabel)
   .transform((button) => ({
@@ -163,7 +163,7 @@ export const sendButtonsInputSchema = z
     if (!input.buttons?.length && !input.rows?.length) {
       context.addIssue({
         code: "custom",
-        path: ["buttons"],
+        path: [],
         message: "Either buttons or rows is required"
       });
     }
@@ -385,7 +385,8 @@ export const sendButtonsInputJsonSchema = {
       minItems: 1,
       maxItems: 12,
       description:
-        "Explicit keyboard rows. Use this instead of buttons + layout when row placement matters.",
+        "Explicit keyboard rows. Use this instead of buttons + layout when row placement matters. The total number of buttons across all rows must not exceed 12; this limit is enforced by application validation.",
+      "x-totalButtonLimit": 12,
       items: {
         type: "array",
         minItems: 1,
@@ -470,7 +471,7 @@ function requireButtonLabel(
   if (!button.label && !button.text) {
     context.addIssue({
       code: "custom",
-      path: ["text"],
+      path: [],
       message: "Button label or text is required"
     });
   }

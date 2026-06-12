@@ -17,7 +17,7 @@ import {
   telegramParseModePayload
 } from "./formatting";
 import { createTelegramInlineKeyboard } from "./inline-keyboard";
-import type { TelegramInlineKeyboardButton } from "./types";
+import type { TelegramInlineKeyboardMarkup } from "./types";
 
 export function createTelegramOutboundAdapter(env: Env): PlatformOutboundAdapter {
   return {
@@ -251,7 +251,7 @@ export async function editTelegramMessageReplyMarkup(
     chatId?: string | number;
     messageId?: number;
     inlineMessageId?: string;
-    replyMarkup?: { inline_keyboard: TelegramInlineKeyboardButton[][] };
+    replyMarkup?: TelegramInlineKeyboardMarkup;
   }
 ): Promise<boolean> {
   return callTelegramApi<boolean>(token, "editMessageReplyMarkup", {
@@ -269,7 +269,7 @@ export async function editTelegramMessageText(
     messageId?: number;
     inlineMessageId?: string;
     text: string;
-    replyMarkup?: { inline_keyboard: TelegramInlineKeyboardButton[][] };
+    replyMarkup?: TelegramInlineKeyboardMarkup;
   }
 ): Promise<boolean> {
   return callTelegramApi<boolean>(token, "editMessageText", {

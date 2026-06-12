@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   currentConversationFileInputSchema,
+  sendButtonsInputJsonSchema,
   sendButtonsInputSchema,
   sendFileInputSchema,
   sendImageInputSchema
@@ -156,6 +157,33 @@ describe("messaging schemas", () => {
         text: "请选择"
       })
     ).toThrow(/Either buttons or rows is required/);
+  });
+
+  it("reports missing buttons or rows as a top-level validation issue", () => {
+    const result = sendButtonsInputSchema.safeParse({
+      platform: "telegram",
+      conversationId: "telegram:123",
+      text: "Choose"
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            path: [],
+            message: "Either buttons or rows is required"
+          })
+        ])
+      );
+    }
+  });
+
+  it("documents the total row button limit in the JSON schema", () => {
+    expect(sendButtonsInputJsonSchema.properties.rows).toMatchObject({
+      "x-totalButtonLimit": 12,
+      description: expect.stringContaining("must not exceed 12")
+    });
   });
 
   it("defaults empty button layout to one column", () => {

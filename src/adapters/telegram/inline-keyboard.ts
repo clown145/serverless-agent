@@ -27,15 +27,11 @@ export async function createTelegramInlineKeyboard(
     expiresAt: string;
   }
 ): Promise<TelegramInlineKeyboardButton[][]> {
-  const rows: TelegramInlineKeyboardButton[][] = [];
-
-  for (const row of input.rows) {
-    rows.push(
-      await Promise.all(row.map((button) => telegramInlineKeyboardButton(env, input, button)))
-    );
-  }
-
-  return rows;
+  return Promise.all(
+    input.rows.map((row) =>
+      Promise.all(row.map((button) => telegramInlineKeyboardButton(env, input, button)))
+    )
+  );
 }
 
 export function parseTelegramButtonOptions(
@@ -105,18 +101,7 @@ async function createTelegramCallbackButton(
     platform: "telegram",
     conversationId: input.conversationId,
     action: button.action,
-    payloadJson: JSON.stringify({
-      ...button.payload,
-      buttonLabel: button.label,
-      [BUTTON_OPTIONS_KEY]: {
-        reuse: button.reuse === true,
-        answerText: button.answerText,
-        showAlert: button.showAlert,
-        removeKeyboardOnClick: button.removeKeyboardOnClick,
-        editMessageText: button.editMessageText,
-        silent: button.silent
-      }
-    }),
+    payloadJson: JSON.stringify(createTelegramCallbackPayload(button)),
     expiresAt: input.expiresAt
   });
 
@@ -124,6 +109,46 @@ async function createTelegramCallbackButton(
     text: button.label,
     callback_data: callback.id
   };
+}
+
+function createTelegramCallbackPayload(button: OutboundCallbackButton): Record<string, unknown> {
+  const payload = { ...(button.payload ?? {}) };
+  delete payload[BUTTON_OPTIONS_KEY];
+  payload.buttonLabel = button.label;
+
+  const options = createTelegramButtonOptionsPayload(button);
+  if (options) {
+    payload[BUTTON_OPTIONS_KEY] = options;
+  }
+
+  return payload;
+}
+
+function createTelegramButtonOptionsPayload(
+  button: OutboundCallbackButton
+): Record<string, unknown> | undefined {
+  const options: Record<string, unknown> = {};
+
+  if (button.reuse === true) {
+    options.reuse = true;
+  }
+  if (button.answerText) {
+    options.answerText = button.answerText;
+  }
+  if (button.showAlert !== undefined) {
+    options.showAlert = button.showAlert;
+  }
+  if (button.removeKeyboardOnClick !== undefined) {
+    options.removeKeyboardOnClick = button.removeKeyboardOnClick;
+  }
+  if (button.editMessageText) {
+    options.editMessageText = button.editMessageText;
+  }
+  if (button.silent !== undefined) {
+    options.silent = button.silent;
+  }
+
+  return Object.keys(options).length ? options : undefined;
 }
 
 function stringOption(value: unknown): string | undefined {
