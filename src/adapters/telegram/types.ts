@@ -46,6 +46,13 @@ export type TelegramInlineKeyboardMarkup = {
 export type TelegramInlineKeyboardButton = {
   text: string;
   callback_data?: string;
+  url?: string;
+  web_app?: {
+    url: string;
+  };
+  copy_text?: {
+    text: string;
+  };
 };
 
 export type TelegramCallbackQuery = {

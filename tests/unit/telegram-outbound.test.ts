@@ -46,9 +46,9 @@ describe("telegram outbound", () => {
       "请选择",
       {
         buttons: [
-          { label: "A", action: "agent.message" },
-          { label: "B", action: "agent.message" },
-          { label: "C", action: "agent.message" }
+          { kind: "callback", label: "A", action: "agent.message" },
+          { kind: "callback", label: "B", action: "agent.message" },
+          { kind: "callback", label: "C", action: "agent.message" }
         ],
         layout: { columns: 2 }
       }
@@ -62,6 +62,57 @@ describe("telegram outbound", () => {
           { text: "B", callback_data: expect.stringMatching(/^cb_/) }
         ],
         [{ text: "C", callback_data: expect.stringMatching(/^cb_/) }]
+      ]
+    });
+  });
+
+  it("sends explicit Telegram keyboard rows with URL and callback buttons", async () => {
+    const fetchMock = vi.fn(async () => jsonResponse({ ok: true, result: { message_id: 42 } }));
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+
+    const result = await sendTelegramButtons(
+      {
+        AGENT_DB: createOutboundDb() as unknown as D1Database,
+        TELEGRAM_BOT_TOKEN: "token"
+      } as unknown as Env,
+      "default",
+      "telegram:123",
+      "请选择",
+      {
+        rows: [
+          [
+            {
+              kind: "callback",
+              label: "继续",
+              action: "agent.message",
+              payload: { text: "继续" },
+              answerText: "已收到"
+            },
+            {
+              kind: "url",
+              label: "文档",
+              url: "https://example.com/docs"
+            }
+          ],
+          [
+            {
+              kind: "copy_text",
+              label: "复制口令",
+              copyText: "/start"
+            }
+          ]
+        ]
+      }
+    );
+
+    expect(result).toMatchObject({ ok: true, providerMessageId: "42" });
+    expect(fetchBody(fetchMock).reply_markup).toEqual({
+      inline_keyboard: [
+        [
+          { text: "继续", callback_data: expect.stringMatching(/^cb_/) },
+          { text: "文档", url: "https://example.com/docs" }
+        ],
+        [{ text: "复制口令", copy_text: { text: "/start" } }]
       ]
     });
   });

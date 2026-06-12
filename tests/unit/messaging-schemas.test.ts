@@ -107,6 +107,57 @@ describe("messaging schemas", () => {
     });
   });
 
+  it("accepts explicit button rows and URL buttons", () => {
+    expect(
+      sendButtonsInputSchema.parse({
+        platform: "telegram",
+        conversationId: "telegram:123",
+        text: "请选择",
+        rows: [
+          [
+            {
+              text: "继续",
+              action: "agent.message",
+              payload: { text: "继续" },
+              answerText: "已收到"
+            },
+            {
+              kind: "url",
+              text: "文档",
+              url: "https://example.com/docs"
+            }
+          ]
+        ]
+      })
+    ).toMatchObject({
+      rows: [
+        [
+          {
+            kind: "callback",
+            label: "继续",
+            action: "agent.message",
+            answerText: "已收到"
+          },
+          {
+            kind: "url",
+            label: "文档",
+            url: "https://example.com/docs"
+          }
+        ]
+      ]
+    });
+  });
+
+  it("requires buttons or rows for button messages", () => {
+    expect(() =>
+      sendButtonsInputSchema.parse({
+        platform: "telegram",
+        conversationId: "telegram:123",
+        text: "请选择"
+      })
+    ).toThrow(/Either buttons or rows is required/);
+  });
+
   it("defaults empty button layout to one column", () => {
     expect(
       sendButtonsInputSchema.parse({

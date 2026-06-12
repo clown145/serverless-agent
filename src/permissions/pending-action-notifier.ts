@@ -26,14 +26,18 @@ export async function notifyPendingAction(env: Env, action: PendingActionRecord)
       .join("\n"),
     buttons: [
       {
+        kind: "callback",
         label: "Confirm",
         action: "pending.confirm",
-        payload: { actionId: action.id }
+        payload: { actionId: action.id },
+        removeKeyboardOnClick: true
       },
       {
+        kind: "callback",
         label: "Reject",
         action: "pending.reject",
-        payload: { actionId: action.id }
+        payload: { actionId: action.id },
+        removeKeyboardOnClick: true
       }
     ],
     expiresInSeconds: secondsUntil(action.expiresAt)

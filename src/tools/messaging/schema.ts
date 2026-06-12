@@ -62,24 +62,121 @@ export type CurrentConversationFileInput = z.infer<typeof currentConversationFil
 
 export const buttonActionSchema = z.enum(["agent.message", "pending.confirm", "pending.reject"]);
 
-const buttonSchema = z.object({
-  label: z.string().min(1).max(64),
-  action: buttonActionSchema,
-  payload: z.record(z.string(), z.unknown()).optional()
-});
+const buttonLabelShape = {
+  label: z.string().min(1).max(64).optional(),
+  text: z.string().min(1).max(64).optional()
+};
+
+const callbackButtonSchema = z
+  .object({
+    kind: z.literal("callback").optional(),
+    ...buttonLabelShape,
+    action: buttonActionSchema,
+    payload: z.record(z.string(), z.unknown()).optional(),
+    reuse: z.boolean().optional(),
+    answerText: z.string().min(1).max(200).optional(),
+    showAlert: z.boolean().optional(),
+    removeKeyboardOnClick: z.boolean().optional(),
+    editMessageText: z.string().min(1).max(4096).optional(),
+    silent: z.boolean().optional()
+  })
+  .superRefine(requireButtonLabel)
+  .transform((button) => ({
+    kind: "callback" as const,
+    label: button.label ?? button.text ?? "",
+    action: button.action,
+    payload: button.payload,
+    reuse: button.reuse,
+    answerText: button.answerText,
+    showAlert: button.showAlert,
+    removeKeyboardOnClick: button.removeKeyboardOnClick,
+    editMessageText: button.editMessageText,
+    silent: button.silent
+  }));
+
+const urlButtonSchema = z
+  .object({
+    kind: z.literal("url"),
+    ...buttonLabelShape,
+    url: z.url()
+  })
+  .superRefine(requireButtonLabel)
+  .transform((button) => ({
+    kind: "url" as const,
+    label: button.label ?? button.text ?? "",
+    url: button.url
+  }));
+
+const webAppButtonSchema = z
+  .object({
+    kind: z.literal("web_app"),
+    ...buttonLabelShape,
+    url: z.url()
+  })
+  .superRefine(requireButtonLabel)
+  .transform((button) => ({
+    kind: "web_app" as const,
+    label: button.label ?? button.text ?? "",
+    url: button.url
+  }));
+
+const copyTextButtonSchema = z
+  .object({
+    kind: z.literal("copy_text"),
+    ...buttonLabelShape,
+    copyText: z.string().min(1).max(256)
+  })
+  .superRefine(requireButtonLabel)
+  .transform((button) => ({
+    kind: "copy_text" as const,
+    label: button.label ?? button.text ?? "",
+    copyText: button.copyText
+  }));
+
+const buttonSchema = z.union([
+  callbackButtonSchema,
+  urlButtonSchema,
+  webAppButtonSchema,
+  copyTextButtonSchema
+]);
+
+const buttonRowsSchema = z.preprocess(
+  parseJsonString,
+  z.array(z.array(buttonSchema).min(1).max(4)).min(1).max(12)
+);
 
 export const buttonLayoutSchema = z.object({
   columns: z.number().int().min(1).max(4).default(1)
 });
 
-export const sendButtonsInputSchema = z.object({
-  platform: messagingPlatformSchema,
-  conversationId: z.string().min(1),
-  text: z.string().min(1).max(4096),
-  buttons: z.preprocess(parseJsonString, z.array(buttonSchema).min(1).max(12)),
-  layout: buttonLayoutSchema.optional(),
-  expiresInSeconds: z.number().int().min(60).max(86_400).optional()
-});
+export const sendButtonsInputSchema = z
+  .object({
+    platform: messagingPlatformSchema,
+    conversationId: z.string().min(1),
+    text: z.string().min(1).max(4096),
+    buttons: z.preprocess(parseJsonString, z.array(buttonSchema).min(1).max(12)).optional(),
+    rows: buttonRowsSchema.optional(),
+    layout: buttonLayoutSchema.optional(),
+    expiresInSeconds: z.number().int().min(60).max(86_400).optional()
+  })
+  .superRefine((input, context) => {
+    if (!input.buttons?.length && !input.rows?.length) {
+      context.addIssue({
+        code: "custom",
+        path: ["buttons"],
+        message: "Either buttons or rows is required"
+      });
+    }
+
+    const rowButtonCount = input.rows?.reduce((count, row) => count + row.length, 0) ?? 0;
+    if (rowButtonCount > 12) {
+      context.addIssue({
+        code: "custom",
+        path: ["rows"],
+        message: "Rows can contain at most 12 buttons total"
+      });
+    }
+  });
 
 export type SendButtonsInput = z.infer<typeof sendButtonsInputSchema>;
 
@@ -224,22 +321,122 @@ export const sendButtonsInputJsonSchema = {
       items: {
         type: "object",
         properties: {
+          kind: {
+            type: "string",
+            enum: ["callback", "url", "web_app", "copy_text"],
+            description:
+              "Button kind. Omit for legacy callback buttons, or use callback, url, web_app, or copy_text."
+          },
           label: {
             type: "string",
-            description: "Button label."
+            description: "Button label. Kept for compatibility with older calls."
+          },
+          text: {
+            type: "string",
+            description: "Button text shown to the user."
           },
           action: {
             type: "string",
             enum: ["agent.message", "pending.confirm", "pending.reject"],
-            description: "Callback action."
+            description: "Callback action when kind is callback."
           },
           payload: {
             type: "object",
             description: "Small callback payload stored server-side."
+          },
+          url: {
+            type: "string",
+            description: "URL opened by url or web_app buttons."
+          },
+          copyText: {
+            type: "string",
+            description: "Text copied by copy_text buttons."
+          },
+          reuse: {
+            type: "boolean",
+            description: "Allow callback buttons to be clicked more than once."
+          },
+          answerText: {
+            type: "string",
+            description: "Telegram callback response text."
+          },
+          showAlert: {
+            type: "boolean",
+            description: "Show Telegram callback response as an alert."
+          },
+          removeKeyboardOnClick: {
+            type: "boolean",
+            description: "Remove the inline keyboard after a callback is handled."
+          },
+          editMessageText: {
+            type: "string",
+            description: "Replace the original message text after a callback is handled."
+          },
+          silent: {
+            type: "boolean",
+            description: "Handle the callback without enqueueing an agent message."
           }
         },
-        required: ["label", "action"],
         additionalProperties: false
+      }
+    },
+    rows: {
+      type: "array",
+      minItems: 1,
+      maxItems: 12,
+      description:
+        "Explicit keyboard rows. Use this instead of buttons + layout when row placement matters.",
+      items: {
+        type: "array",
+        minItems: 1,
+        maxItems: 4,
+        items: {
+          type: "object",
+          properties: {
+            kind: {
+              type: "string",
+              enum: ["callback", "url", "web_app", "copy_text"]
+            },
+            label: {
+              type: "string"
+            },
+            text: {
+              type: "string"
+            },
+            action: {
+              type: "string",
+              enum: ["agent.message", "pending.confirm", "pending.reject"]
+            },
+            payload: {
+              type: "object"
+            },
+            url: {
+              type: "string"
+            },
+            copyText: {
+              type: "string"
+            },
+            reuse: {
+              type: "boolean"
+            },
+            answerText: {
+              type: "string"
+            },
+            showAlert: {
+              type: "boolean"
+            },
+            removeKeyboardOnClick: {
+              type: "boolean"
+            },
+            editMessageText: {
+              type: "string"
+            },
+            silent: {
+              type: "boolean"
+            }
+          },
+          additionalProperties: false
+        }
       }
     },
     layout: {
@@ -261,9 +458,23 @@ export const sendButtonsInputJsonSchema = {
       description: "Callback expiry in seconds."
     }
   },
-  required: ["platform", "conversationId", "text", "buttons"],
+  required: ["platform", "conversationId", "text"],
+  anyOf: [{ required: ["buttons"] }, { required: ["rows"] }],
   additionalProperties: false
 } as const;
+
+function requireButtonLabel(
+  button: { label?: string; text?: string },
+  context: z.RefinementCtx
+): void {
+  if (!button.label && !button.text) {
+    context.addIssue({
+      code: "custom",
+      path: ["text"],
+      message: "Button label or text is required"
+    });
+  }
+}
 
 function parseJsonString(value: unknown): unknown {
   if (typeof value !== "string") {

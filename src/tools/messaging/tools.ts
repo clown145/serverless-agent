@@ -217,6 +217,7 @@ function sendButtonsTool(): RegisteredTool {
         conversationId: parsed.data.conversationId,
         text: parsed.data.text,
         buttons: parsed.data.buttons,
+        rows: parsed.data.rows,
         layout: parsed.data.layout,
         expiresInSeconds: parsed.data.expiresInSeconds
       });

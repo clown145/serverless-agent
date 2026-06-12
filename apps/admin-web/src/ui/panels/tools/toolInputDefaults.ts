@@ -117,19 +117,31 @@ function toolExamples(text: ToolInputExampleText = {}): Record<string, Record<st
       platform: "telegram",
       conversationId: "telegram:123456",
       text: text.buttonPrompt ?? "Choose an option",
-      buttons: [
-        {
-          label: text.buttonContinueLabel ?? "Continue",
-          action: "agent.message",
-          payload: { text: text.buttonContinueText ?? "Continue" }
-        },
-        {
-          label: text.buttonRemindLabel ?? "Remind later",
-          action: "agent.message",
-          payload: { text: text.buttonRemindText ?? "Remind me later" }
-        }
-      ],
-      layout: { columns: 2 }
+      rows: [
+        [
+          {
+            kind: "callback",
+            text: text.buttonContinueLabel ?? "Continue",
+            action: "agent.message",
+            payload: { text: text.buttonContinueText ?? "Continue" },
+            answerText: "Sent"
+          },
+          {
+            kind: "callback",
+            text: text.buttonRemindLabel ?? "Remind later",
+            action: "agent.message",
+            payload: { text: text.buttonRemindText ?? "Remind me later" },
+            answerText: "Sent"
+          }
+        ],
+        [
+          {
+            kind: "url",
+            text: "Docs",
+            url: "https://core.telegram.org/bots/api#inlinekeyboardbutton"
+          }
+        ]
+      ]
     },
     "schedule.create": {
       title: text.scheduleTitle ?? "Follow up",

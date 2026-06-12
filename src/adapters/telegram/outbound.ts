@@ -2,12 +2,12 @@ import { physicalConversationForPlatform } from "../../conversations/ids";
 import type {
   ButtonLayout,
   OutboundButton,
+  OutboundButtonRow,
   OutboundFile,
   PlatformActivityType,
   PlatformOutboundAdapter,
   PlatformSendResult
 } from "../../platforms/outbound/types";
-import { createPlatformCallback } from "../../storage/repositories/platform-callbacks-repository";
 import type { Env } from "../../shared/types/env";
 import { callTelegramApi, callTelegramMultipartApi } from "./api";
 import { resolveTelegramBotForAgent } from "./config";
@@ -16,6 +16,8 @@ import {
   stripTelegramMarkup,
   telegramParseModePayload
 } from "./formatting";
+import { createTelegramInlineKeyboard } from "./inline-keyboard";
+import type { TelegramInlineKeyboardButton } from "./types";
 
 export function createTelegramOutboundAdapter(env: Env): PlatformOutboundAdapter {
   return {
@@ -32,6 +34,7 @@ export function createTelegramOutboundAdapter(env: Env): PlatformOutboundAdapter
     sendButtons: (input) =>
       sendTelegramButtons(env, input.agentId, input.conversationId, input.text, {
         buttons: input.buttons,
+        rows: input.rows,
         layout: input.layout,
         expiresInSeconds: input.expiresInSeconds
       }),
@@ -144,7 +147,8 @@ export async function sendTelegramButtons(
   conversationId: string,
   text: string,
   input: {
-    buttons: OutboundButton[];
+    buttons?: OutboundButton[];
+    rows?: OutboundButtonRow[];
     layout?: ButtonLayout;
     expiresInSeconds?: number;
   }
@@ -156,32 +160,19 @@ export async function sendTelegramButtons(
   const token = bot.token;
 
   const expiresAt = new Date(Date.now() + (input.expiresInSeconds ?? 600) * 1000).toISOString();
-  const buttons = await Promise.all(
-    input.buttons.map(async (button) => {
-      const callback = await createPlatformCallback(env.AGENT_DB, {
-        agentId,
-        platform: "telegram",
-        conversationId,
-        action: button.action,
-        payloadJson: JSON.stringify({
-          ...button.payload,
-          buttonLabel: button.label
-        }),
-        expiresAt
-      });
-      return {
-        text: button.label,
-        callback_data: callback.id
-      };
-    })
-  );
+  const keyboard = await createTelegramInlineKeyboard(env, {
+    agentId,
+    conversationId,
+    rows: input.rows ?? chunkButtons(input.buttons ?? [], input.layout?.columns ?? 1),
+    expiresAt
+  });
 
   const body: Record<string, unknown> = {
     chat_id: telegramChatId(conversationId),
     text,
     disable_web_page_preview: true,
     reply_markup: {
-      inline_keyboard: chunkButtons(buttons, input.layout?.columns ?? 1)
+      inline_keyboard: keyboard
     }
   };
   const parseMode = normalizeTelegramParseMode(bot.integration?.config.parseMode);
@@ -251,6 +242,42 @@ export async function answerTelegramCallbackQuery(
     callback_query_id: callbackQueryId,
     text: options.text,
     show_alert: options.showAlert
+  });
+}
+
+export async function editTelegramMessageReplyMarkup(
+  token: string,
+  input: {
+    chatId?: string | number;
+    messageId?: number;
+    inlineMessageId?: string;
+    replyMarkup?: { inline_keyboard: TelegramInlineKeyboardButton[][] };
+  }
+): Promise<boolean> {
+  return callTelegramApi<boolean>(token, "editMessageReplyMarkup", {
+    chat_id: input.chatId,
+    message_id: input.messageId,
+    inline_message_id: input.inlineMessageId,
+    reply_markup: input.replyMarkup ?? { inline_keyboard: [] }
+  });
+}
+
+export async function editTelegramMessageText(
+  token: string,
+  input: {
+    chatId?: string | number;
+    messageId?: number;
+    inlineMessageId?: string;
+    text: string;
+    replyMarkup?: { inline_keyboard: TelegramInlineKeyboardButton[][] };
+  }
+): Promise<boolean> {
+  return callTelegramApi<boolean>(token, "editMessageText", {
+    chat_id: input.chatId,
+    message_id: input.messageId,
+    inline_message_id: input.inlineMessageId,
+    text: input.text,
+    reply_markup: input.replyMarkup
   });
 }
 

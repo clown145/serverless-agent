@@ -11,7 +11,12 @@ import {
   getPlatformCallback,
   markPlatformCallbackUsed
 } from "../../../storage/repositories/platform-callbacks-repository";
-import { answerTelegramCallbackQuery } from "../outbound";
+import {
+  answerTelegramCallbackQuery,
+  editTelegramMessageReplyMarkup,
+  editTelegramMessageText
+} from "../outbound";
+import { parseTelegramButtonOptions, type TelegramCallbackButtonOptions } from "../inline-keyboard";
 import type { TelegramCallbackContext, TelegramCallbackHandlerResult } from "./types";
 
 export async function handleTelegramCallbackQuery(
@@ -43,6 +48,7 @@ export async function handleTelegramCallbackQuery(
   }
 
   const payload = parsePayload(callback.payloadJson);
+  const buttonOptions = parseTelegramButtonOptions(payload);
 
   if (callback.action === "pending.confirm") {
     const actionId = stringPayload(payload, "actionId");
@@ -54,8 +60,16 @@ export async function handleTelegramCallbackQuery(
     const result = await confirmPendingAction(env, actionId);
     if (result.ok) {
       await markPlatformCallbackUsed(env.AGENT_DB, callback.id);
+      await applyTelegramButtonEffects(token, context, buttonOptions);
     }
-    await answerCallback(token, context.query.id, result.ok ? "Confirmed" : result.message);
+    await answerCallback(
+      token,
+      context.query.id,
+      result.ok ? (buttonOptions.answerText ?? "Confirmed") : result.message,
+      {
+        showAlert: buttonOptions.showAlert
+      }
+    );
     return { handled: true };
   }
 
@@ -69,13 +83,31 @@ export async function handleTelegramCallbackQuery(
     const result = await rejectPendingAction(env, actionId);
     if (result.ok) {
       await markPlatformCallbackUsed(env.AGENT_DB, callback.id);
+      await applyTelegramButtonEffects(token, context, buttonOptions);
     }
-    await answerCallback(token, context.query.id, result.ok ? "Rejected" : result.message);
+    await answerCallback(
+      token,
+      context.query.id,
+      result.ok ? (buttonOptions.answerText ?? "Rejected") : result.message,
+      {
+        showAlert: buttonOptions.showAlert
+      }
+    );
     return { handled: true };
   }
 
   if (callback.action === "agent.message") {
-    await markPlatformCallbackUsed(env.AGENT_DB, callback.id);
+    if (!buttonOptions.reuse) {
+      await markPlatformCallbackUsed(env.AGENT_DB, callback.id);
+    }
+    if (buttonOptions.silent) {
+      await applyTelegramButtonEffects(token, context, buttonOptions);
+      await answerCallback(token, context.query.id, buttonOptions.answerText ?? "Handled", {
+        showAlert: buttonOptions.showAlert
+      });
+      return { handled: true };
+    }
+
     const text =
       stringPayload(payload, "text") ??
       stringPayload(payload, "message") ??
@@ -115,7 +147,10 @@ export async function handleTelegramCallbackQuery(
     };
 
     await env.AGENT_QUEUE.send(job);
-    await answerCallback(token, context.query.id, "Sent");
+    await applyTelegramButtonEffects(token, context, buttonOptions);
+    await answerCallback(token, context.query.id, buttonOptions.answerText ?? "Sent", {
+      showAlert: buttonOptions.showAlert
+    });
     return { handled: true, eventId };
   }
 
@@ -126,13 +161,49 @@ export async function handleTelegramCallbackQuery(
 async function answerCallback(
   token: string | undefined,
   callbackQueryId: string,
-  text: string
+  text: string,
+  options: { showAlert?: boolean } = {}
 ): Promise<void> {
   if (!token) {
     return;
   }
 
-  await answerTelegramCallbackQuery(token, callbackQueryId, { text }).catch(() => undefined);
+  await answerTelegramCallbackQuery(token, callbackQueryId, {
+    text,
+    showAlert: options.showAlert
+  }).catch(() => undefined);
+}
+
+async function applyTelegramButtonEffects(
+  token: string | undefined,
+  context: TelegramCallbackContext,
+  options: TelegramCallbackButtonOptions
+): Promise<void> {
+  if (!token || (!options.editMessageText && !options.removeKeyboardOnClick)) {
+    return;
+  }
+
+  const message = context.query.message;
+  const target = {
+    chatId: message?.chat.id,
+    messageId: message?.message_id,
+    inlineMessageId: context.query.inline_message_id
+  };
+
+  if (!target.inlineMessageId && (!target.chatId || !target.messageId)) {
+    return;
+  }
+
+  if (options.editMessageText) {
+    await editTelegramMessageText(token, {
+      ...target,
+      text: options.editMessageText,
+      replyMarkup: options.removeKeyboardOnClick ? { inline_keyboard: [] } : undefined
+    }).catch(() => undefined);
+    return;
+  }
+
+  await editTelegramMessageReplyMarkup(token, target).catch(() => undefined);
 }
 
 function parsePayload(value: string): Record<string, unknown> {

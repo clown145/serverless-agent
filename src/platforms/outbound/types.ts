@@ -6,11 +6,46 @@ export type OutboundFile = {
   mimeType: string;
 };
 
-export type OutboundButton = {
+export type OutboundCallbackAction = "agent.message" | "pending.confirm" | "pending.reject";
+
+export type OutboundCallbackButton = {
+  kind: "callback";
   label: string;
-  action: "agent.message" | "pending.confirm" | "pending.reject";
+  action: OutboundCallbackAction;
   payload?: Record<string, unknown>;
+  reuse?: boolean;
+  answerText?: string;
+  showAlert?: boolean;
+  removeKeyboardOnClick?: boolean;
+  editMessageText?: string;
+  silent?: boolean;
 };
+
+export type OutboundUrlButton = {
+  kind: "url";
+  label: string;
+  url: string;
+};
+
+export type OutboundWebAppButton = {
+  kind: "web_app";
+  label: string;
+  url: string;
+};
+
+export type OutboundCopyTextButton = {
+  kind: "copy_text";
+  label: string;
+  copyText: string;
+};
+
+export type OutboundButton =
+  | OutboundCallbackButton
+  | OutboundUrlButton
+  | OutboundWebAppButton
+  | OutboundCopyTextButton;
+
+export type OutboundButtonRow = OutboundButton[];
 
 export type ButtonLayout = {
   columns?: number;
@@ -48,7 +83,8 @@ export type SendButtonsInput = {
   agentId: string;
   conversationId: string;
   text: string;
-  buttons: OutboundButton[];
+  buttons?: OutboundButton[];
+  rows?: OutboundButtonRow[];
   layout?: ButtonLayout;
   expiresInSeconds?: number;
 };
