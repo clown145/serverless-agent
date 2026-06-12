@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { sendTelegramButtons, sendTelegramChatAction } from "../../src/adapters/telegram/outbound";
+import type { OutboundButton } from "../../src/platforms/outbound/types";
 import type { Env } from "../../src/shared/types/env";
 
 const originalFetch = globalThis.fetch;
@@ -63,6 +64,41 @@ describe("telegram outbound", () => {
         ],
         [{ text: "C", callback_data: expect.stringMatching(/^cb_/) }]
       ]
+    });
+  });
+
+  it("treats legacy buttons without kind as callback buttons", async () => {
+    const fetchMock = vi.fn(async () => jsonResponse({ ok: true, result: { message_id: 42 } }));
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+    const db = createOutboundDb();
+
+    const result = await sendTelegramButtons(
+      {
+        AGENT_DB: db as unknown as D1Database,
+        TELEGRAM_BOT_TOKEN: "token"
+      } as unknown as Env,
+      "default",
+      "telegram:123",
+      "Choose",
+      {
+        buttons: [
+          {
+            label: "Legacy",
+            action: "agent.message",
+            payload: { text: "legacy" }
+          } as unknown as OutboundButton
+        ]
+      }
+    );
+
+    expect(result).toMatchObject({ ok: true, providerMessageId: "42" });
+    expect(fetchBody(fetchMock).reply_markup).toEqual({
+      inline_keyboard: [[{ text: "Legacy", callback_data: expect.stringMatching(/^cb_/) }]]
+    });
+    expect(db.callbacks).toHaveLength(1);
+    expect(JSON.parse(db.callbacks[0]?.payloadJson ?? "{}")).toEqual({
+      text: "legacy",
+      buttonLabel: "Legacy"
     });
   });
 

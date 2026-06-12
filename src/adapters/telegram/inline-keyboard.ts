@@ -9,6 +9,12 @@ import type { TelegramInlineKeyboardButton } from "./types";
 
 const BUTTON_OPTIONS_KEY = "__button";
 
+type LegacyOutboundCallbackButton = Omit<OutboundCallbackButton, "kind"> & {
+  kind?: undefined;
+};
+
+type TelegramInlineKeyboardInputButton = OutboundButton | LegacyOutboundCallbackButton;
+
 export type TelegramCallbackButtonOptions = {
   reuse: boolean;
   answerText?: string;
@@ -60,31 +66,46 @@ async function telegramInlineKeyboardButton(
     conversationId: string;
     expiresAt: string;
   },
-  button: OutboundButton
+  button: TelegramInlineKeyboardInputButton
 ): Promise<TelegramInlineKeyboardButton> {
-  switch (button.kind) {
+  const normalizedButton = normalizeTelegramInlineKeyboardButton(button);
+
+  switch (normalizedButton.kind) {
     case "callback":
-      return createTelegramCallbackButton(env, input, button);
+      return createTelegramCallbackButton(env, input, normalizedButton);
     case "url":
       return {
-        text: button.label,
-        url: button.url
+        text: normalizedButton.label,
+        url: normalizedButton.url
       };
     case "web_app":
       return {
-        text: button.label,
+        text: normalizedButton.label,
         web_app: {
-          url: button.url
+          url: normalizedButton.url
         }
       };
     case "copy_text":
       return {
-        text: button.label,
+        text: normalizedButton.label,
         copy_text: {
-          text: button.copyText
+          text: normalizedButton.copyText
         }
       };
   }
+}
+
+function normalizeTelegramInlineKeyboardButton(
+  button: TelegramInlineKeyboardInputButton
+): OutboundButton {
+  if (button.kind) {
+    return button;
+  }
+
+  return {
+    ...button,
+    kind: "callback"
+  };
 }
 
 async function createTelegramCallbackButton(
