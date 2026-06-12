@@ -186,6 +186,61 @@ describe("messaging schemas", () => {
     });
   });
 
+  it("rejects explicit button rows outside Telegram", () => {
+    const result = sendButtonsInputSchema.safeParse({
+      platform: "qq",
+      conversationId: "qq:123",
+      text: "Choose",
+      rows: [
+        [
+          {
+            text: "Continue",
+            action: "agent.message"
+          }
+        ]
+      ]
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            path: ["rows"],
+            message: "Explicit button rows are only supported on Telegram"
+          })
+        ])
+      );
+    }
+  });
+
+  it("rejects non-callback buttons outside Telegram", () => {
+    const result = sendButtonsInputSchema.safeParse({
+      platform: "wecom",
+      conversationId: "wecom:123",
+      text: "Choose",
+      buttons: [
+        {
+          kind: "url",
+          text: "Docs",
+          url: "https://example.com/docs"
+        }
+      ]
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            path: ["buttons", 0, "kind"],
+            message: "Only callback buttons are supported on non-Telegram platforms"
+          })
+        ])
+      );
+    }
+  });
+
   it("defaults empty button layout to one column", () => {
     expect(
       sendButtonsInputSchema.parse({

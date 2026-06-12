@@ -168,6 +168,26 @@ export const sendButtonsInputSchema = z
       });
     }
 
+    if (input.platform !== "telegram") {
+      if (input.rows?.length) {
+        context.addIssue({
+          code: "custom",
+          path: ["rows"],
+          message: "Explicit button rows are only supported on Telegram"
+        });
+      }
+
+      input.buttons?.forEach((button, index) => {
+        if (button.kind !== "callback") {
+          context.addIssue({
+            code: "custom",
+            path: ["buttons", index, "kind"],
+            message: "Only callback buttons are supported on non-Telegram platforms"
+          });
+        }
+      });
+    }
+
     const rowButtonCount = input.rows?.reduce((count, row) => count + row.length, 0) ?? 0;
     if (rowButtonCount > 12) {
       context.addIssue({
@@ -325,7 +345,7 @@ export const sendButtonsInputJsonSchema = {
             type: "string",
             enum: ["callback", "url", "web_app", "copy_text"],
             description:
-              "Button kind. Omit for legacy callback buttons, or use callback, url, web_app, or copy_text."
+              "Button kind. Omit for legacy callback buttons, or use callback, url, web_app, or copy_text. URL, web_app, and copy_text buttons are Telegram-only."
           },
           label: {
             type: "string",
@@ -385,7 +405,7 @@ export const sendButtonsInputJsonSchema = {
       minItems: 1,
       maxItems: 12,
       description:
-        "Explicit keyboard rows. Use this instead of buttons + layout when row placement matters. The total number of buttons across all rows must not exceed 12; this limit is enforced by application validation.",
+        "Telegram-only explicit keyboard rows. Use this instead of buttons + layout when row placement matters. The total number of buttons across all rows must not exceed 12; this limit is enforced by application validation.",
       "x-totalButtonLimit": 12,
       items: {
         type: "array",
