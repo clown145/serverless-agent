@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   currentConversationFileInputSchema,
+  sendButtonsInputJsonSchema,
   sendButtonsInputSchema,
   sendFileInputSchema,
   sendImageInputSchema
@@ -105,6 +106,180 @@ describe("messaging schemas", () => {
     ).toMatchObject({
       layout: { columns: 2 }
     });
+  });
+
+  it("accepts explicit button rows and URL buttons", () => {
+    expect(
+      sendButtonsInputSchema.parse({
+        platform: "telegram",
+        conversationId: "telegram:123",
+        text: "请选择",
+        rows: [
+          [
+            {
+              text: "继续",
+              action: "agent.message",
+              payload: { text: "继续" },
+              answerText: "已收到"
+            },
+            {
+              kind: "url",
+              text: "文档",
+              url: "https://example.com/docs"
+            }
+          ]
+        ]
+      })
+    ).toMatchObject({
+      rows: [
+        [
+          {
+            kind: "callback",
+            label: "继续",
+            action: "agent.message",
+            answerText: "已收到"
+          },
+          {
+            kind: "url",
+            label: "文档",
+            url: "https://example.com/docs"
+          }
+        ]
+      ]
+    });
+  });
+
+  it("requires buttons or rows for button messages", () => {
+    expect(() =>
+      sendButtonsInputSchema.parse({
+        platform: "telegram",
+        conversationId: "telegram:123",
+        text: "请选择"
+      })
+    ).toThrow(/Either buttons or rows is required/);
+  });
+
+  it("reports missing buttons or rows as a top-level validation issue", () => {
+    const result = sendButtonsInputSchema.safeParse({
+      platform: "telegram",
+      conversationId: "telegram:123",
+      text: "Choose"
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            path: [],
+            message: "Either buttons or rows is required"
+          })
+        ])
+      );
+    }
+  });
+
+  it("rejects button messages that provide both buttons and rows", () => {
+    const result = sendButtonsInputSchema.safeParse({
+      platform: "telegram",
+      conversationId: "telegram:123",
+      text: "Choose",
+      buttons: [
+        {
+          label: "A",
+          action: "agent.message"
+        }
+      ],
+      rows: [
+        [
+          {
+            text: "B",
+            action: "agent.message"
+          }
+        ]
+      ]
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            path: [],
+            message: "Cannot provide both buttons and rows"
+          })
+        ])
+      );
+    }
+  });
+
+  it("documents the total row button limit in the JSON schema", () => {
+    expect(sendButtonsInputJsonSchema.properties.rows).toMatchObject({
+      "x-totalButtonLimit": 12,
+      description: expect.stringContaining("must not exceed 12")
+    });
+  });
+
+  it("documents buttons and rows as mutually exclusive in the JSON schema", () => {
+    expect(sendButtonsInputJsonSchema).toMatchObject({
+      oneOf: [{ required: ["buttons"] }, { required: ["rows"] }]
+    });
+    expect("anyOf" in sendButtonsInputJsonSchema).toBe(false);
+  });
+
+  it("rejects explicit button rows outside Telegram", () => {
+    const result = sendButtonsInputSchema.safeParse({
+      platform: "qq",
+      conversationId: "qq:123",
+      text: "Choose",
+      rows: [
+        [
+          {
+            text: "Continue",
+            action: "agent.message"
+          }
+        ]
+      ]
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            path: ["rows"],
+            message: "Explicit button rows are only supported on Telegram"
+          })
+        ])
+      );
+    }
+  });
+
+  it("rejects non-callback buttons outside Telegram", () => {
+    const result = sendButtonsInputSchema.safeParse({
+      platform: "wecom",
+      conversationId: "wecom:123",
+      text: "Choose",
+      buttons: [
+        {
+          kind: "url",
+          text: "Docs",
+          url: "https://example.com/docs"
+        }
+      ]
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            path: ["buttons", 0, "kind"],
+            message: "Only callback buttons are supported on non-Telegram platforms"
+          })
+        ])
+      );
+    }
   });
 
   it("defaults empty button layout to one column", () => {
