@@ -166,6 +166,9 @@ export async function sendTelegramButtons(
     rows: input.rows ?? chunkButtons(input.buttons ?? [], input.layout?.columns ?? 1),
     expiresAt
   });
+  if (!keyboard.length || keyboard.every((row) => row.length === 0)) {
+    return { ok: false, error: "No buttons or rows provided for inline keyboard" };
+  }
 
   const body: Record<string, unknown> = {
     chat_id: telegramChatId(conversationId),

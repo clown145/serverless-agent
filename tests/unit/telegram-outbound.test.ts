@@ -67,6 +67,28 @@ describe("telegram outbound", () => {
     });
   });
 
+  it("does not send an empty inline keyboard", async () => {
+    const fetchMock = vi.fn(async () => jsonResponse({ ok: true, result: { message_id: 42 } }));
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+
+    const result = await sendTelegramButtons(
+      {
+        AGENT_DB: createOutboundDb() as unknown as D1Database,
+        TELEGRAM_BOT_TOKEN: "token"
+      } as unknown as Env,
+      "default",
+      "telegram:123",
+      "Choose",
+      {}
+    );
+
+    expect(result).toEqual({
+      ok: false,
+      error: "No buttons or rows provided for inline keyboard"
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it("treats legacy buttons without kind as callback buttons", async () => {
     const fetchMock = vi.fn(async () => jsonResponse({ ok: true, result: { message_id: 42 } }));
     globalThis.fetch = fetchMock as unknown as typeof fetch;
