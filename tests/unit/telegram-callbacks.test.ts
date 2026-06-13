@@ -128,6 +128,41 @@ describe("telegram callbacks", () => {
     });
   });
 
+  it("truncates callback answer text to Telegram's 200 character limit", async () => {
+    const fetchMock = vi.fn(async () => jsonResponse({ ok: true, result: true }));
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+    const queue = { send: vi.fn(async () => undefined) };
+    const db = createCallbackDb([
+      callbackRow({
+        id: "cb_long_answer",
+        action: "agent.message",
+        payload_json: JSON.stringify({
+          __button: {
+            silent: true,
+            answerText: "x".repeat(250)
+          }
+        })
+      })
+    ]);
+
+    await handleTelegramCallbackQuery(
+      {
+        AGENT_DB: db as unknown as D1Database,
+        AGENT_QUEUE: queue
+      } as unknown as Env,
+      {
+        agentId: "default",
+        query: query("cb_long_answer")
+      },
+      "token"
+    );
+
+    expect(fetchUrl(fetchMock, 0)).toContain("/bottoken/answerCallbackQuery");
+    const body = fetchBody(fetchMock, 0);
+    expect(String(body.text)).toHaveLength(200);
+    expect(body.text).toBe(`${"x".repeat(197)}...`);
+  });
+
   it("does not require message text for silent callbacks", async () => {
     const fetchMock = vi.fn(async () => jsonResponse({ ok: true, result: true }));
     globalThis.fetch = fetchMock as unknown as typeof fetch;

@@ -169,9 +169,14 @@ async function answerCallback(
   }
 
   await answerTelegramCallbackQuery(token, callbackQueryId, {
-    text,
+    text: truncateTelegramCallbackAnswer(text),
     showAlert: options.showAlert
   }).catch(() => undefined);
+}
+
+function truncateTelegramCallbackAnswer(text: string): string {
+  const chars = Array.from(text);
+  return chars.length > 200 ? `${chars.slice(0, 197).join("")}...` : text;
 }
 
 async function applyTelegramButtonEffects(

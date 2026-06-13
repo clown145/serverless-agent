@@ -179,11 +179,52 @@ describe("messaging schemas", () => {
     }
   });
 
+  it("rejects button messages that provide both buttons and rows", () => {
+    const result = sendButtonsInputSchema.safeParse({
+      platform: "telegram",
+      conversationId: "telegram:123",
+      text: "Choose",
+      buttons: [
+        {
+          label: "A",
+          action: "agent.message"
+        }
+      ],
+      rows: [
+        [
+          {
+            text: "B",
+            action: "agent.message"
+          }
+        ]
+      ]
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            path: [],
+            message: "Cannot provide both buttons and rows"
+          })
+        ])
+      );
+    }
+  });
+
   it("documents the total row button limit in the JSON schema", () => {
     expect(sendButtonsInputJsonSchema.properties.rows).toMatchObject({
       "x-totalButtonLimit": 12,
       description: expect.stringContaining("must not exceed 12")
     });
+  });
+
+  it("documents buttons and rows as mutually exclusive in the JSON schema", () => {
+    expect(sendButtonsInputJsonSchema).toMatchObject({
+      oneOf: [{ required: ["buttons"] }, { required: ["rows"] }]
+    });
+    expect("anyOf" in sendButtonsInputJsonSchema).toBe(false);
   });
 
   it("rejects explicit button rows outside Telegram", () => {

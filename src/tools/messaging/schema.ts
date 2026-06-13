@@ -168,6 +168,14 @@ export const sendButtonsInputSchema = z
       });
     }
 
+    if (input.buttons?.length && input.rows?.length) {
+      context.addIssue({
+        code: "custom",
+        path: [],
+        message: "Cannot provide both buttons and rows"
+      });
+    }
+
     if (input.platform !== "telegram") {
       if (input.rows?.length) {
         context.addIssue({
@@ -480,7 +488,7 @@ export const sendButtonsInputJsonSchema = {
     }
   },
   required: ["platform", "conversationId", "text"],
-  anyOf: [{ required: ["buttons"] }, { required: ["rows"] }],
+  oneOf: [{ required: ["buttons"] }, { required: ["rows"] }],
   additionalProperties: false
 } as const;
 
