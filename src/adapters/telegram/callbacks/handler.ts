@@ -195,12 +195,18 @@ async function applyTelegramButtonEffects(
   }
 
   if (options.editMessageText) {
-    await editTelegramMessageText(token, {
+    const edited = await editTelegramMessageText(token, {
       ...target,
       text: options.editMessageText,
       replyMarkup: options.removeKeyboardOnClick ? { inline_keyboard: [] } : message?.reply_markup
-    }).catch(() => undefined);
-    return;
+    }).then(
+      () => true,
+      () => false
+    );
+
+    if (edited || !options.removeKeyboardOnClick) {
+      return;
+    }
   }
 
   await editTelegramMessageReplyMarkup(token, target).catch(() => undefined);

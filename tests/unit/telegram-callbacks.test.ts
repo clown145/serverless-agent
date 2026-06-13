@@ -209,6 +209,58 @@ describe("telegram callbacks", () => {
     });
     expect(fetchUrl(fetchMock, 1)).toContain("/bottoken/answerCallbackQuery");
   });
+
+  it("falls back to removing the keyboard when editing message text fails", async () => {
+    const fetchMock = vi.fn(async (url: RequestInfo | URL) =>
+      String(url).includes("/editMessageText")
+        ? jsonResponse({ ok: false, description: "message is media" })
+        : jsonResponse({ ok: true, result: true })
+    );
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+    const queue = { send: vi.fn(async () => undefined) };
+    const db = createCallbackDb([
+      callbackRow({
+        id: "cb_media_edit",
+        action: "agent.message",
+        payload_json: JSON.stringify({
+          __button: {
+            silent: true,
+            editMessageText: "Updated",
+            removeKeyboardOnClick: true
+          }
+        })
+      })
+    ]);
+
+    const result = await handleTelegramCallbackQuery(
+      {
+        AGENT_DB: db as unknown as D1Database,
+        AGENT_QUEUE: queue
+      } as unknown as Env,
+      {
+        agentId: "default",
+        query: query("cb_media_edit", "Open")
+      },
+      "token"
+    );
+
+    expect(result.handled).toBe(true);
+    expect(queue.send).not.toHaveBeenCalled();
+    expect(fetchUrl(fetchMock, 0)).toContain("/bottoken/editMessageText");
+    expect(fetchBody(fetchMock, 0)).toMatchObject({
+      chat_id: 123,
+      message_id: 10,
+      text: "Updated",
+      reply_markup: { inline_keyboard: [] }
+    });
+    expect(fetchUrl(fetchMock, 1)).toContain("/bottoken/editMessageReplyMarkup");
+    expect(fetchBody(fetchMock, 1)).toMatchObject({
+      chat_id: 123,
+      message_id: 10,
+      reply_markup: { inline_keyboard: [] }
+    });
+    expect(fetchUrl(fetchMock, 2)).toContain("/bottoken/answerCallbackQuery");
+  });
 });
 
 function createCallbackDb(rows: PlatformCallbackRow[]) {
