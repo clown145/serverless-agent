@@ -1596,12 +1596,22 @@
 }
 
 .debug-message-row,
-.run-step-row,
-.run-diagnostics {
+.run-step-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto auto;
   gap: 10px;
   align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  padding: 12px;
+}
+
+.run-diagnostics {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
   border: 1px solid var(--border);
   border-radius: 7px;
   background: var(--surface);
@@ -1623,6 +1633,56 @@
 .run-diagnostics span {
   color: var(--text-muted);
   font-size: 12px;
+}
+
+.run-diagnostics-heading {
+  min-width: 0;
+}
+
+.run-metric-grid,
+.run-timeline-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.run-metric-grid {
+  grid-column: 1 / -1;
+}
+
+.run-metric {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface-muted);
+  padding: 10px;
+}
+
+.run-metric strong,
+.run-metric span,
+.run-metric small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.run-metric strong {
+  margin-top: 4px;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.run-metric span,
+.run-metric small {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.run-metric small {
+  margin-top: 4px;
+}
+
+.run-metric.danger strong {
+  color: var(--danger);
 }
 
 .debug-message-row p {

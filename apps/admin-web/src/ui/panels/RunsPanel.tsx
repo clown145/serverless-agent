@@ -85,18 +85,76 @@ export function RunsPanel({ client, notify, selectedRunId }: RunsPanelProps) {
         {details ? (
           <>
             <div className="run-diagnostics">
-              <div>
+              <div className="run-diagnostics-heading">
                 <strong>{String(details.run.id ?? activeRunId)}</strong>
                 <span>{String(details.run.conversation_id ?? "")}</span>
               </div>
               <StatusBadge value={String(details.run.status ?? "unknown")} />
-              <span>{details.diagnostics.durationMs ?? 0}ms</span>
-              <span>{t("runs.modelCalls", { count: details.diagnostics.modelCallCount })}</span>
-              <span>{t("runs.toolCalls", { count: details.diagnostics.toolCallCount })}</span>
+              <div className="run-metric-grid">
+                <RunMetric
+                  label={t("runs.duration")}
+                  value={formatMs(details.diagnostics.durationMs)}
+                />
+                <RunMetric
+                  label={t("runs.modelCallsLabel")}
+                  value={details.diagnostics.modelCallCount}
+                />
+                <RunMetric
+                  label={t("runs.toolCallsLabel")}
+                  value={details.diagnostics.toolCallCount}
+                  detail={formatStatusCounts(details.diagnostics.toolStatusCounts, t)}
+                />
+                <RunMetric
+                  label={t("runs.auditLogs")}
+                  value={details.diagnostics.auditLogCount}
+                  detail={formatStatusCounts(details.diagnostics.auditStatusCounts, t)}
+                />
+                <RunMetric
+                  label={t("runs.avgToolLatency")}
+                  value={formatMs(details.diagnostics.toolLatencyMs.average)}
+                  detail={
+                    details.diagnostics.toolLatencyMs.slowestToolName
+                      ? t("runs.slowestTool", {
+                          tool: details.diagnostics.toolLatencyMs.slowestToolName,
+                          latency: formatMs(details.diagnostics.toolLatencyMs.max)
+                        })
+                      : undefined
+                  }
+                />
+                <RunMetric
+                  label={t("runs.failures")}
+                  value={
+                    details.diagnostics.failedStepCount + details.diagnostics.failedToolCallCount
+                  }
+                  detail={
+                    details.diagnostics.errorSummary.category
+                      ? translateStatus(details.diagnostics.errorSummary.category, t)
+                      : t("common.none")
+                  }
+                  tone={details.diagnostics.errorSummary.count > 0 ? "danger" : "normal"}
+                />
+              </div>
               {details.diagnostics.lastError && (
                 <span className="danger-text">{details.diagnostics.lastError}</span>
               )}
             </div>
+            <section className="run-section">
+              <h2>{t("runs.timeline")}</h2>
+              <div className="run-timeline-summary">
+                <RunMetric
+                  label={t("runs.startedAt")}
+                  value={details.diagnostics.timeline.startedAt ?? t("common.unknown")}
+                />
+                <RunMetric
+                  label={t("runs.lastEventAt")}
+                  value={details.diagnostics.timeline.lastEventAt ?? t("common.unknown")}
+                />
+                <RunMetric
+                  label={t("runs.lastToolCompletedAt")}
+                  value={details.diagnostics.timeline.lastToolCompletedAt ?? t("common.none")}
+                />
+              </div>
+            </section>
             <div className="run-timeline">
               {details.steps.map((step) => (
                 <article className="run-step-row" key={String(step.id)}>
@@ -148,4 +206,52 @@ export function RunsPanel({ client, notify, selectedRunId }: RunsPanelProps) {
       </div>
     </section>
   );
+}
+
+function RunMetric({
+  label,
+  value,
+  detail,
+  tone = "normal"
+}: {
+  label: string;
+  value: string | number;
+  detail?: string;
+  tone?: "normal" | "danger";
+}) {
+  return (
+    <div className={`run-metric ${tone}`}>
+      <span>{label}</span>
+      <strong>{value}</strong>
+      {detail && <small>{detail}</small>}
+    </div>
+  );
+}
+
+function formatMs(value?: number): string {
+  return typeof value === "number" ? `${value}ms` : "-";
+}
+
+type Translator = (key: string, vars?: Record<string, string | number>) => string;
+
+function formatStatusCounts(
+  counts: Record<string, number> | undefined,
+  t: Translator
+): string | undefined {
+  if (!counts) {
+    return undefined;
+  }
+
+  const entries = Object.entries(counts);
+  if (entries.length === 0) {
+    return undefined;
+  }
+
+  return entries.map(([status, count]) => `${translateStatus(status, t)} ${count}`).join(" · ");
+}
+
+function translateStatus(status: string, t: Translator): string {
+  const key = `status.${status}`;
+  const translated = t(key);
+  return translated === key ? status : translated;
 }

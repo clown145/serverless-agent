@@ -1,4 +1,4 @@
-import { getRunDetails } from "../../storage/repositories/run-details-repository";
+import { getRunDetails } from "../../observability/run-details";
 import { errorResponse, jsonResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
 
