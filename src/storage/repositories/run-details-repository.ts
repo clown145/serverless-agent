@@ -1,25 +1,16 @@
-export type RunDetails = {
+export type RunDetailRows = {
   run: Record<string, unknown>;
   steps: Record<string, unknown>[];
   toolCalls: Record<string, unknown>[];
   auditLogs: Record<string, unknown>[];
   triggerMessage?: Record<string, unknown>;
   conversation?: Record<string, unknown>;
-  diagnostics: {
-    durationMs?: number;
-    stepCount: number;
-    modelCallCount: number;
-    toolCallCount: number;
-    failedStepCount: number;
-    failedToolCallCount: number;
-    lastError?: string;
-  };
 };
 
-export async function getRunDetails(
+export async function getRunDetailRows(
   db: D1Database,
   runId: string
-): Promise<RunDetails | undefined> {
+): Promise<RunDetailRows | undefined> {
   const run = await db
     .prepare("SELECT * FROM runs WHERE id = ?")
     .bind(runId)
@@ -45,8 +36,7 @@ export async function getRunDetails(
     toolCalls: parsedToolCalls,
     auditLogs,
     triggerMessage,
-    conversation,
-    diagnostics: createDiagnostics(run, steps, parsedToolCalls)
+    conversation
   };
 }
 
@@ -105,32 +95,6 @@ function parseToolCall(row: Record<string, unknown>): Record<string, unknown> {
     input: parseJson(row.input_json),
     output: parseJson(row.output_json),
     latency_ms: elapsedMs(row.created_at, row.completed_at)
-  };
-}
-
-function createDiagnostics(
-  run: Record<string, unknown>,
-  steps: Record<string, unknown>[],
-  toolCalls: Record<string, unknown>[]
-): RunDetails["diagnostics"] {
-  const failedSteps = steps.filter((step) => step.status === "failed");
-  const failedToolCalls = toolCalls.filter(
-    (toolCall) =>
-      toolCall.status === "failed" ||
-      toolCall.status === "permission_denied" ||
-      toolCall.status === "needs_confirmation"
-  );
-  const lastError =
-    [...failedToolCalls].reverse()[0]?.error_code ?? [...failedSteps].reverse()[0]?.summary;
-
-  return {
-    durationMs: elapsedMs(run.created_at, run.updated_at),
-    stepCount: steps.length,
-    modelCallCount: steps.filter((step) => step.kind === "model_called").length,
-    toolCallCount: toolCalls.length,
-    failedStepCount: failedSteps.length,
-    failedToolCallCount: failedToolCalls.length,
-    lastError: typeof lastError === "string" ? lastError : undefined
   };
 }
 

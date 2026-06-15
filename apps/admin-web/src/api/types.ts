@@ -22,9 +22,42 @@ export type RunDetails = {
     stepCount: number;
     modelCallCount: number;
     toolCallCount: number;
+    auditLogCount: number;
     failedStepCount: number;
     failedToolCallCount: number;
     lastError?: string;
+    stepStatusCounts: Record<string, number>;
+    toolStatusCounts: Record<string, number>;
+    auditStatusCounts: Record<string, number>;
+    toolLatencyMs: {
+      completedCount: number;
+      average?: number;
+      max?: number;
+      slowestToolName?: string;
+      slowestToolId?: string;
+    };
+    timeline: {
+      startedAt?: string;
+      completedAt?: string;
+      firstEventAt?: string;
+      lastEventAt?: string;
+      lastStepAt?: string;
+      lastToolCompletedAt?: string;
+    };
+    errorSummary: {
+      count: number;
+      category?:
+        | "permission_denied"
+        | "needs_confirmation"
+        | "validation_error"
+        | "tool_failed"
+        | "run_failed";
+      source?: "run_step" | "tool_call";
+      toolName?: string;
+      message?: string;
+      code?: string;
+      at?: string;
+    };
   };
 };
 
