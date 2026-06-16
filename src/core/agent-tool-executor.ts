@@ -6,7 +6,7 @@ import { validateSkillToolCall } from "../skills/skill-tools";
 import type { ToolRegistry } from "../tools/registry/tool-registry";
 import type { ToolResult } from "../tools/types";
 import type { ModelMessage, ModelToolCall } from "./model/types";
-import { stringifyToolResult } from "./model/json";
+import { formatToolResultForModel } from "./model/tool-result-formatter";
 import { recordToolCompletedStep, recordToolRequestedStep } from "./run-step-recorder";
 
 export type AgentToolExecution = {
@@ -126,6 +126,6 @@ function createToolResultMessage(toolCall: ModelToolCall, result: unknown): Mode
     role: "tool",
     toolCallId: toolCall.id,
     toolName: toolCall.name,
-    content: stringifyToolResult(result)
+    content: formatToolResultForModel(result, toolCall.name)
   };
 }
