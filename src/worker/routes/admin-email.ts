@@ -6,6 +6,8 @@ import {
   listEmailMessageRecords,
   getEmailMessageRecord
 } from "../../storage/repositories/email-messages-repository";
+import { getMessageAttachmentRecord } from "../../storage/repositories/message-attachments-repository";
+import { getPlatformIntegrationRecord } from "../../storage/repositories/platform-integrations-repository";
 import { toEmailMessageDto } from "./platforms/email-dto";
 import {
   adminForwardEmailSchema,
@@ -72,12 +74,16 @@ export async function handleAdminEmailSendAction(request: Request, env: Env): Pr
   }
 
   const registry = createToolRegistry(env);
+  const target = await resolveEmailActionTarget(env, action, parsed.data);
+  if (target instanceof Response) {
+    return target;
+  }
   const result = await registry.execute(action, {
-    agentId: env.DEFAULT_AGENT_ID ?? "default",
+    agentId: target.agentId,
     actorId: "admin",
     actorRole: "admin",
     platform: "admin",
-    conversationId: "admin:email",
+    conversationId: target.conversationId,
     runId: createId("run"),
     stepId: createId("step"),
     input: parsed.data
@@ -102,13 +108,18 @@ export async function handleAdminEmailAttachmentSave(
     return errorResponse(400, "invalid_payload", zodMessage(parsed.error));
   }
 
+  const attachment = await getMessageAttachmentRecord(env.AGENT_DB, input);
+  if (!attachment) {
+    return errorResponse(404, "attachment_not_found", "Attachment not found");
+  }
+
   const registry = createToolRegistry(env);
   const result = await registry.execute("email.save_attachment", {
-    agentId: env.DEFAULT_AGENT_ID ?? "default",
+    agentId: attachment.agentId,
     actorId: "admin",
     actorRole: "admin",
     platform: "admin",
-    conversationId: "admin:email",
+    conversationId: attachment.conversationId,
     runId: createId("run"),
     stepId: createId("step"),
     input: {
@@ -121,4 +132,38 @@ export async function handleAdminEmailAttachmentSave(
     { ok: result.status === "success", result },
     { status: result.status === "failed" ? 500 : 200 }
   );
+}
+
+type EmailAction = "email.send" | "email.reply" | "email.forward";
+
+async function resolveEmailActionTarget(
+  env: Env,
+  action: EmailAction,
+  input: unknown
+): Promise<{ agentId: string; conversationId?: string } | Response> {
+  if (action === "email.reply" || action === "email.forward") {
+    const emailMessageId = (input as { emailMessageId?: string }).emailMessageId;
+    if (!emailMessageId) {
+      return errorResponse(400, "invalid_payload", "emailMessageId is required");
+    }
+    const message = await getEmailMessageRecord(env.AGENT_DB, emailMessageId);
+    if (!message) {
+      return errorResponse(404, "email_message_not_found", "Email message not found");
+    }
+    return { agentId: message.agentId, conversationId: message.conversationId };
+  }
+
+  const integrationId = (input as { integrationId?: string }).integrationId;
+  if (integrationId) {
+    const integration = await getPlatformIntegrationRecord(env.AGENT_DB, integrationId);
+    if (!integration || integration.platform !== "email") {
+      return errorResponse(404, "email_integration_not_found", "Email integration not found");
+    }
+    return {
+      agentId: integration.agentId,
+      conversationId: `email:${integration.id}:outbound`
+    };
+  }
+
+  return { agentId: env.DEFAULT_AGENT_ID ?? "default" };
 }

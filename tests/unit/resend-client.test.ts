@@ -54,4 +54,26 @@ describe("Resend email client", () => {
       })
     ).rejects.toThrow("Invalid API key");
   });
+
+  it("rejects oversized attachments before posting to Resend", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch");
+
+    await expect(
+      sendResendEmail({
+        apiKey: "re_test",
+        from: "bot@example.com",
+        to: [{ address: "user@example.com" }],
+        subject: "Hi",
+        text: "Hello",
+        attachments: [
+          {
+            filename: "large.bin",
+            contentType: "application/octet-stream",
+            bytes: new Uint8Array(31 * 1024 * 1024)
+          }
+        ]
+      })
+    ).rejects.toThrow("Email payload exceeds Resend's 40MB limit after base64 encoding");
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
 });

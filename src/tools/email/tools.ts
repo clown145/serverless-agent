@@ -222,7 +222,7 @@ function previewEmailAttachmentTool(): RegisteredTool {
       const attachment = await resolveMessageAttachmentBytes(context, parsed.data);
       const maxBytes = parsed.data.maxBytes ?? 64_000;
       const textPreview = isTextMime(attachment.mimeType)
-        ? new TextDecoder().decode(attachment.bytes.slice(0, maxBytes))
+        ? new TextDecoder().decode(attachment.bytes.subarray(0, maxBytes))
         : undefined;
       return {
         status: "success",
@@ -373,7 +373,10 @@ async function sendForward(
     }
   }
 
-  if (input.mode === "eml_attachment" && original.rawR2Key) {
+  if (input.mode === "eml_attachment") {
+    if (!original.rawR2Key) {
+      return failed("raw_email_not_found", "Original raw email key is missing", false);
+    }
     const object = await createBlobStorage(context.env).get(original.rawR2Key);
     if (!object) {
       return failed("raw_email_not_found", "Original raw email object not found", false);
@@ -471,5 +474,5 @@ function previewKind(mimeType: string): "text" | "image" | "pdf" | "download" {
 }
 
 function safeSubject(subject: string | undefined): string {
-  return (subject?.trim() || "forwarded-email").replace(/[^\w.-]+/g, "_").slice(0, 80);
+  return (subject?.trim() || "forwarded-email").replace(/[\\/:*?"<>|]/g, "_").slice(0, 80);
 }

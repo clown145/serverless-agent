@@ -66,28 +66,36 @@ export function EmailPanel({ client, notify }: PanelProps) {
   }
 
   async function saveAccount() {
-    const payload = accountPayload(accountDraft);
-    if (editingIntegration) {
-      await client.updateEmailIntegration(editingIntegration.id, payload);
-    } else {
-      await client.createEmailIntegration({
-        ...payload,
-        name: payload.name || "Email",
-        fromAddress: payload.fromAddress || "",
-        inboundAddresses: payload.inboundAddresses ?? []
-      });
+    try {
+      const payload = accountPayload(accountDraft);
+      if (editingIntegration) {
+        await client.updateEmailIntegration(editingIntegration.id, payload);
+      } else {
+        await client.createEmailIntegration({
+          ...payload,
+          name: payload.name || "Email",
+          fromAddress: payload.fromAddress || "",
+          inboundAddresses: payload.inboundAddresses ?? []
+        });
+      }
+      setAccountDialogOpen(false);
+      setEditingIntegration(undefined);
+      setAccountDraft(defaultEmailAccountDraft());
+      notify("Email account saved", "ok");
+      await load();
+    } catch (error) {
+      notify(errorMessage(error, "Failed to save email account"), "error");
     }
-    setAccountDialogOpen(false);
-    setEditingIntegration(undefined);
-    setAccountDraft(defaultEmailAccountDraft());
-    notify("Email account saved", "ok");
-    await load();
   }
 
   async function deleteAccount(id: string) {
-    await client.deleteEmailIntegration(id);
-    notify("Email account deleted", "ok");
-    await load();
+    try {
+      await client.deleteEmailIntegration(id);
+      notify("Email account deleted", "ok");
+      await load();
+    } catch (error) {
+      notify(errorMessage(error, "Failed to delete email account"), "error");
+    }
   }
 
   async function submitCompose(input: {
@@ -97,28 +105,34 @@ export function EmailPanel({ client, notify }: PanelProps) {
     forwardMode?: "compose" | "eml_attachment";
     includeOriginalAttachments?: boolean;
   }) {
-    const to = parseAddresses(input.to);
-    if (composeMode === "send") {
-      await client.sendEmail({
-        integrationId: selectedIntegrationId || undefined,
-        to,
-        subject: input.subject,
-        text: input.text
-      });
-    } else if (composeMode === "reply" && selectedMessage) {
-      await client.replyEmail({ emailMessageId: selectedMessage.id, text: input.text });
-    } else if (composeMode === "forward" && selectedMessage) {
-      await client.forwardEmail({
-        emailMessageId: selectedMessage.id,
-        to,
-        text: input.text,
-        mode: input.forwardMode,
-        includeOriginalAttachments: input.includeOriginalAttachments
-      });
+    try {
+      const to = parseAddresses(input.to);
+      if (composeMode === "send") {
+        await client.sendEmail({
+          integrationId: selectedIntegrationId || undefined,
+          to,
+          subject: input.subject,
+          text: input.text
+        });
+      } else if (composeMode === "reply" && selectedMessage) {
+        await client.replyEmail({ emailMessageId: selectedMessage.id, text: input.text });
+      } else if (composeMode === "forward" && selectedMessage) {
+        await client.forwardEmail({
+          emailMessageId: selectedMessage.id,
+          to,
+          text: input.text,
+          mode: input.forwardMode,
+          includeOriginalAttachments: input.includeOriginalAttachments
+        });
+      } else {
+        throw new Error("No selected email message");
+      }
+      setComposeMode(undefined);
+      notify("Email action submitted", "ok");
+      await load();
+    } catch (error) {
+      notify(errorMessage(error, "Failed to submit email action"), "error");
     }
-    setComposeMode(undefined);
-    notify("Email action submitted", "ok");
-    await load();
   }
 
   async function saveAttachment(messageId: string, attachmentId: string) {
@@ -128,8 +142,12 @@ export function EmailPanel({ client, notify }: PanelProps) {
     if (!path) {
       return;
     }
-    await client.saveEmailAttachment(messageId, attachmentId, path);
-    notify("Attachment saved", "ok");
+    try {
+      await client.saveEmailAttachment(messageId, attachmentId, path);
+      notify("Attachment saved", "ok");
+    } catch (error) {
+      notify(errorMessage(error, "Failed to save attachment"), "error");
+    }
   }
 
   function openNewAccount() {
@@ -242,4 +260,8 @@ function parseAddresses(value: string): EmailAddress[] {
     .map((item) => item.trim())
     .filter(Boolean)
     .map((address) => ({ address }));
+}
+
+function errorMessage(error: unknown, fallback: string): string {
+  return error instanceof Error ? error.message : fallback;
 }

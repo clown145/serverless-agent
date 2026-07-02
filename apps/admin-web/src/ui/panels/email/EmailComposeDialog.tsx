@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { EmailMessage } from "../../../api/types";
 import { FormDialog } from "../../FormDialog";
+import { formatEmailAddress, formatEmailList } from "./emailFormat";
 
 type EmailComposeDialogProps = {
   mode: "send" | "reply" | "forward";
@@ -28,6 +29,35 @@ export function EmailComposeDialog({
   const [text, setText] = useState("");
   const [forwardMode, setForwardMode] = useState<"compose" | "eml_attachment">("compose");
   const [includeOriginalAttachments, setIncludeOriginalAttachments] = useState(false);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    setText("");
+    setForwardMode("compose");
+    setIncludeOriginalAttachments(false);
+
+    if (mode === "reply" && sourceMessage) {
+      setTo(
+        sourceMessage.replyTo.length
+          ? formatEmailList(sourceMessage.replyTo)
+          : formatEmailAddress(sourceMessage.from)
+      );
+      setSubject(prefixedSubject("Re:", sourceMessage.subject, /^re:/i));
+      return;
+    }
+
+    if (mode === "forward" && sourceMessage) {
+      setTo("");
+      setSubject(prefixedSubject("Fwd:", sourceMessage.subject, /^fwd?:/i));
+      return;
+    }
+
+    setTo("");
+    setSubject("");
+  }, [mode, open, sourceMessage]);
 
   return (
     <FormDialog open={open} title={title(mode)} onOpenChange={onOpenChange}>
@@ -95,6 +125,11 @@ export function EmailComposeDialog({
       </form>
     </FormDialog>
   );
+}
+
+function prefixedSubject(prefix: string, subject: string | undefined, pattern: RegExp): string {
+  const value = subject?.trim() || "(no subject)";
+  return pattern.test(value) ? value : `${prefix} ${value}`;
 }
 
 function title(mode: EmailComposeDialogProps["mode"]): string {
