@@ -65,7 +65,7 @@ export type ScheduleIdInput = z.infer<typeof scheduleIdInputSchema>;
 
 const platformProperty = {
   type: "string",
-  enum: ["telegram", "qq", "wecom", "weixin_oc", "webhook", "admin", "webui"],
+  enum: ["telegram", "qq", "wecom", "weixin_oc", "webhook", "admin", "webui", "email"],
   description: "Target platform. Defaults to the current message platform."
 } as const;
 

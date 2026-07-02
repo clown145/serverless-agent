@@ -70,13 +70,15 @@ Cloudflare Worker 不执行真实 `git pull`。Git 能力通过 GitHub/GitLab AP
 
 ## 邮件边界
 
-入站邮件可以通过 Cloudflare Email Routing / Email Workers 触发 agent。
+入站邮件通过 Cloudflare Email Routing / Email Workers 触发 agent。Worker 只负责匹配邮箱 integration、解析 raw MIME、保存 `.eml` 和附件、写入 `email_messages`，再把 `platform=email` 的 `InternalMessage` 入队。
 
 出站邮件作为 `email` 工具接入：
 
-- 可接 Cloudflare Email Service 或第三方邮件 API；
-- 默认属于高权限工具；
-- 新收件人、附件和批量发送应要求确认或白名单。
+- 当前实现使用 Resend API；
+- `email.send`、`email.reply`、`email.forward` 默认需要 explicit confirmation；
+- `email.list_messages`、`email.get_message`、`email.preview_attachment` 只读；
+- `email.save_attachment` 需要 `email:read` 和 `workspace:write`，并以二进制方式写入 VFS；
+- agent 的普通 final response 不会自动回邮件，必须显式调用邮件工具才会对外发信。
 
 ## 搜索和 HTTP 边界
 

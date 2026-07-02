@@ -15,7 +15,7 @@ const createScheduleSchema = z
     title: z.string().min(1).optional(),
     text: z.string().min(1),
     platform: z
-      .enum(["telegram", "qq", "wecom", "weixin_oc", "webhook", "admin", "webui"])
+      .enum(["telegram", "qq", "wecom", "weixin_oc", "webhook", "admin", "webui", "email"])
       .optional(),
     conversationId: z.string().min(1).optional(),
     actorId: z.string().min(1).optional(),

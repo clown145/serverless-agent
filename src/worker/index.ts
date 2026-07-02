@@ -4,6 +4,7 @@ import { WeixinOcGatewayDurableObject } from "../platforms/weixin-oc/weixin-oc-g
 import { handleScheduled } from "../scheduler/scheduled";
 import type { Env } from "../shared/types/env";
 import type { QueueMessageBody } from "../shared/types/queue";
+import { handleInboundEmail } from "./email-handler";
 import { handleQueueBatch } from "./queue-consumer";
 import { routeRequest } from "./router";
 
@@ -22,5 +23,9 @@ export default {
 
   scheduled(controller: ScheduledController, env: Env, ctx: ExecutionContext) {
     return handleScheduled(controller, env, ctx);
+  },
+
+  email(message, env, ctx) {
+    return handleInboundEmail(message, env, ctx);
   }
 } satisfies ExportedHandler<Env, QueueMessageBody>;

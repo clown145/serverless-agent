@@ -213,7 +213,7 @@ export const sendMessageInputJsonSchema = {
   properties: {
     platform: {
       type: "string",
-      enum: ["telegram", "qq", "wecom", "weixin_oc", "webhook", "admin", "webui"],
+      enum: ["telegram", "qq", "wecom", "weixin_oc", "webhook", "admin", "webui", "email"],
       description: "Target platform for the outbound message."
     },
     conversationId: {
@@ -278,7 +278,7 @@ export const sendFileInputJsonSchema = {
   properties: {
     platform: {
       type: "string",
-      enum: ["telegram", "qq", "wecom", "weixin_oc", "webhook", "admin", "webui"],
+      enum: ["telegram", "qq", "wecom", "weixin_oc", "webhook", "admin", "webui", "email"],
       description: "Target platform for the outbound file."
     },
     conversationId: {
@@ -331,7 +331,7 @@ export const sendButtonsInputJsonSchema = {
   properties: {
     platform: {
       type: "string",
-      enum: ["telegram", "qq", "wecom", "weixin_oc", "webhook", "admin", "webui"],
+      enum: ["telegram", "qq", "wecom", "weixin_oc", "webhook", "admin", "webui", "email"],
       description: "Target platform for the outbound buttons."
     },
     conversationId: {

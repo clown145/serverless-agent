@@ -41,6 +41,10 @@ export type VfsFile = {
   version: number;
 };
 
+export type VfsBinaryFile = Omit<VfsFile, "content"> & {
+  bytes: Uint8Array;
+};
+
 export type VfsSearchMatch = {
   path: string;
   kind: VfsEntryKind;

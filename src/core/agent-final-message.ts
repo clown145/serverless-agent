@@ -1,6 +1,7 @@
 import { createId } from "../shared/ids";
 import type { Env } from "../shared/types/env";
 import type { InternalMessage } from "../shared/types/internal-message";
+import { insertOutboundTextMessage } from "../storage/repositories/messages-repository";
 import { createToolRegistry } from "../tools/registry/tool-registry";
 import { recordToolCompletedStep, recordToolRequestedStep } from "./run-step-recorder";
 
@@ -10,6 +11,16 @@ export async function sendFinalMessage(
   message: InternalMessage,
   text: string
 ): Promise<void> {
+  if (message.platform === "email") {
+    await insertOutboundTextMessage(env.AGENT_DB, {
+      agentId: message.agentId,
+      platform: message.platform,
+      conversationId: message.conversationId,
+      text
+    });
+    return;
+  }
+
   const registry = createToolRegistry(env);
   const stepId = createId("step");
 

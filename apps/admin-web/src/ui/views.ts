@@ -5,6 +5,7 @@ export type ViewId =
   | "model_config"
   | "models"
   | "platforms"
+  | "email"
   | "diagnostics"
   | "debug"
   | "tools"

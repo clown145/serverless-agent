@@ -63,7 +63,7 @@ src/
 | -------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------- |
 | `src/worker/`        | HTTP routes、webhook 入口、admin API、Queue/Cron handler。                      | agent 推理逻辑、平台业务决策、工具实现。             |
 | `src/agents/`        | Durable Object coordinator、mailbox、alarm、run 恢复。                          | 平台 payload 细节、对象存储 key 拼接、具体工具 API。 |
-| `src/adapters/`      | 平台协议和内部协议互转。                                                        | agent 决策、模型调用、权限策略。                     |
+| `src/adapters/`      | 平台协议和内部协议互转；例如 email MIME 解析和 Resend client。                  | agent 决策、模型调用、权限策略。                     |
 | `src/commands/`      | slash/system command 解析、注册和执行分发。                                     | 平台 webhook、工具底层执行。                         |
 | `src/context/`       | conversation context、附件 caption 等上下文加载逻辑。                           | 平台协议解析、模型 provider 实现。                   |
 | `src/conversations/` | conversation ID 生成和解析。                                                    | 平台 API 调用。                                      |
@@ -71,7 +71,7 @@ src/
 | `src/diagnostics/`   | 运行前配置检查和 runtime checks。                                               | 修复配置、写入业务状态。                             |
 | `src/media/`         | 附件持久化、平台入站媒体分发和 media object key helper。                        | 平台协议细节、VFS 服务。                             |
 | `src/platforms/`     | 平台能力、outbound registry、gateway DO wrappers 和 context hints。             | 具体 adapter normalize 逻辑。                        |
-| `src/tools/`         | 模型可调用工具、schema、权限和执行器。                                          | 平台 webhook、agent state machine。                  |
+| `src/tools/`         | 模型可调用工具、schema、权限和执行器；例如 `src/tools/email`。                  | 平台 webhook、agent state machine。                  |
 | `src/storage/`       | D1 repositories、object storage、DO storage helpers，以及预留的 KV cache 边界。 | 业务流程和平台适配。                                 |
 | `src/permissions/`   | 权限策略解析、pending action 创建和确认执行。                                   | HTTP route、具体工具实现。                           |
 | `src/scheduler/`     | schedules、Cron sweep、heartbeat 和 retry policy。                              | 平台消息解析。                                       |
@@ -84,14 +84,14 @@ src/
 
 ## 放文件的判断规则
 
-- 外部平台 payload：`src/adapters/{platform}`。
+- 外部平台 payload：`src/adapters/{platform}`；邮件的 MIME/Resend 边界在 `src/adapters/email`。
 - HTTP 路由：`src/worker`。
 - agent run 状态：`src/core`。
 - Durable Object 生命周期：`src/agents`。
 - D1、KV、对象存储：`src/storage`。
 - VFS path、虚拟命令和文件服务：`src/vfs`。
 - 权限策略和确认请求：`src/permissions`。
-- agent 可调用能力：`src/tools/{domain}`。
+- agent 可调用能力：`src/tools/{domain}`；邮件工具在 `src/tools/email`。
 - 未来任务和心跳：`src/scheduler`。
 - Skill frontmatter、加载和管理：`src/skills`。
 - 日志和审计：`src/observability`。

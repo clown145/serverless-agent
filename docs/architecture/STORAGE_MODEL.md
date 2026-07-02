@@ -12,6 +12,7 @@ D1 用于结构化数据：
 - platform_accounts / platform_integrations
 - conversations
 - messages
+- email_messages
 - runs
 - run_steps
 - tool_calls
@@ -34,6 +35,7 @@ D1 适合查询、审计、撤销和跨实例恢复。
 - skills 文件；
 - artifacts；
 - attachments；
+- raw email `.eml`；
 - 大型日志或导出内容。
 
 支持后端：
@@ -48,6 +50,7 @@ D1 适合查询、审计、撤销和跨实例恢复。
 agents/{agent_id}/vfs/blobs/sha256/{prefix}/{shard}/{checksum}
 runs/{run_id}/artifacts/{name}
 attachments/{platform}/{message_id}/{name}
+email/{agent_id}/{integration_id}/raw/{email_message_id}.eml
 ```
 
 对象内容应尽量 content-addressed，避免高频覆盖同一个 object key。

@@ -10,6 +10,7 @@ import { ChatPanel } from "./panels/ChatPanel";
 import { ConversationsPanel } from "./panels/ConversationsPanel";
 import { DebugPanel } from "./panels/DebugPanel";
 import { DiagnosticsPanel } from "./panels/DiagnosticsPanel";
+import { EmailPanel } from "./panels/EmailPanel";
 import { ModelConfigPanel } from "./panels/ModelConfigPanel";
 import { ModelsPanel } from "./panels/ModelsPanel";
 import { PlatformsPanel } from "./panels/PlatformsPanel";
@@ -131,6 +132,7 @@ export function App() {
             <ModelsPanel client={client} notify={notify} onNavigate={setActiveView} />
           )}
           {active === "platforms" && <PlatformsPanel client={client} notify={notify} />}
+          {active === "email" && <EmailPanel client={client} notify={notify} />}
           {active === "diagnostics" && <DiagnosticsPanel client={client} notify={notify} />}
           {active === "debug" && <DebugPanel client={client} notify={notify} onRun={openRun} />}
           {active === "tools" && <ToolsPanel client={client} notify={notify} />}

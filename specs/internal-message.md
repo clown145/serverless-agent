@@ -2,14 +2,14 @@
 
 ## 概览
 
-`InternalMessage` 用于消除 Telegram、QQ、WeCom、Weixin OC、Webhook、WebUI/Admin 等平台差异。adapter 入站的目标是产出这个结构。
+`InternalMessage` 用于消除 Telegram、QQ、WeCom、Weixin OC、Email、Webhook、WebUI/Admin 等平台差异。adapter 入站的目标是产出这个结构。
 
 ## InternalMessage
 
 ```ts
 type InternalMessage = {
   id: string;
-  platform: "telegram" | "qq" | "wecom" | "weixin_oc" | "webhook" | "admin" | "webui";
+  platform: "telegram" | "qq" | "wecom" | "weixin_oc" | "webhook" | "admin" | "webui" | "email";
   platformMessageId: string;
   agentId: string;
   conversationId: string;

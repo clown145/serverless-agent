@@ -83,7 +83,7 @@ export type ChatMessage = {
   id: string;
   agentId: string;
   conversationId: string;
-  platform: "telegram" | "qq" | "wecom" | "weixin_oc" | "webhook" | "admin" | "webui";
+  platform: "telegram" | "qq" | "wecom" | "weixin_oc" | "webhook" | "admin" | "webui" | "email";
   platformMessageId: string;
   senderId: string;
   role: "user" | "assistant";
@@ -109,7 +109,7 @@ export type ConversationSettings = {
   agentId: string;
   conversationId: string;
   sessionId: string;
-  platform: "telegram" | "qq" | "wecom" | "weixin_oc" | "webhook" | "admin" | "webui";
+  platform: "telegram" | "qq" | "wecom" | "weixin_oc" | "webhook" | "admin" | "webui" | "email";
   rootConversationId: string;
   title?: string;
   modelProviderId?: string;
@@ -600,6 +600,53 @@ export type WeixinOcIntegration = {
   contextTokenCount: number;
   lastCheckedAt?: string;
   lastError?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type EmailAddress = {
+  address: string;
+  name?: string;
+};
+
+export type EmailIntegration = {
+  id: string;
+  agentId: string;
+  name: string;
+  platform: "email";
+  fromAddress: string;
+  fromName?: string;
+  replyTo?: string;
+  inboundAddresses: string[];
+  hasResendApiKey: boolean;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type EmailMessage = {
+  id: string;
+  agentId: string;
+  integrationId: string;
+  internalMessageId?: string;
+  direction: "inbound" | "outbound";
+  conversationId: string;
+  threadKey: string;
+  rfcMessageId?: string;
+  resendMessageId?: string;
+  from: EmailAddress;
+  to: EmailAddress[];
+  cc: EmailAddress[];
+  bcc: EmailAddress[];
+  replyTo: EmailAddress[];
+  subject?: string;
+  snippet?: string;
+  textBody?: string;
+  htmlBody?: string;
+  status: string;
+  error?: string;
+  sentAt?: string;
+  receivedAt?: string;
   createdAt: string;
   updatedAt: string;
 };
