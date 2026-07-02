@@ -5,12 +5,7 @@ export type EmailAddress = {
 
 export type EmailMessageDirection = "inbound" | "outbound";
 
-export type EmailMessageStatus =
-  | "received"
-  | "queued"
-  | "sent"
-  | "failed"
-  | "rejected";
+export type EmailMessageStatus = "received" | "queued" | "sent" | "failed" | "rejected";
 
 export type EmailMessageRecord = {
   id: string;
@@ -119,7 +114,9 @@ function parseJsonArray<T = string>(value: string): T[] {
 function parseJsonObject<T extends Record<string, unknown>>(value: string, fallback: T): T {
   try {
     const parsed = JSON.parse(value) as unknown;
-    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? (parsed as T) : fallback;
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? (parsed as T)
+      : fallback;
   } catch {
     return fallback;
   }

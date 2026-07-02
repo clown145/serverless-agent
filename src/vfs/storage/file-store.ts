@@ -97,10 +97,7 @@ export async function putVfsFile(env: Env, input: PutVfsFileInput): Promise<VfsE
   return await getVfsEntry(env.AGENT_DB, input.agentId, path);
 }
 
-export async function putVfsBinaryFile(
-  env: Env,
-  input: PutVfsBinaryFileInput
-): Promise<VfsEntry> {
+export async function putVfsBinaryFile(env: Env, input: PutVfsBinaryFileInput): Promise<VfsEntry> {
   const path = normalizeVfsPath(input.path);
   if (isRootPath(path)) {
     throw vfsInvalid("Cannot write the VFS root directory as a file");

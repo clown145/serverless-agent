@@ -24,7 +24,11 @@ export function EmailMessageList({ messages, selectedId, onSelect }: EmailMessag
           onClick={() => onSelect(message.id)}
         >
           <span className="email-message-subject">{message.subject || "(no subject)"}</span>
-          <span>{message.direction === "inbound" ? formatEmailAddress(message.from) : "To: " + message.to.map(formatEmailAddress).join(", ")}</span>
+          <span>
+            {message.direction === "inbound"
+              ? formatEmailAddress(message.from)
+              : "To: " + message.to.map(formatEmailAddress).join(", ")}
+          </span>
           <span>{message.snippet}</span>
           <StatusBadge value={message.status} />
         </button>

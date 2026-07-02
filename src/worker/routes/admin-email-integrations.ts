@@ -10,10 +10,7 @@ import {
 import { toEmailIntegrationDto } from "./platforms/email-dto";
 import { createEmailIntegrationSchema, zodMessage } from "./platforms/email-schemas";
 
-export async function handleAdminEmailIntegrations(
-  request: Request,
-  env: Env
-): Promise<Response> {
+export async function handleAdminEmailIntegrations(request: Request, env: Env): Promise<Response> {
   if (request.method === "GET") {
     const integrations = await listPlatformIntegrationRecords(env.AGENT_DB, { platform: "email" });
     return jsonResponse({ ok: true, integrations: integrations.map(toEmailIntegrationDto) });

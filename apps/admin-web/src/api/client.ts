@@ -607,13 +607,15 @@ export function createAdminClient(getToken: () => string) {
         { method: "DELETE" }
       );
     },
-    listEmailMessages: (body: {
-      agentId?: string;
-      integrationId?: string;
-      direction?: EmailMessage["direction"];
-      conversationId?: string;
-      limit?: number;
-    } = {}) => {
+    listEmailMessages: (
+      body: {
+        agentId?: string;
+        integrationId?: string;
+        direction?: EmailMessage["direction"];
+        conversationId?: string;
+        limit?: number;
+      } = {}
+    ) => {
       const params = new URLSearchParams();
       for (const [key, value] of Object.entries(body)) {
         if (value !== undefined) {

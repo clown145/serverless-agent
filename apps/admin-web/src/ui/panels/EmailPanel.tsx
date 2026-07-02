@@ -122,7 +122,8 @@ export function EmailPanel({ client, notify }: PanelProps) {
   }
 
   async function saveAttachment(messageId: string, attachmentId: string) {
-    const fileName = sourceMessage?.attachments.find((item) => item.id === attachmentId)?.name ?? attachmentId;
+    const fileName =
+      sourceMessage?.attachments.find((item) => item.id === attachmentId)?.name ?? attachmentId;
     const path = window.prompt("Save to VFS path", `/workspace/email/${fileName}`);
     if (!path) {
       return;
@@ -144,7 +145,9 @@ export function EmailPanel({ client, notify }: PanelProps) {
   }
 
   useEffect(() => {
-    load().catch((error) => notify(error instanceof Error ? error.message : "Failed to load email", "error"));
+    load().catch((error) =>
+      notify(error instanceof Error ? error.message : "Failed to load email", "error")
+    );
   }, [selectedIntegrationId]);
 
   useEffect(() => {
@@ -186,7 +189,9 @@ export function EmailPanel({ client, notify }: PanelProps) {
           email={selectedMessage}
           sourceMessage={sourceMessage}
           onCompose={setComposeMode}
-          onSaveAttachment={(messageId, attachmentId) => void saveAttachment(messageId, attachmentId)}
+          onSaveAttachment={(messageId, attachmentId) =>
+            void saveAttachment(messageId, attachmentId)
+          }
         />
       </div>
       <FormDialog

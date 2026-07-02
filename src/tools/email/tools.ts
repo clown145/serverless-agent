@@ -1,4 +1,8 @@
-import { formatAddress, sendResendEmail, type ResendAttachmentInput } from "../../adapters/email/resend";
+import {
+  formatAddress,
+  sendResendEmail,
+  type ResendAttachmentInput
+} from "../../adapters/email/resend";
 import {
   resolveDefaultEmailIntegration,
   resolveEmailIntegrationById
@@ -98,23 +102,27 @@ function replyEmailTool(): RegisteredTool {
       const references = [...original.references, original.rfcMessageId].filter(
         (value): value is string => Boolean(value)
       );
-      return sendEmail(context, {
-        integrationId: original.integrationId,
-        to,
-        subject: replySubject(original.subject),
-        text: parsed.data.text,
-        html: parsed.data.html,
-        attachments: parsed.data.attachments
-      }, {
-        conversationId: original.conversationId,
-        threadKey: original.threadKey,
-        inReplyTo: original.rfcMessageId,
-        references,
-        headers: {
-          ...(original.rfcMessageId ? { "In-Reply-To": original.rfcMessageId } : {}),
-          References: references.join(" ")
+      return sendEmail(
+        context,
+        {
+          integrationId: original.integrationId,
+          to,
+          subject: replySubject(original.subject),
+          text: parsed.data.text,
+          html: parsed.data.html,
+          attachments: parsed.data.attachments
+        },
+        {
+          conversationId: original.conversationId,
+          threadKey: original.threadKey,
+          inReplyTo: original.rfcMessageId,
+          references,
+          headers: {
+            ...(original.rfcMessageId ? { "In-Reply-To": original.rfcMessageId } : {}),
+            References: references.join(" ")
+          }
         }
-      });
+      );
     }
   });
 }
@@ -198,7 +206,8 @@ function previewEmailAttachmentTool(): RegisteredTool {
     definition: {
       name: "email.preview_attachment",
       title: "Preview Email Attachment",
-      description: "Preview text attachments and return metadata for images, PDFs, and other files.",
+      description:
+        "Preview text attachments and return metadata for images, PDFs, and other files.",
       inputSchema: previewEmailAttachmentInputJsonSchema,
       annotations: { readOnlyHint: true, openWorldHint: false },
       permission: { level: 1, scopes: ["email:read"] },
@@ -331,7 +340,11 @@ async function sendEmail(
       status: "failed",
       error: error instanceof Error ? error.message : String(error)
     });
-    return failed("email_send_failed", error instanceof Error ? error.message : "Email send failed", true);
+    return failed(
+      "email_send_failed",
+      error instanceof Error ? error.message : "Email send failed",
+      true
+    );
   }
 }
 
@@ -373,20 +386,24 @@ async function sendForward(
   }
 
   const text = input.text ?? createForwardText(original);
-  const result = await sendEmail(context, {
-    integrationId: original.integrationId,
-    to: input.to,
-    cc: input.cc,
-    bcc: input.bcc,
-    subject: forwardSubject(original.subject),
-    text,
-    html: input.html,
-    attachments
-  }, {
-    conversationId: original.conversationId,
-    threadKey: original.threadKey,
-    extraAttachments
-  });
+  const result = await sendEmail(
+    context,
+    {
+      integrationId: original.integrationId,
+      to: input.to,
+      cc: input.cc,
+      bcc: input.bcc,
+      subject: forwardSubject(original.subject),
+      text,
+      html: input.html,
+      attachments
+    },
+    {
+      conversationId: original.conversationId,
+      threadKey: original.threadKey,
+      extraAttachments
+    }
+  );
   return result;
 }
 
@@ -401,7 +418,10 @@ async function resolveEmailAttachments(
   return resolved;
 }
 
-async function requireEmailMessage(context: Pick<ToolExecutionContext, "env" | "agentId">, id: string) {
+async function requireEmailMessage(
+  context: Pick<ToolExecutionContext, "env" | "agentId">,
+  id: string
+) {
   const message = await getEmailMessageRecord(context.env.AGENT_DB, id);
   if (!message || message.agentId !== context.agentId) {
     throw new Error("Email message not found");
@@ -432,7 +452,9 @@ function createForwardText(original: Awaited<ReturnType<typeof requireEmailMessa
 }
 
 function isTextMime(mimeType: string): boolean {
-  return mimeType.startsWith("text/") || mimeType === "application/json" || mimeType.endsWith("+json");
+  return (
+    mimeType.startsWith("text/") || mimeType === "application/json" || mimeType.endsWith("+json")
+  );
 }
 
 function previewKind(mimeType: string): "text" | "image" | "pdf" | "download" {

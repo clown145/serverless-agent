@@ -41,12 +41,7 @@ export function draftFromIntegration(integration: EmailIntegration): EmailAccoun
   };
 }
 
-export function EmailAccountForm({
-  draft,
-  editing,
-  onChange,
-  onSubmit
-}: EmailAccountFormProps) {
+export function EmailAccountForm({ draft, editing, onChange, onSubmit }: EmailAccountFormProps) {
   function patch(partial: Partial<EmailAccountDraft>) {
     onChange({ ...draft, ...partial });
   }

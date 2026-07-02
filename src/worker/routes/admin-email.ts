@@ -2,7 +2,10 @@ import { createToolRegistry } from "../../tools/registry/tool-registry";
 import { errorResponse, jsonResponse } from "../../shared/http";
 import type { Env } from "../../shared/types/env";
 import { createId } from "../../shared/ids";
-import { listEmailMessageRecords, getEmailMessageRecord } from "../../storage/repositories/email-messages-repository";
+import {
+  listEmailMessageRecords,
+  getEmailMessageRecord
+} from "../../storage/repositories/email-messages-repository";
 import { toEmailMessageDto } from "./platforms/email-dto";
 import {
   adminForwardEmailSchema,
@@ -52,8 +55,11 @@ export async function handleAdminEmailMessageDetail(
 export async function handleAdminEmailSendAction(request: Request, env: Env): Promise<Response> {
   const pathname = new URL(request.url).pathname;
   const body = await request.json().catch(() => ({}));
-  const action =
-    pathname.endsWith("/reply") ? "email.reply" : pathname.endsWith("/forward") ? "email.forward" : "email.send";
+  const action = pathname.endsWith("/reply")
+    ? "email.reply"
+    : pathname.endsWith("/forward")
+      ? "email.forward"
+      : "email.send";
   const schema =
     action === "email.reply"
       ? adminReplyEmailSchema
@@ -77,7 +83,10 @@ export async function handleAdminEmailSendAction(request: Request, env: Env): Pr
     input: parsed.data
   });
 
-  return jsonResponse({ ok: result.status === "success", result }, { status: result.status === "failed" ? 500 : 200 });
+  return jsonResponse(
+    { ok: result.status === "success", result },
+    { status: result.status === "failed" ? 500 : 200 }
+  );
 }
 
 export async function handleAdminEmailAttachmentSave(
@@ -108,5 +117,8 @@ export async function handleAdminEmailAttachmentSave(
       path: parsed.data.path
     }
   });
-  return jsonResponse({ ok: result.status === "success", result }, { status: result.status === "failed" ? 500 : 200 });
+  return jsonResponse(
+    { ok: result.status === "success", result },
+    { status: result.status === "failed" ? 500 : 200 }
+  );
 }

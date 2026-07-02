@@ -32,7 +32,9 @@ type PostalEmail = {
   attachments?: PostalAttachment[];
 };
 
-export async function parseRawEmail(raw: ReadableStream<Uint8Array> | ArrayBuffer | string): Promise<{
+export async function parseRawEmail(
+  raw: ReadableStream<Uint8Array> | ArrayBuffer | string
+): Promise<{
   email: NormalizedEmail;
   rawBytes: Uint8Array;
 }> {
@@ -65,7 +67,11 @@ export async function parseRawEmail(raw: ReadableStream<Uint8Array> | ArrayBuffe
   };
 }
 
-export function createEmailSnippet(input: { subject?: string; text?: string; html?: string }): string {
+export function createEmailSnippet(input: {
+  subject?: string;
+  text?: string;
+  html?: string;
+}): string {
   const base = input.text || stripHtml(input.html ?? "");
   const compact = base.replace(/\s+/g, " ").trim();
   return compact.slice(0, 240) || input.subject?.slice(0, 240) || "";
@@ -84,7 +90,9 @@ export async function createThreadKey(
     .join("");
 }
 
-function normalizeAttachments(attachments: PostalAttachment[] | undefined): NormalizedEmailAttachment[] {
+function normalizeAttachments(
+  attachments: PostalAttachment[] | undefined
+): NormalizedEmailAttachment[] {
   return (attachments ?? [])
     .filter((attachment) => !attachment.related)
     .map((attachment) => {
@@ -119,7 +127,9 @@ function normalizeHeaders(headers: PostalEmail["headers"]): Record<string, strin
     return {};
   }
   if (headers instanceof Map) {
-    return Object.fromEntries(Array.from(headers.entries()).map(([key, value]) => [key.toLowerCase(), value]));
+    return Object.fromEntries(
+      Array.from(headers.entries()).map(([key, value]) => [key.toLowerCase(), value])
+    );
   }
   if (Array.isArray(headers)) {
     return Object.fromEntries(headers.map((item) => [item.key.toLowerCase(), item.value]));
@@ -141,7 +151,9 @@ function splitReferences(value: string | undefined): string[] {
 }
 
 function normalizeAddresses(addresses: PostalAddress[] | undefined): EmailAddress[] {
-  return (addresses ?? []).map(normalizeAddress).filter((item): item is EmailAddress => Boolean(item));
+  return (addresses ?? [])
+    .map(normalizeAddress)
+    .filter((item): item is EmailAddress => Boolean(item));
 }
 
 function normalizeAddress(address: PostalAddress | undefined): EmailAddress | undefined {
@@ -154,7 +166,9 @@ function normalizeAddress(address: PostalAddress | undefined): EmailAddress | un
   };
 }
 
-async function rawToBytes(raw: ReadableStream<Uint8Array> | ArrayBuffer | string): Promise<Uint8Array> {
+async function rawToBytes(
+  raw: ReadableStream<Uint8Array> | ArrayBuffer | string
+): Promise<Uint8Array> {
   if (typeof raw === "string") {
     return new TextEncoder().encode(raw);
   }
@@ -166,7 +180,8 @@ async function rawToBytes(raw: ReadableStream<Uint8Array> | ArrayBuffer | string
 }
 
 function stripHtml(html: string): string {
-  return html.replace(/<style[\s\S]*?<\/style>/gi, " ")
+  return html
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
     .replace(/<[^>]+>/g, " ");
 }

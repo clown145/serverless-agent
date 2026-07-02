@@ -183,7 +183,10 @@ export const saveEmailAttachmentInputJsonSchema = {
   additionalProperties: false
 } as const;
 
-function requireTextOrHtml(input: { text?: string; html?: string }, context: z.RefinementCtx): void {
+function requireTextOrHtml(
+  input: { text?: string; html?: string },
+  context: z.RefinementCtx
+): void {
   if (!input.text?.trim() && !input.html?.trim()) {
     context.addIssue({
       code: "custom",

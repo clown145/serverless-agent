@@ -52,7 +52,12 @@ export function EmailMessageDetail({
       </dl>
       <pre className="email-body">{email.textBody || email.snippet || ""}</pre>
       {email.htmlBody && (
-        <iframe className="email-html-preview" sandbox="" srcDoc={email.htmlBody} title="Email HTML" />
+        <iframe
+          className="email-html-preview"
+          sandbox=""
+          srcDoc={email.htmlBody}
+          title="Email HTML"
+        />
       )}
       <h3>Attachments</h3>
       <EmailAttachmentList client={client} message={sourceMessage} onSave={onSaveAttachment} />

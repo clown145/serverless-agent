@@ -143,14 +143,16 @@ function createR2BucketMock(): R2Bucket & {
 }
 
 function createBinaryMetadataDb(): D1Database {
-  let entry: {
-    path: string;
-    r2_key: string;
-    mime_type: string;
-    size: number;
-    checksum: string;
-    version: number;
-  } | undefined;
+  let entry:
+    | {
+        path: string;
+        r2_key: string;
+        mime_type: string;
+        size: number;
+        checksum: string;
+        version: number;
+      }
+    | undefined;
 
   return {
     prepare: (sql: string) => ({

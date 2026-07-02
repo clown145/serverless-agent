@@ -17,7 +17,8 @@ export function normalizeEmailToInternalMessage(input: {
   const from = formatAddressLine("From", [input.email.from]);
   const to = formatAddressLine("To", input.email.to);
   const cc = input.email.cc.length ? formatAddressLine("Cc", input.email.cc) : undefined;
-  const body = input.email.text || createEmailSnippet({ html: input.email.html }) || "(no text body)";
+  const body =
+    input.email.text || createEmailSnippet({ html: input.email.html }) || "(no text body)";
   const attachmentLine = input.email.attachments.length
     ? `Attachments: ${input.email.attachments
         .map((attachment) => attachment.fileName ?? attachment.id)
@@ -50,7 +51,10 @@ export function normalizeEmailToInternalMessage(input: {
   };
 }
 
-function formatAddressLine(label: string, addresses: Array<{ address: string; name?: string }>): string {
+function formatAddressLine(
+  label: string,
+  addresses: Array<{ address: string; name?: string }>
+): string {
   return `${label}: ${addresses
     .map((item) => (item.name ? `${item.name} <${item.address}>` : item.address))
     .join(", ")}`;

@@ -62,7 +62,9 @@ export function EmailComposeDialog({
               Forward mode
               <select
                 value={forwardMode}
-                onChange={(event) => setForwardMode(event.target.value as "compose" | "eml_attachment")}
+                onChange={(event) =>
+                  setForwardMode(event.target.value as "compose" | "eml_attachment")
+                }
               >
                 <option value="compose">Composed forward</option>
                 <option value="eml_attachment">Raw .eml attachment</option>
