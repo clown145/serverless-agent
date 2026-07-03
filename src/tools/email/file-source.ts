@@ -1,4 +1,5 @@
 import { createBlobStorage } from "../../storage/blob";
+import { getEmailMessageByInternalMessageId } from "../../storage/repositories/email-messages-repository";
 import { getMessageAttachmentRecord } from "../../storage/repositories/message-attachments-repository";
 import { createVfsWorkspace } from "../../vfs/services/workspace-service";
 import { resolveOutboundFile } from "../messaging/file-source";
@@ -36,6 +37,13 @@ export async function resolveMessageAttachmentBytes(
 }> {
   const attachment = await getMessageAttachmentRecord(context.env.AGENT_DB, input);
   if (!attachment || attachment.agentId !== context.agentId || !attachment.r2Key) {
+    throw new Error("Attachment not found");
+  }
+  const emailMessage = await getEmailMessageByInternalMessageId(
+    context.env.AGENT_DB,
+    attachment.messageId
+  );
+  if (!emailMessage || emailMessage.agentId !== context.agentId) {
     throw new Error("Attachment not found");
   }
 

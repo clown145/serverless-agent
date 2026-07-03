@@ -39,21 +39,20 @@ export function EmailPanel({ client, notify }: PanelProps) {
     [messages, selectedMessageId]
   );
 
-  async function load() {
-    const [accounts, emailMessages] = await Promise.all([
-      client.getEmailIntegrations(),
-      client.listEmailMessages({
-        integrationId: selectedIntegrationId || undefined,
-        limit: 50
-      })
-    ]);
+  async function load(options: { integrationId?: string; messageId?: string } = {}) {
+    const requestedIntegrationId = options.integrationId ?? selectedIntegrationId;
+    const activeMessageId = options.messageId ?? selectedMessageId;
+    const accounts = await client.getEmailIntegrations();
+    const activeIntegrationId = requestedIntegrationId || accounts.integrations[0]?.id || "";
+    const emailMessages = await client.listEmailMessages({
+      integrationId: activeIntegrationId || undefined,
+      limit: 50
+    });
     setIntegrations(accounts.integrations);
     setMessages(emailMessages.messages);
-    if (!selectedIntegrationId && accounts.integrations[0]) {
-      setSelectedIntegrationId(accounts.integrations[0].id);
-    }
-    if (!selectedMessageId && emailMessages.messages[0]) {
-      setSelectedMessageId(emailMessages.messages[0].id);
+    setSelectedIntegrationId(activeIntegrationId);
+    if (!emailMessages.messages.some((message) => message.id === activeMessageId)) {
+      setSelectedMessageId(emailMessages.messages[0]?.id ?? "");
     }
   }
 
@@ -97,8 +96,14 @@ export function EmailPanel({ client, notify }: PanelProps) {
   async function deleteAccount(id: string) {
     try {
       await client.deleteEmailIntegration(id);
+      const deletingSelected = id === selectedIntegrationId;
+      if (deletingSelected) {
+        setSelectedIntegrationId("");
+        setSelectedMessageId("");
+        setSourceMessage(undefined);
+      }
       notify("Email account deleted", "ok");
-      await load();
+      await load(deletingSelected ? { integrationId: "", messageId: "" } : undefined);
     } catch (error) {
       notify(errorMessage(error, "Failed to delete email account"), "error");
     }
