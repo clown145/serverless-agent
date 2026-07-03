@@ -28,8 +28,13 @@ export async function handleAdminEmailMessages(request: Request, env: Env): Prom
     return errorResponse(400, "invalid_query", zodMessage(parsed.error));
   }
 
+  const listTarget = await resolveEmailListTarget(env, parsed.data);
+  if (listTarget instanceof Response) {
+    return listTarget;
+  }
+
   const messages = await listEmailMessageRecords(env.AGENT_DB, {
-    agentId: parsed.data.agentId ?? env.DEFAULT_AGENT_ID ?? "default",
+    agentId: listTarget.agentId,
     integrationId: parsed.data.integrationId,
     direction: parsed.data.direction,
     conversationId: parsed.data.conversationId,
@@ -135,6 +140,28 @@ export async function handleAdminEmailAttachmentSave(
 }
 
 type EmailAction = "email.send" | "email.reply" | "email.forward";
+
+async function resolveEmailListTarget(
+  env: Env,
+  input: { agentId?: string; integrationId?: string }
+): Promise<{ agentId: string } | Response> {
+  if (!input.integrationId) {
+    return { agentId: input.agentId ?? env.DEFAULT_AGENT_ID ?? "default" };
+  }
+
+  const integration = await getPlatformIntegrationRecord(env.AGENT_DB, input.integrationId);
+  if (!integration || integration.platform !== "email") {
+    return errorResponse(404, "email_integration_not_found", "Email integration not found");
+  }
+  if (input.agentId && input.agentId !== integration.agentId) {
+    return errorResponse(
+      400,
+      "email_integration_agent_mismatch",
+      "Email integration does not belong to the requested agent"
+    );
+  }
+  return { agentId: integration.agentId };
+}
 
 async function resolveEmailActionTarget(
   env: Env,

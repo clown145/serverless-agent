@@ -10,6 +10,7 @@ export function normalizeEmailToInternalMessage(input: {
   integrationId: string;
   email: NormalizedEmail;
   receivedAt?: string;
+  inlineAttachments?: boolean;
 }): InternalMessage {
   const receivedAt = input.receivedAt ?? nowIso();
   const conversationId = `email:${input.integrationId}:${input.email.threadKey}`;
@@ -38,14 +39,18 @@ export function normalizeEmailToInternalMessage(input: {
     },
     kind: input.email.attachments.length ? "attachment" : "text",
     text: [subject, from, to, cc, "", body, attachmentLine].filter(Boolean).join("\n"),
-    attachments: input.email.attachments.map<MessageAttachment>((attachment) => ({
-      id: attachment.id,
-      type: attachmentType(attachment.mimeType),
-      name: attachment.fileName,
-      mimeType: attachment.mimeType,
-      size: attachment.size,
-      dataBase64: bytesToBase64(attachment.bytes)
-    })),
+    attachments: input.email.attachments.map<MessageAttachment>((attachment) => {
+      const normalized: MessageAttachment = {
+        id: attachment.id,
+        type: attachmentType(attachment.mimeType),
+        name: attachment.fileName,
+        mimeType: attachment.mimeType,
+        size: attachment.size
+      };
+      return input.inlineAttachments === true
+        ? { ...normalized, dataBase64: bytesToBase64(attachment.bytes) }
+        : normalized;
+    }),
     rawRef: `email:${input.integrationId}:${input.email.rfcMessageId}`,
     receivedAt
   };
