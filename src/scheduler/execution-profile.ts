@@ -13,7 +13,7 @@ export const scheduleExecutionProfileSchema = z.object({
   createdByActorId: z.string().min(1),
   createdByActorRole: z.enum(["owner", "admin", "member", "unknown"]).optional(),
   createdFromPlatform: z
-    .enum(["telegram", "qq", "wecom", "weixin_oc", "webhook", "admin", "webui"])
+    .enum(["telegram", "qq", "wecom", "weixin_oc", "webhook", "admin", "webui", "email"])
     .optional(),
   createdFromConversationId: z.string().min(1).optional(),
   createdFromRunId: z.string().min(1).optional(),

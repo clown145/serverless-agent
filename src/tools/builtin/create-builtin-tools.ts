@@ -1,4 +1,5 @@
 import { createMessagingTools } from "../messaging/tools";
+import { createEmailTools } from "../email/tools";
 import { createHttpTools } from "../http/tools";
 import { createScheduleTools } from "../schedule/tools";
 import { createSearchTools } from "../search/tools";
@@ -11,6 +12,7 @@ import { createWebTools } from "../web/tools";
 export function createBuiltinTools(): RegisteredTool[] {
   return [
     ...createMessagingTools(),
+    ...createEmailTools(),
     ...createScheduleTools(),
     ...createVfsTools(),
     ...createSkillTools(),

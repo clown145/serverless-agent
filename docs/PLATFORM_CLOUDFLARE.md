@@ -15,8 +15,8 @@
 | 文件内容       | Object Storage                | VFS 文件、skills、artifacts、attachments。                         |
 | 结构化数据     | D1                            | runs、messages、tool calls、permissions、schedules、VFS metadata。 |
 | 缓存           | KV                            | 热配置、短期去重和 catalog cache。                                 |
-| 入站邮件       | Email Workers / Email Routing | 邮件触发 agent。                                                   |
-| 出站邮件       | Email Service 或第三方 API    | 受权限控制的发信工具。                                             |
+| 入站邮件       | Email Workers / Email Routing | raw MIME 解析、附件持久化、邮件触发 agent。                        |
+| 出站邮件       | Resend API                    | 受权限和确认流控制的发信、回复、转发工具。                         |
 
 ## Worker
 
@@ -28,6 +28,7 @@ Worker 是入口层，负责：
 - 投递 Queue；
 - 返回平台要求的响应；
 - 提供 admin API 和 WebUI assets。
+- 通过 Email Worker handler 接收 Cloudflare Email Routing 投递的邮件。
 
 Worker 不运行完整 agent loop。
 
@@ -73,6 +74,7 @@ D1 是结构化状态库，优先保存：
 
 - agent 配置；
 - platform integrations；
+- email message index；
 - conversations 和 messages；
 - runs 和 run steps；
 - tool calls；
@@ -108,6 +110,7 @@ KV 适合缓存，不适合作为核心一致性状态。当前代码主要用�
 - 不跑任意代码；
 - 不做重型浏览器自动化；
 - 出站邮件、通用搜索、LLM 可能需要第三方额度或付费 API。
+- Email Routing 负责入站投递，出站邮件依赖 Resend API key 和对应额度。
 
 这些能力应作为可插拔工具接入，不能成为 core runtime 的隐式依赖。
 

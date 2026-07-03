@@ -2,10 +2,12 @@ import type { Env } from "../../shared/types/env";
 import {
   createVfsDirectory,
   deleteVfsEntry,
+  getVfsBinaryFile,
   getVfsFile,
   listVfsEntries,
   listVfsTree,
   moveVfsEntry,
+  putVfsBinaryFile,
   putVfsFile,
   searchVfs
 } from "../storage";
@@ -19,11 +21,20 @@ export type VfsWorkspaceContext = {
 export function createVfsWorkspace(context: VfsWorkspaceContext) {
   return {
     readFile: (path: string) => getVfsFile(context.env, context.agentId, path),
+    readBinaryFile: (path: string) => getVfsBinaryFile(context.env, context.agentId, path),
     writeFile: (input: { path: string; content: string; mimeType?: string }) =>
       putVfsFile(context.env, {
         agentId: context.agentId,
         path: input.path,
         content: input.content,
+        mimeType: input.mimeType,
+        createdBy: context.actorId
+      }),
+    writeBinaryFile: (input: { path: string; bytes: Uint8Array; mimeType?: string }) =>
+      putVfsBinaryFile(context.env, {
+        agentId: context.agentId,
+        path: input.path,
+        bytes: input.bytes,
         mimeType: input.mimeType,
         createdBy: context.actorId
       }),

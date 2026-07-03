@@ -10,7 +10,9 @@ Admin WebUI 是一个 React + Vite SPA，和 Worker 部署在同一个 Cloudflar
 /ui
 ```
 
-WebUI 只负责管理和调试入口，不绕过 agent runtime。浏览器里发送的消息会被转换成 `platform:webui` 的 `InternalMessage`，再进入和 Telegram、QQ、WeCom、Weixin OC 相同的执行链路。
+WebUI 只负责管理和调试入口，不绕过 agent runtime。浏览器里发送的消息会被转换成 `platform:webui` 的 `InternalMessage`，再进入和 Telegram、QQ、WeCom、Weixin OC、Email 相同的执行链路。
+
+WebUI 也提供独立 Email 页面，用于配置邮箱 integration、查看邮件列表和详情、发送/回复/转发邮件，以及下载或保存邮件附件到 VFS。
 
 ## 运行模型
 

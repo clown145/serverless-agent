@@ -8,6 +8,8 @@ const OWNER_SCOPES = [
   "message:send_file",
   "message:send_image",
   "message:send_buttons",
+  "email:read",
+  "email:send",
   "web:search",
   "http:request",
   "schedule:read",

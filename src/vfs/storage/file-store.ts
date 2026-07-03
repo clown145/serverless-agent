@@ -11,12 +11,20 @@ import { isRootPath, normalizeVfsPath } from "../core/path";
 import { vfsConflict, vfsInvalid, vfsNotFound } from "../core/errors";
 import { ensureParentDirectories, findVfsEntry, getVfsEntry } from "./entry-store";
 import { createBlobStorage } from "../../storage/blob";
-import type { VfsEntry, VfsFile, VfsStorageKind } from "./types";
+import type { VfsBinaryFile, VfsEntry, VfsFile, VfsStorageKind } from "./types";
 
 export type PutVfsFileInput = {
   agentId: string;
   path: string;
   content: string;
+  mimeType?: string;
+  createdBy: string;
+};
+
+export type PutVfsBinaryFileInput = {
+  agentId: string;
+  path: string;
+  bytes: Uint8Array;
   mimeType?: string;
   createdBy: string;
 };
@@ -85,6 +93,55 @@ export async function putVfsFile(env: Env, input: PutVfsFileInput): Promise<VfsE
     createdBy: input.createdBy,
     now
   });
+
+  return await getVfsEntry(env.AGENT_DB, input.agentId, path);
+}
+
+export async function putVfsBinaryFile(env: Env, input: PutVfsBinaryFileInput): Promise<VfsEntry> {
+  const path = normalizeVfsPath(input.path);
+  if (isRootPath(path)) {
+    throw vfsInvalid("Cannot write the VFS root directory as a file");
+  }
+
+  const now = nowIso();
+  const size = input.bytes.byteLength;
+  const checksum = await sha256Hex(input.bytes);
+  const mimeType = input.mimeType ?? "application/octet-stream";
+  const storageKind: VfsStorageKind = "r2_blob";
+  const r2Key = buildVfsBlobKey(input.agentId, checksum);
+
+  await ensureParentDirectories(env.AGENT_DB, {
+    agentId: input.agentId,
+    path,
+    createdBy: input.createdBy,
+    now
+  });
+
+  const existing = await findVfsEntry(env.AGENT_DB, input.agentId, path);
+  if (existing?.kind === "directory") {
+    throw vfsConflict(`A directory already exists at ${path}`);
+  }
+
+  const blobStorage = createBlobStorage(env);
+  await blobStorage.put(r2Key, input.bytes, { contentType: mimeType });
+  try {
+    await writeVfsFileMetadata(env, {
+      agentId: input.agentId,
+      path,
+      storageKind,
+      r2Key,
+      mimeType,
+      size,
+      checksum,
+      version: existing ? existing.version + 1 : 1,
+      content: "",
+      createdBy: input.createdBy,
+      now
+    });
+  } catch (error) {
+    await cleanupUnreferencedBlob(env.AGENT_DB, blobStorage, input.agentId, r2Key);
+    throw error;
+  }
 
   return await getVfsEntry(env.AGENT_DB, input.agentId, path);
 }
@@ -201,6 +258,49 @@ export async function getVfsFile(env: Env, agentId: string, path: string): Promi
   return {
     path: normalized,
     content: await object.text(),
+    mimeType: entry.mimeType,
+    size: entry.size,
+    checksum: entry.checksum,
+    version: entry.version
+  };
+}
+
+export async function getVfsBinaryFile(
+  env: Env,
+  agentId: string,
+  path: string
+): Promise<VfsBinaryFile> {
+  const normalized = normalizeVfsPath(path);
+  const entry = await findVfsEntry(env.AGENT_DB, agentId, normalized);
+
+  if (!entry || entry.kind !== "file") {
+    throw vfsNotFound(normalized);
+  }
+
+  const content = await readTextContent(env.AGENT_DB, agentId, normalized);
+  if (content) {
+    return {
+      path: normalized,
+      bytes: new TextEncoder().encode(content.content),
+      mimeType: content.mime_type ?? entry.mimeType,
+      size: content.size ?? entry.size,
+      checksum: content.checksum ?? entry.checksum,
+      version: content.version ?? entry.version
+    };
+  }
+
+  if (!entry.r2Key) {
+    throw vfsNotFound(normalized);
+  }
+
+  const object = await createBlobStorage(env).get(entry.r2Key);
+  if (!object) {
+    throw new Error(`VFS object not found: ${normalized}`);
+  }
+
+  return {
+    path: normalized,
+    bytes: new Uint8Array(await object.arrayBuffer()),
     mimeType: entry.mimeType,
     size: entry.size,
     checksum: entry.checksum,

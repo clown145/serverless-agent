@@ -2,6 +2,14 @@ import type { Env } from "../../shared/types/env";
 import { handleAdminConversationDetail, handleAdminConversations } from "./admin-conversations";
 import { handleAdminDebugMessages } from "./admin-debug-messages";
 import { handleAdminDiagnostics } from "./admin-diagnostics";
+import {
+  handleAdminEmailAttachmentSave,
+  handleAdminEmailMessageDetail,
+  handleAdminEmailMessages,
+  handleAdminEmailSendAction
+} from "./admin-email";
+import { handleAdminEmailIntegrationDetail } from "./admin-email-integration-detail";
+import { handleAdminEmailIntegrations } from "./admin-email-integrations";
 import { handleAdminHeartbeats } from "./admin-heartbeats";
 import { handleAdminMcpServerDetail } from "./admin-mcp-server-detail";
 import { handleAdminMcpServers } from "./admin-mcp-servers";
@@ -138,6 +146,43 @@ export async function handleAdminRoute(
     const weixinOcPath = url.pathname.replace("/admin/platforms/weixin-oc-integrations/", "");
     const integrationId = decodeURIComponent(weixinOcPath.split("/")[0] ?? "");
     return handleAdminWeixinOcIntegrationDetail(request, env, integrationId);
+  }
+
+  if (url.pathname === "/admin/platforms/email") {
+    return handleAdminEmailIntegrations(request, env);
+  }
+
+  if (url.pathname.startsWith("/admin/platforms/email-integrations/")) {
+    const emailPath = url.pathname.replace("/admin/platforms/email-integrations/", "");
+    const integrationId = decodeURIComponent(emailPath.split("/")[0] ?? "");
+    return handleAdminEmailIntegrationDetail(request, env, integrationId);
+  }
+
+  if (url.pathname === "/admin/email/messages") {
+    return handleAdminEmailMessages(request, env);
+  }
+
+  if (
+    url.pathname === "/admin/email/send" ||
+    url.pathname === "/admin/email/reply" ||
+    url.pathname === "/admin/email/forward"
+  ) {
+    return handleAdminEmailSendAction(request, env);
+  }
+
+  const emailAttachmentSaveMatch = url.pathname.match(
+    /^\/admin\/email\/messages\/([^/]+)\/attachments\/([^/]+)\/save$/
+  );
+  if (emailAttachmentSaveMatch) {
+    return handleAdminEmailAttachmentSave(request, env, {
+      messageId: decodeURIComponent(emailAttachmentSaveMatch[1]),
+      attachmentId: decodeURIComponent(emailAttachmentSaveMatch[2])
+    });
+  }
+
+  const emailMessageMatch = url.pathname.match(/^\/admin\/email\/messages\/([^/]+)$/);
+  if (emailMessageMatch) {
+    return handleAdminEmailMessageDetail(request, env, decodeURIComponent(emailMessageMatch[1]));
   }
 
   if (request.method === "GET" && url.pathname === "/admin/tools") {

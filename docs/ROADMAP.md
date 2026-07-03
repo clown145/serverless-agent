@@ -23,6 +23,7 @@
 
 - 文档结构和模块 README 标准化。
 - 多平台能力差异的 adapter 抽象。
+- 邮件账号管理、Cloudflare Email Worker 入站、Resend 出站和附件保存能力。
 - mailbox event state 的保留期和清理策略。
 - `src/shared/types` 中共享类型的收敛。
 - 搜索、HTTP、messaging、scheduler、skills 等工具的运行边界说明。
@@ -30,7 +31,6 @@
 ## 后续方向
 
 - GitHub / GitLab API 工具：repo tree、文件读取、commit 和 PR。
-- 入站邮件解析和出站邮件工具。
 - RSS 或 URL 变动监控。
 - 更完整的 rate limit 和 time window 权限策略。
 - 更细的 platform capability registry。

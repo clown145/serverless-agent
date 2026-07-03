@@ -13,6 +13,7 @@ Telegram webhook
 WeCom webhook
 QQ Official webhook
 Admin/WebUI message
+Cloudflare Email Worker
         |
         v
 Worker route
@@ -48,14 +49,15 @@ Worker 和 Platform Gateway Durable Object 都只做轻量工作：
 
 ## 当前适配器
 
-| 平台         | 内部 platform | 入站方式                                                                                                              | 出站能力                                         | 主要状态                                                         |
-| ------------ | ------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ | ---------------------------------------------------------------- |
-| Telegram     | `telegram`    | `POST /webhooks/telegram`                                                                                             | 文本、文件、图片、按钮、typing                   | WebUI integration 或 Worker secrets                              |
-| QQ Official  | `qq`          | `connectionMode=gateway` 使用 DO WebSocket；`connectionMode=webhook` 使用 `POST /webhooks/qq-official/:webhookSecret` | 文本；群聊/C2C 支持文件和图片；频道/私信支持图片 | D1 integration、conversation target，gateway 模式另有 DO session |
-| WeCom        | `wecom`       | `GET/POST /webhooks/wecom/:webhookSecret`                                                                             | 文本下行、客服联系入口                           | D1 integration、加密 secret                                      |
-| Weixin OC    | `weixin_oc`   | Gateway DO 扫码登录和 HTTP long-poll                                                                                  | 文本、文件、图片、typing                         | 加密 token 在 D1；运行游标和 context token 在 DO storage         |
-| WebUI        | `webui`       | `POST /admin/messages`                                                                                                | 写入本地 WebUI conversation history              | D1                                                               |
-| Admin script | `admin`       | `POST /admin/messages`                                                                                                | 写入本地 admin conversation history              | D1                                                               |
+| 平台         | 内部 platform | 入站方式                                                                                                              | 出站能力                                         | 主要状态                                                                |
+| ------------ | ------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ | ----------------------------------------------------------------------- |
+| Telegram     | `telegram`    | `POST /webhooks/telegram`                                                                                             | 文本、文件、图片、按钮、typing                   | WebUI integration 或 Worker secrets                                     |
+| QQ Official  | `qq`          | `connectionMode=gateway` 使用 DO WebSocket；`connectionMode=webhook` 使用 `POST /webhooks/qq-official/:webhookSecret` | 文本；群聊/C2C 支持文件和图片；频道/私信支持图片 | D1 integration、conversation target，gateway 模式另有 DO session        |
+| WeCom        | `wecom`       | `GET/POST /webhooks/wecom/:webhookSecret`                                                                             | 文本下行、客服联系入口                           | D1 integration、加密 secret                                             |
+| Weixin OC    | `weixin_oc`   | Gateway DO 扫码登录和 HTTP long-poll                                                                                  | 文本、文件、图片、typing                         | 加密 token 在 D1；运行游标和 context token 在 DO storage                |
+| Email        | `email`       | Cloudflare Email Routing / Email Worker `email(message, env, ctx)`                                                    | Resend 发信、回复、转发、附件                    | D1 email integration、encrypted Resend key、email_messages、R2 raw MIME |
+| WebUI        | `webui`       | `POST /admin/messages`                                                                                                | 写入本地 WebUI conversation history              | D1                                                                      |
+| Admin script | `admin`       | `POST /admin/messages`                                                                                                | 写入本地 admin conversation history              | D1                                                                      |
 
 `webhook` 仍是内部平台枚举的一员，用于通用 webhook 类入口和权限策略兼容。
 
@@ -122,6 +124,18 @@ Webhook 模式不需要 Worker 出站固定 IP，因为 QQ 主动把事件推到
 - 入站图片会尝试下载、解密并写入当前对象存储后端；写入失败不阻断整条消息。
 
 `context_token` 是向某个微信用户回复的必要上下文。用户至少先发来一条消息，系统记录该用户的 `context_token` 后，agent 才能主动回到这个微信会话。
+
+## Email
+
+Email 通过 Cloudflare Email Routing / Email Workers 接收邮件。
+
+- Worker 导出 `email(message, env, ctx)`，按收件地址匹配 active `platform_integrations(platform=email)`。
+- 入站 raw MIME 使用 `postal-mime` 解析，原始 `.eml` 写入对象存储，邮件索引写入 `email_messages`。
+- 普通附件复用 `message_attachments` 和当前对象存储后端，进入和其他平台一致的附件链路。
+- 入站邮件标准化为 `platform=email` 的 `InternalMessage` 并入队，因此会自动触发 agent。
+- agent 的最终文本不会自动回邮件；只有显式调用 `email.send`、`email.reply` 或 `email.forward` 才通过 Resend 对外发信。
+- `email.forward` 支持普通转发正文，也支持把原始 `.eml` 作为附件转发。
+- `email.save_attachment` 会把附件以二进制形式保存到 VFS，保留 MIME、size 和 checksum。
 
 ## WebUI 和 Admin
 

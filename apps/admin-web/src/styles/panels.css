@@ -144,6 +144,155 @@
   margin-bottom: 14px;
 }
 
+.email-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.email-sidebar,
+.email-detail,
+.email-account-list,
+.email-message-list,
+.email-attachment-list {
+  display: grid;
+  gap: 10px;
+}
+
+.email-sidebar h3,
+.email-detail h3 {
+  margin: 8px 0 0;
+  font-size: 13px;
+}
+
+.email-account-row,
+.email-message-row,
+.email-attachment-row {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--text);
+  padding: 10px;
+  text-align: left;
+}
+
+.email-account-row {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+}
+
+.email-message-row {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.email-account-row.selected,
+.email-message-row.selected {
+  border-color: #4f8f86;
+  background: var(--accent-muted);
+}
+
+.email-account-row strong,
+.email-account-row small,
+.email-message-row span,
+.email-attachment-row strong,
+.email-attachment-row small {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.email-account-row small,
+.email-message-row span,
+.email-attachment-row small,
+.email-detail-header p,
+.email-meta {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.email-message-subject {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.email-detail-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.email-detail-header h2 {
+  margin: 0 0 4px;
+  font-size: 20px;
+}
+
+.email-meta {
+  display: grid;
+  grid-template-columns: 70px minmax(0, 1fr);
+  gap: 6px 10px;
+  margin: 12px 0;
+}
+
+.email-meta dt {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.email-meta dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.email-body {
+  max-height: 360px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: #f8fafc;
+  padding: 12px;
+  white-space: pre-wrap;
+}
+
+.email-html-preview {
+  width: 100%;
+  min-height: 260px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: white;
+}
+
+.email-account-form,
+.email-compose-form {
+  display: grid;
+  gap: 12px;
+}
+
+.email-account-form {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.email-account-form .primary-button,
+.email-compose-form .primary-button,
+.email-compose-form label,
+.email-compose-form .checkbox-row {
+  grid-column: 1 / -1;
+}
+
+.email-compose-form textarea {
+  resize: vertical;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .weixin-oc-advanced-toggle {
   align-self: end;
 }

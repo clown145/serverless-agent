@@ -4,7 +4,7 @@ export const listMessagesSchema = z.object({
   agentId: z.string().min(1).optional(),
   conversationId: z.string().min(1).default("webui:default"),
   platform: z
-    .enum(["telegram", "qq", "wecom", "weixin_oc", "webhook", "admin", "webui"])
+    .enum(["telegram", "qq", "wecom", "weixin_oc", "webhook", "admin", "webui", "email"])
     .optional(),
   limit: z.coerce.number().int().min(1).max(100).default(50)
 });

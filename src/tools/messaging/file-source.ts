@@ -17,8 +17,8 @@ export async function resolveOutboundFile(
 ): Promise<OutboundFile> {
   if (source.type === "vfs") {
     const workspace = createVfsWorkspace(context);
-    const file = await workspace.readFile(source.path);
-    const bytes = new TextEncoder().encode(file.content);
+    const file = await workspace.readBinaryFile(source.path);
+    const bytes = file.bytes;
     ensureFileSize(bytes.byteLength);
     return {
       bytes,

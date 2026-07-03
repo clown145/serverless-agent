@@ -9,6 +9,9 @@ import type {
   ModelCatalogItem,
   DiagnosticCheck,
   DiagnosticSummary,
+  EmailAddress,
+  EmailIntegration,
+  EmailMessage,
   McpServer,
   McpTool,
   ModelProvider,
@@ -38,6 +41,7 @@ import type {
   ToolCatalogItem,
   ToolCallHistoryItem,
   ToolDebugCall,
+  ToolResult,
   ToolSettings,
   VfsEntry,
   VfsFile,
@@ -110,10 +114,15 @@ export function createAdminClient(getToken: () => string) {
         })
       });
     },
-    listMessages: (body: { conversationId: string; agentId?: string; limit?: number }) => {
+    listMessages: (body: {
+      conversationId: string;
+      agentId?: string;
+      platform?: ChatMessage["platform"];
+      limit?: number;
+    }) => {
       const params = new URLSearchParams({
         conversationId: body.conversationId,
-        platform: "webui",
+        platform: body.platform ?? "webui",
         limit: String(body.limit ?? 50)
       });
       if (body.agentId) {
@@ -553,6 +562,122 @@ export function createAdminClient(getToken: () => string) {
     getWeixinOcIntegrations: () => {
       return request<ApiResult<{ integrations: WeixinOcIntegration[] }>>(
         "/admin/platforms/weixin-oc"
+      );
+    },
+    getEmailIntegrations: () => {
+      return request<ApiResult<{ integrations: EmailIntegration[] }>>("/admin/platforms/email");
+    },
+    createEmailIntegration: (body: {
+      agentId?: string;
+      name: string;
+      fromAddress: string;
+      fromName?: string;
+      replyTo?: string;
+      inboundAddresses: string[];
+      resendApiKey?: string;
+    }) => {
+      return request<ApiResult<{ integration: EmailIntegration }>>("/admin/platforms/email", {
+        method: "POST",
+        body: JSON.stringify(body)
+      });
+    },
+    updateEmailIntegration: (
+      integrationId: string,
+      body: {
+        agentId?: string;
+        name?: string;
+        fromAddress?: string;
+        fromName?: string;
+        replyTo?: string;
+        inboundAddresses?: string[];
+        resendApiKey?: string;
+      }
+    ) => {
+      return request<ApiResult<{ integration: EmailIntegration }>>(
+        `/admin/platforms/email-integrations/${integrationId}`,
+        {
+          method: "PUT",
+          body: JSON.stringify(body)
+        }
+      );
+    },
+    deleteEmailIntegration: (integrationId: string) => {
+      return request<ApiResult<{ deleted: boolean }>>(
+        `/admin/platforms/email-integrations/${integrationId}`,
+        { method: "DELETE" }
+      );
+    },
+    listEmailMessages: (
+      body: {
+        agentId?: string;
+        integrationId?: string;
+        direction?: EmailMessage["direction"];
+        conversationId?: string;
+        limit?: number;
+      } = {}
+    ) => {
+      const params = new URLSearchParams();
+      for (const [key, value] of Object.entries(body)) {
+        if (value !== undefined) {
+          params.set(key, String(value));
+        }
+      }
+      const query = params.toString();
+      return request<ApiResult<{ messages: EmailMessage[] }>>(
+        `/admin/email/messages${query ? `?${query}` : ""}`
+      );
+    },
+    getEmailMessage: (emailMessageId: string) => {
+      return request<ApiResult<{ message: EmailMessage }>>(
+        `/admin/email/messages/${encodeURIComponent(emailMessageId)}`
+      );
+    },
+    sendEmail: (body: {
+      integrationId?: string;
+      to: EmailAddress[];
+      cc?: EmailAddress[];
+      bcc?: EmailAddress[];
+      replyTo?: EmailAddress[];
+      subject: string;
+      text?: string;
+      html?: string;
+      attachments?: unknown[];
+    }) => {
+      return request<ApiResult<{ result: ToolResult }>>("/admin/email/send", {
+        method: "POST",
+        body: JSON.stringify(body)
+      });
+    },
+    replyEmail: (body: { emailMessageId: string; text?: string; html?: string }) => {
+      return request<ApiResult<{ result: ToolResult }>>("/admin/email/reply", {
+        method: "POST",
+        body: JSON.stringify(body)
+      });
+    },
+    forwardEmail: (body: {
+      emailMessageId: string;
+      to: EmailAddress[];
+      cc?: EmailAddress[];
+      bcc?: EmailAddress[];
+      mode?: "compose" | "eml_attachment";
+      text?: string;
+      html?: string;
+      includeOriginalAttachments?: boolean;
+    }) => {
+      return request<ApiResult<{ result: ToolResult }>>("/admin/email/forward", {
+        method: "POST",
+        body: JSON.stringify(body)
+      });
+    },
+    saveEmailAttachment: (messageId: string, attachmentId: string, path: string) => {
+      return request<ApiResult<{ result: ToolResult }>>(
+        `/admin/email/messages/${encodeURIComponent(messageId)}/attachments/${encodeURIComponent(
+          attachmentId
+        )}/save`,
+        {
+          method: "POST",
+          body: JSON.stringify({ path })
+        }
       );
     },
     createWeixinOcIntegration: (body: {

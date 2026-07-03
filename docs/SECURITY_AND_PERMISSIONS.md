@@ -58,7 +58,7 @@ model proposes tool call
 
 - `actor`：谁触发了操作。
 - `agent_id`：哪个 agent 执行。
-- `platform`：Telegram、QQ、WeCom、Weixin OC、Webhook、WebUI 或 Admin。
+- `platform`：Telegram、QQ、WeCom、Weixin OC、Email、Webhook、WebUI 或 Admin。
 - `conversation_id`：私聊、群聊或线程。
 - `tool_name`：请求的工具。
 - `permission_level`：工具所需等级。
@@ -75,6 +75,7 @@ model proposes tool call
 - 修改权限配置；
 - 安装或更新 skill；
 - 发送邮件到新收件人；
+- 回复或转发带附件的邮件；
 - 写 GitHub commit 或 PR；
 - 调用未知 HTTP endpoint；
 - 读取敏感 secret。
