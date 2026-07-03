@@ -277,6 +277,9 @@ async function sendEmail(
   const resolved = input.integrationId
     ? await resolveEmailIntegrationById(context.env, input.integrationId)
     : await resolveDefaultEmailIntegration(context.env, context.agentId);
+  if (resolved.integration.agentId !== context.agentId) {
+    return failed("email_integration_not_found", "Email integration not found", false);
+  }
   const attachments = [
     ...(await resolveEmailAttachments(context, input.attachments)),
     ...(options.extraAttachments ?? [])

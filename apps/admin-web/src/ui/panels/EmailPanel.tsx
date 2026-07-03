@@ -1,6 +1,12 @@
 import { Plus, RefreshCw, Send } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import type { ChatMessage, EmailAddress, EmailIntegration, EmailMessage } from "../../api/types";
+import type {
+  ChatMessage,
+  EmailAddress,
+  EmailIntegration,
+  EmailMessage,
+  ToolResult
+} from "../../api/types";
 import { FormDialog } from "../FormDialog";
 import { ToolbarButton } from "../ToolbarButton";
 import {
@@ -107,25 +113,39 @@ export function EmailPanel({ client, notify }: PanelProps) {
   }) {
     try {
       const to = parseAddresses(input.to);
+      let result: ToolResult;
       if (composeMode === "send") {
-        await client.sendEmail({
-          integrationId: selectedIntegrationId || undefined,
-          to,
-          subject: input.subject,
-          text: input.text
-        });
+        result = (
+          await client.sendEmail({
+            integrationId: selectedIntegrationId || undefined,
+            to,
+            subject: input.subject,
+            text: input.text
+          })
+        ).result;
       } else if (composeMode === "reply" && selectedMessage) {
-        await client.replyEmail({ emailMessageId: selectedMessage.id, text: input.text });
+        result = (await client.replyEmail({ emailMessageId: selectedMessage.id, text: input.text }))
+          .result;
       } else if (composeMode === "forward" && selectedMessage) {
-        await client.forwardEmail({
-          emailMessageId: selectedMessage.id,
-          to,
-          text: input.text,
-          mode: input.forwardMode,
-          includeOriginalAttachments: input.includeOriginalAttachments
-        });
+        result = (
+          await client.forwardEmail({
+            emailMessageId: selectedMessage.id,
+            to,
+            text: input.text,
+            mode: input.forwardMode,
+            includeOriginalAttachments: input.includeOriginalAttachments
+          })
+        ).result;
       } else {
         throw new Error("No selected email message");
+      }
+
+      if (result.status === "needs_confirmation") {
+        notify("Email action needs confirmation in Pending Actions", "ok");
+        return;
+      }
+      if (result.status !== "success") {
+        throw new Error(result.error?.message ?? "Failed to submit email action");
       }
       setComposeMode(undefined);
       notify("Email action submitted", "ok");

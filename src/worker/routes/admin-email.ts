@@ -91,7 +91,7 @@ export async function handleAdminEmailSendAction(request: Request, env: Env): Pr
 
   return jsonResponse(
     { ok: result.status === "success", result },
-    { status: result.status === "failed" ? 500 : 200 }
+    { status: emailToolHttpStatus(result.status) }
   );
 }
 
@@ -130,7 +130,7 @@ export async function handleAdminEmailAttachmentSave(
   });
   return jsonResponse(
     { ok: result.status === "success", result },
-    { status: result.status === "failed" ? 500 : 200 }
+    { status: emailToolHttpStatus(result.status) }
   );
 }
 
@@ -166,4 +166,17 @@ async function resolveEmailActionTarget(
   }
 
   return { agentId: env.DEFAULT_AGENT_ID ?? "default" };
+}
+
+function emailToolHttpStatus(status: string): number {
+  if (status === "failed") {
+    return 500;
+  }
+  if (status === "permission_denied") {
+    return 403;
+  }
+  if (status === "needs_confirmation") {
+    return 202;
+  }
+  return 200;
 }

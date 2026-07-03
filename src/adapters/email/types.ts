@@ -14,6 +14,11 @@ export type ResolvedEmailIntegration = {
   resendApiKey: string;
 };
 
+export type ResolvedInboundEmailIntegration = {
+  integration: PlatformIntegrationRecord;
+  config: EmailIntegrationConfig;
+};
+
 export type NormalizedEmailAttachment = {
   id: string;
   fileName?: string;

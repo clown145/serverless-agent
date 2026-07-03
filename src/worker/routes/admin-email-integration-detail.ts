@@ -14,17 +14,14 @@ export async function handleAdminEmailIntegrationDetail(
   env: Env,
   integrationId: string
 ): Promise<Response> {
-  if (request.method === "DELETE") {
-    const deleted = await deletePlatformIntegrationRecord(env.AGENT_DB, integrationId);
-    if (!deleted) {
-      return errorResponse(404, "email_integration_not_found", "Email integration not found");
-    }
-    return jsonResponse({ ok: true, deleted });
-  }
-
   const integration = await getPlatformIntegrationRecord(env.AGENT_DB, integrationId);
   if (!integration || integration.platform !== "email") {
     return errorResponse(404, "email_integration_not_found", "Email integration not found");
+  }
+
+  if (request.method === "DELETE") {
+    const deleted = await deletePlatformIntegrationRecord(env.AGENT_DB, integrationId);
+    return jsonResponse({ ok: true, deleted });
   }
 
   if (request.method !== "PUT") {

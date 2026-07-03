@@ -6,7 +6,11 @@ import {
   listPlatformIntegrationRecords
 } from "../../storage/repositories/platform-integrations-repository";
 import type { PlatformIntegrationRecord } from "../../storage/repositories/platform-integration-types";
-import type { EmailIntegrationConfig, ResolvedEmailIntegration } from "./types";
+import type {
+  EmailIntegrationConfig,
+  ResolvedEmailIntegration,
+  ResolvedInboundEmailIntegration
+} from "./types";
 
 export function parseEmailIntegrationConfig(
   integration: PlatformIntegrationRecord
@@ -31,7 +35,7 @@ export function parseEmailIntegrationConfig(
 export async function resolveEmailIntegrationByInboundAddress(
   env: Env,
   address: string
-): Promise<ResolvedEmailIntegration | undefined> {
+): Promise<ResolvedInboundEmailIntegration | undefined> {
   const normalized = normalizeEmailAddress(address);
   const integrations = await listPlatformIntegrationRecords(env.AGENT_DB, { platform: "email" });
 
@@ -40,8 +44,7 @@ export async function resolveEmailIntegrationByInboundAddress(
     if (config.inboundAddresses.includes(normalized)) {
       return {
         integration,
-        config,
-        resendApiKey: await requireResendApiKey(env, integration)
+        config
       };
     }
   }
