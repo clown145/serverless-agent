@@ -39,7 +39,7 @@ export async function parseRawEmail(
   rawBytes: Uint8Array;
 }> {
   const rawBytes = await rawToBytes(raw);
-  const parsed = (await PostalMime.parse(rawBytes.buffer.slice(0))) as PostalEmail;
+  const parsed = (await PostalMime.parse(rawEmailForParser(rawBytes))) as PostalEmail;
   const headers = normalizeHeaders(parsed.headers);
   const rfcMessageId = parsed.messageId || header(headers, "message-id") || createId("mailmsg");
   const references = splitReferences(header(headers, "references"));
@@ -177,6 +177,17 @@ async function rawToBytes(
   }
   const response = new Response(raw);
   return new Uint8Array(await response.arrayBuffer());
+}
+
+function rawEmailForParser(bytes: Uint8Array): Uint8Array | ArrayBuffer {
+  if (
+    bytes.buffer instanceof ArrayBuffer &&
+    bytes.byteOffset === 0 &&
+    bytes.byteLength === bytes.buffer.byteLength
+  ) {
+    return bytes.buffer;
+  }
+  return bytes;
 }
 
 function stripHtml(html: string): string {

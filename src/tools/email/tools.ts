@@ -42,6 +42,7 @@ import {
   type ForwardEmailInput,
   type SendEmailInput
 } from "./schema";
+import { emailAttachmentPreviewKind, isTextEmailMime } from "./preview";
 
 export function createEmailTools(): RegisteredTool[] {
   return [
@@ -221,7 +222,7 @@ function previewEmailAttachmentTool(): RegisteredTool {
       }
       const attachment = await resolveMessageAttachmentBytes(context, parsed.data);
       const maxBytes = parsed.data.maxBytes ?? 64_000;
-      const textPreview = isTextMime(attachment.mimeType)
+      const textPreview = isTextEmailMime(attachment.mimeType)
         ? new TextDecoder().decode(attachment.bytes.subarray(0, maxBytes))
         : undefined;
       return {
@@ -230,7 +231,7 @@ function previewEmailAttachmentTool(): RegisteredTool {
           fileName: attachment.fileName,
           mimeType: attachment.mimeType,
           size: attachment.size,
-          previewKind: previewKind(attachment.mimeType),
+          previewKind: emailAttachmentPreviewKind(attachment.mimeType),
           textPreview,
           truncated: Boolean(textPreview && attachment.bytes.byteLength > maxBytes)
         }
@@ -455,25 +456,6 @@ function createForwardText(original: Awaited<ReturnType<typeof requireEmailMessa
     "",
     original.textBody ?? original.snippet ?? ""
   ].join("\n");
-}
-
-function isTextMime(mimeType: string): boolean {
-  return (
-    mimeType.startsWith("text/") || mimeType === "application/json" || mimeType.endsWith("+json")
-  );
-}
-
-function previewKind(mimeType: string): "text" | "image" | "pdf" | "download" {
-  if (isTextMime(mimeType)) {
-    return "text";
-  }
-  if (mimeType.startsWith("image/")) {
-    return "image";
-  }
-  if (mimeType === "application/pdf") {
-    return "pdf";
-  }
-  return "download";
 }
 
 function safeSubject(subject: string | undefined): string {
