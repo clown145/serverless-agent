@@ -32,7 +32,8 @@ async function runAgentForMessageInternal(
   inboundMessage: InternalMessage
 ): Promise<string> {
   const resolved = await resolveInboundConversation(env, inboundMessage);
-  const message = await persistInboundMedia(env, resolved.message);
+  const media = await persistInboundMedia(env, resolved.message);
+  const message = media.message;
   await insertMessage(env.AGENT_DB, message);
 
   const runId = createId("run");
@@ -57,6 +58,20 @@ async function runAgentForMessageInternal(
   });
 
   try {
+    if (media.rejection) {
+      await appendRunStep(env.AGENT_DB, {
+        id: createId("step"),
+        runId,
+        agentId: message.agentId,
+        kind: "completed",
+        status: "completed",
+        summary: media.rejection.summary
+      });
+      await sendFinalMessage(env, runId, message, media.rejection.responseText);
+      await completeRun(env.AGENT_DB, runId, "completed");
+      return runId;
+    }
+
     const capabilities = await resolveActiveModelCapabilities(
       env,
       message.agentId,
