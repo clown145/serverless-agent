@@ -1,4 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { createBuiltinTools } from "../../src/tools/builtin/create-builtin-tools";
+import { createModelTools } from "../../src/core/agent-context";
 import { GeminiProvider } from "../../src/core/model/gemini-provider";
 import { OpenAiCompatibleProvider } from "../../src/core/model/openai-compatible-provider";
 
@@ -420,6 +422,53 @@ describe("model request bodies", () => {
         })
       ])
     );
+  });
+
+  it("formats all builtin tools as valid Gemini function declarations", async () => {
+    const fetchMock = vi.fn(async () => {
+      return jsonResponse({ candidates: [{ content: { parts: [{ text: "done" }] } }] });
+    });
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+
+    const provider = new GeminiProvider({
+      apiKey: "test",
+      model: "gemini-2.5-flash"
+    });
+    const tools = createModelTools(createBuiltinTools());
+    await provider.complete({
+      messages: [{ role: "user", content: "hello" }],
+      tools
+    });
+
+    const body = fetchBody(fetchMock) as {
+      tools?: Array<{
+        functionDeclarations?: Array<{
+          name: string;
+          description?: string;
+          parameters?: {
+            type?: string;
+            properties?: Record<string, unknown>;
+            required?: string[];
+            oneOf?: unknown[];
+          };
+        }>;
+      }>;
+    };
+
+    const declarations = body.tools?.[0]?.functionDeclarations ?? [];
+    expect(declarations.length).toBeGreaterThan(0);
+
+    for (const declaration of declarations) {
+      expect(declaration.parameters).toBeDefined();
+      if (declaration.parameters?.required) {
+        expect(declaration.parameters.type?.toLowerCase()).toBe("object");
+        const propKeys = Object.keys(declaration.parameters.properties ?? {});
+        for (const req of declaration.parameters.required) {
+          expect(propKeys).toContain(req);
+        }
+      }
+      expect(declaration.parameters?.oneOf).toBeUndefined();
+    }
   });
 });
 
