@@ -488,7 +488,6 @@ export const sendButtonsInputJsonSchema = {
     }
   },
   required: ["platform", "conversationId", "text"],
-  oneOf: [{ required: ["buttons"] }, { required: ["rows"] }],
   additionalProperties: false
 } as const;
 

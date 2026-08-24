@@ -220,11 +220,10 @@ describe("messaging schemas", () => {
     });
   });
 
-  it("documents buttons and rows as mutually exclusive in the JSON schema", () => {
-    expect(sendButtonsInputJsonSchema).toMatchObject({
-      oneOf: [{ required: ["buttons"] }, { required: ["rows"] }]
-    });
+  it("does not include invalid oneOf/anyOf in the JSON schema", () => {
+    expect("oneOf" in sendButtonsInputJsonSchema).toBe(false);
     expect("anyOf" in sendButtonsInputJsonSchema).toBe(false);
+    expect(sendButtonsInputJsonSchema.required).toEqual(["platform", "conversationId", "text"]);
   });
 
   it("rejects explicit button rows outside Telegram", () => {
